@@ -1,0 +1,21 @@
+[package]
+name = "vanity_orbt"
+version = "0.1.0"
+edition = "2021"
+description = "Fast, local Solana vanity address generator"
+license = "MIT"
+
+[[bin]]
+name = "vanity-orbt"
+path = "src/main.rs"
+
+[dependencies]
+solana-sdk = "1.17.0"
+rayon = "1.7.0"
+hex = "0.4.3"
+bs58 = "0.5"
+clap = { version = "4", features = ["derive"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
