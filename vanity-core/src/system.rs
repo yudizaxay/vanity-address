@@ -11,6 +11,8 @@ pub struct SystemProfile {
     pub worker_threads: usize,
     pub progress_interval: u64,
     pub memory_pressure: MemoryPressure,
+    /// Set after a live benchmark warm-up for accurate ETA.
+    pub measured_keys_per_sec: Option<f64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -52,7 +54,14 @@ impl SystemProfile {
             worker_threads,
             progress_interval,
             memory_pressure,
+            measured_keys_per_sec: None,
         }
+    }
+
+    /// Store a live benchmark result from `benchmark()`.
+    pub fn with_benchmark(mut self, keys_per_sec: f64) -> Self {
+        self.measured_keys_per_sec = Some(keys_per_sec.max(1.0));
+        self
     }
 
     /// Override thread count (e.g. from `--threads` CLI flag).
@@ -100,6 +109,9 @@ impl SystemProfile {
     }
 
     pub fn estimated_keys_per_sec(&self, chain_id: &str) -> f64 {
+        if let Some(measured) = self.measured_keys_per_sec {
+            return measured;
+        }
         let per_thread = match chain_id {
             "evm" | "aptos" | "sui" | "near" => 35_000.0,
             _ => 80_000.0,

@@ -79,3 +79,16 @@ impl ChainGrinder for StellarGrinder {
         "Base58 strkey — public addresses start with G."
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::StellarGrinder;
+    use crate::chain::ChainGrinder;
+
+    #[test]
+    fn stellar_address_starts_with_g() {
+        let g = StellarGrinder;
+        let (addr, _) = g.grind_attempt();
+        assert!(addr.starts_with('G'));
+    }
+}

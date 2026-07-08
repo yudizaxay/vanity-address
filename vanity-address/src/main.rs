@@ -1,6 +1,7 @@
 mod banner;
 mod menu;
 mod terminal;
+mod warnings;
 
 use clap::Parser;
 use colored::Colorize;
@@ -8,8 +9,14 @@ use indicatif::{ProgressBar, ProgressStyle};
 use menu::run as run_interactive;
 use std::fs::OpenOptions;
 use std::io::{self, Write};
-use std::path::Path;
-use vanity_core::{grind, Chain, ChainGrinder, GrindResult, Pattern, SystemProfile};
+use std::path::{Path, PathBuf};
+use vanity_core::{
+    benchmark, format_attempts, grind, grind_estimate, Chain, ChainGrinder, GrindResult,
+    Pattern, PatternRisk, SystemProfile,
+};
+
+const BENCHMARK_SECS: f64 = 2.0;
+const DEFAULT_RESULTS_FILE: &str = "vanity-results.txt";
 
 #[derive(Parser)]
 #[command(
@@ -44,6 +51,18 @@ struct Cli {
     /// Append match to vanity-results.txt (private keys — keep this file safe)
     #[arg(long)]
     save: bool,
+
+    /// File path for saved keys (used with --save or interactive save prompt)
+    #[arg(long, value_name = "PATH")]
+    output: Option<String>,
+
+    /// Skip the 2-second speed calibration warm-up before grinding
+    #[arg(long)]
+    no_benchmark: bool,
+
+    /// Allow impractical patterns in CLI mode (years+ estimated grind time)
+    #[arg(long)]
+    force: bool,
 }
 
 struct RunConfig {
@@ -59,6 +78,9 @@ struct RunConfig {
     save: bool,
     /// After grind, ask whether to save (interactive).
     prompt_save: bool,
+    output: Option<PathBuf>,
+    no_benchmark: bool,
+    force: bool,
 }
 
 impl Clone for RunConfig {
@@ -73,6 +95,9 @@ impl Clone for RunConfig {
             compact_header: self.compact_header,
             save: self.save,
             prompt_save: self.prompt_save,
+            output: self.output.clone(),
+            no_benchmark: self.no_benchmark,
+            force: self.force,
         }
     }
 }
@@ -86,6 +111,9 @@ impl Cli {
             || self.quiet
             || self.threads.is_some()
             || self.save
+            || self.output.is_some()
+            || self.no_benchmark
+            || self.force
     }
 
     fn into_run_config(self) -> Result<RunConfig, String> {
@@ -103,17 +131,18 @@ impl Cli {
             compact_header: false,
             save: self.save,
             prompt_save: false,
+            output: self.output.map(PathBuf::from),
+            no_benchmark: self.no_benchmark,
+            force: self.force,
         })
     }
 }
 
-fn format_attempts(n: f64) -> String {
-    if n >= 1_000_000_000.0 {
-        format!("{:.1}B", n / 1_000_000_000.0)
-    } else if n >= 1_000_000.0 {
+fn format_speed(n: f64) -> String {
+    if n >= 1_000_000.0 {
         format!("{:.1}M", n / 1_000_000.0)
     } else if n >= 1_000.0 {
-        format!("{:.1}K", n / 1_000.0)
+        format!("{:.0}K", n / 1_000.0)
     } else {
         format!("{:.0}", n)
     }
@@ -156,6 +185,67 @@ fn run_grind(config: RunConfig) {
             std::process::exit(1);
         }
         profile = profile.with_threads(threads);
+    }
+
+    let pre_estimate =
+        grind_estimate(expected, profile.estimated_keys_per_sec(chain.id()), &pattern);
+
+    // CLI direct mode: warn and block impractical patterns unless --force.
+    if !config.compact_header && !config.quiet {
+        warnings::print_pattern_warnings(&pre_estimate);
+        if pre_estimate.risk == PatternRisk::Impractical && !config.force {
+            print_error(
+                "Pattern is not practical on a single machine. Shorten it or pass --force to grind anyway.",
+            );
+            std::process::exit(1);
+        }
+    }
+
+    if !config.quiet && !config.no_benchmark {
+        if !config.compact_header {
+            println!(
+                "  {}  {}",
+                "Calibrating".dimmed(),
+                format!("{BENCHMARK_SECS:.0}s warm-up to measure real speed…").dimmed()
+            );
+        }
+        match benchmark(chain.clone(), &profile, BENCHMARK_SECS) {
+            Ok(rate) => {
+                profile = profile.with_benchmark(rate);
+                let calibrated = grind_estimate(
+                    expected,
+                    profile.estimated_keys_per_sec(chain.id()),
+                    &pattern,
+                );
+                if !config.compact_header {
+                    println!(
+                        "  {}  {}",
+                        "Measured".dimmed(),
+                        format!("~{} keys/sec", format_speed(rate)).green()
+                    );
+                    println!(
+                        "  {}  {}",
+                        "Est. time".dimmed(),
+                        calibrated.time_label.yellow()
+                    );
+                    println!();
+                } else {
+                    println!(
+                        "  {}  {}",
+                        "Speed".dimmed(),
+                        format!("~{} keys/sec (measured)", format_speed(rate)).green()
+                    );
+                }
+            }
+            Err(e) => {
+                if !config.compact_header {
+                    eprintln!(
+                        "  {}  benchmark skipped ({e})",
+                        "warn:".yellow().bold(),
+                    );
+                }
+            }
+        }
     }
 
     if !config.quiet {
@@ -265,18 +355,27 @@ fn run_grind(config: RunConfig) {
         print_success(&result, &pattern);
     }
 
+    let output_path = config
+        .output
+        .clone()
+        .unwrap_or_else(|| PathBuf::from(DEFAULT_RESULTS_FILE));
+    let save_prompt = format!(
+        "  Save keys to {}? [y/N]: ",
+        output_path.display()
+    );
+
     let should_save = if config.save {
         true
     } else if config.prompt_save && !config.quiet {
         println!();
-        terminal::read_yes_no_key("  Save keys to vanity-results.txt? [y/N]: ", false, false)
+        terminal::read_yes_no_key(&save_prompt, false, false)
             .unwrap_or(false)
     } else {
         false
     };
 
     if should_save {
-        match save_result(&chain, &pattern, &result) {
+        match save_result(&output_path, &chain, &pattern, &result) {
             Ok(path) => {
                 if !config.quiet {
                     println!(
@@ -433,10 +532,12 @@ fn format_number(n: u64) -> String {
     out.chars().rev().collect()
 }
 
-const RESULTS_FILE: &str = "vanity-results.txt";
-
-fn save_result(chain: &Chain, pattern: &Pattern, result: &GrindResult) -> io::Result<String> {
-    let path = Path::new(RESULTS_FILE);
+fn save_result(
+    path: &Path,
+    chain: &Chain,
+    pattern: &Pattern,
+    result: &GrindResult,
+) -> io::Result<String> {
     let mut file = OpenOptions::new().create(true).append(true).open(path)?;
 
     let timestamp = chrono_timestamp();
@@ -462,7 +563,7 @@ fn save_result(chain: &Chain, pattern: &Pattern, result: &GrindResult) -> io::Re
     )?;
     writeln!(file)?;
 
-    Ok(RESULTS_FILE.to_string())
+    Ok(path.display().to_string())
 }
 
 fn chrono_timestamp() -> String {
@@ -522,6 +623,9 @@ fn main() {
             compact_header: true,
             save: false,
             prompt_save: true,
+            output: None,
+            no_benchmark: false,
+            force: false,
         };
 
         loop {

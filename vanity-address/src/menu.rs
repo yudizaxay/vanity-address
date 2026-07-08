@@ -1,8 +1,9 @@
 use crate::banner;
 use crate::terminal::{peace_out, read_line_with_escape, read_menu_choice, read_yes_no_key, wait_for_key, MenuChoice};
+use crate::warnings;
 use colored::Colorize;
 use std::io::Write;
-use vanity_core::{Chain, ChainGrinder, SystemProfile, MENU_CHAINS};
+use vanity_core::{grind_estimate, Chain, ChainGrinder, GrindEstimate, PatternRisk, SystemProfile, MENU_CHAINS};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum WizardStep {
@@ -258,7 +259,11 @@ fn run_wizard() -> Option<InteractiveConfig> {
 
                 let profile = SystemProfile::detect();
                 let expected = chain.expected_attempts(&pattern);
-                let estimate = TimeEstimate::from_attempts(expected, &profile, chain.id(), &pattern);
+                let estimate = grind_estimate(
+                    expected,
+                    profile.estimated_keys_per_sec(chain.id()),
+                    &pattern,
+                );
 
                 banner::print_compact();
                 print_summary(&chain, &pattern, &estimate, &profile);
@@ -341,142 +346,10 @@ fn show_error(msg: &str) {
     pause();
 }
 
-struct TimeEstimate {
-    attempts_label: String,
-    time_label: String,
-    difficulty: String,
-    difficulty_bars: String,
-    risk: PatternRisk,
-}
-
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum PatternRisk {
-    None,
-    Caution,
-    Long,
-    Impractical,
-}
-
-impl PatternRisk {
-    fn assess(attempts: f64, pattern_chars: usize, avg_secs: f64) -> Self {
-        if attempts >= 1e15 || pattern_chars >= 10 || avg_secs >= 86400.0 * 365.0 * 10.0 {
-            PatternRisk::Impractical
-        } else if attempts >= 1e12 || pattern_chars >= 8 || avg_secs >= 86400.0 * 30.0 {
-            PatternRisk::Long
-        } else if attempts >= 1e9 || pattern_chars >= 6 || avg_secs >= 86400.0 {
-            PatternRisk::Caution
-        } else {
-            PatternRisk::None
-        }
-    }
-}
-
-fn format_duration(avg_secs: f64) -> String {
-    if avg_secs < 5.0 {
-        "a few seconds".to_string()
-    } else if avg_secs < 60.0 {
-        format!("~{:.0} seconds", avg_secs)
-    } else if avg_secs < 3_600.0 {
-        format!("~{:.0} minutes", avg_secs / 60.0)
-    } else if avg_secs < 86_400.0 {
-        format!("~{:.1} hours", avg_secs / 3_600.0)
-    } else if avg_secs < 86_400.0 * 30.0 {
-        format!("~{:.0} days", avg_secs / 86_400.0)
-    } else if avg_secs < 86_400.0 * 365.0 {
-        format!("~{:.0} months", avg_secs / (86_400.0 * 30.0))
-    } else if avg_secs < 86_400.0 * 365.0 * 100.0 {
-        format!("~{:.0} years", avg_secs / (86_400.0 * 365.0))
-    } else {
-        "centuries+ — not practical on one machine".to_string()
-    }
-}
-
-fn effective_pattern_chars(pattern: &vanity_core::Pattern) -> usize {
-    let prefix = pattern
-        .prefix_match
-        .strip_prefix("0x")
-        .unwrap_or(&pattern.prefix_match);
-    prefix.len() + pattern.suffix_match.len()
-}
-
-impl TimeEstimate {
-    fn from_attempts(attempts: f64, profile: &SystemProfile, chain_id: &str, pattern: &vanity_core::Pattern) -> Self {
-        let keys_per_sec = profile.estimated_keys_per_sec(chain_id);
-        let avg_secs = attempts / keys_per_sec;
-        let attempts_label = format_attempts(attempts);
-        let time_label = format_duration(avg_secs);
-        let pattern_chars = effective_pattern_chars(pattern);
-        let risk = PatternRisk::assess(attempts, pattern_chars, avg_secs);
-
-        let (difficulty, filled) = match attempts {
-            a if a < 100_000.0 => ("Easy", 2),
-            a if a < 10_000_000.0 => ("Quick", 3),
-            a if a < 1_000_000_000.0 => ("Medium", 5),
-            a if a < 1_000_000_000_000.0 => ("Hard", 7),
-            _ => ("Extreme", 10),
-        };
-
-        Self {
-            attempts_label,
-            time_label,
-            difficulty: difficulty.to_string(),
-            difficulty_bars: format!("{}{}", "█".repeat(filled), "░".repeat(10 - filled)),
-            risk,
-        }
-    }
-}
-
-fn print_pattern_warning(risk: PatternRisk, pattern_chars: usize) {
-    match risk {
-        PatternRisk::None => {}
-        PatternRisk::Caution => {
-            println!();
-            println!(
-                "  {} {}",
-                "⚠".yellow().bold(),
-                "This pattern may take hours or longer. 4–6 characters is usually realistic."
-                    .yellow()
-            );
-        }
-        PatternRisk::Long => {
-            println!();
-            println!(
-                "  {} {}",
-                "⚠".red().bold(),
-                "Long pattern — weeks or months on this machine. Strongly consider shortening it."
-                    .red()
-            );
-        }
-        PatternRisk::Impractical => {
-            println!();
-            println!(
-                "  {} {}",
-                "⛔".red().bold(),
-                format!(
-                    "{pattern_chars} characters is NOT practical on a single PC (years to centuries+)."
-                )
-                .red()
-                .bold()
-            );
-            println!(
-                "  {}",
-                "Vanity grinds are probabilistic — you will almost certainly never find a match."
-                    .red()
-                    .dimmed()
-            );
-            println!(
-                "  {}",
-                "Recommended: 2–4 chars suffix/prefix · 6 max for patient grinds."
-                    .dimmed()
-            );
-        }
-    }
-}
-
 fn print_summary(
     chain: &Chain,
     pattern: &vanity_core::Pattern,
-    estimate: &TimeEstimate,
+    estimate: &GrindEstimate,
     profile: &SystemProfile,
 ) {
     println!("{}", "── Summary ──".bold().yellow());
@@ -535,14 +408,14 @@ fn print_summary(
     println!(
         "  {:<14} {}",
         "Est. speed:".dimmed(),
-        format!("~{} keys/sec on this machine", format_speed(speed)).green()
+        format!("~{} keys/sec on this machine (estimated)", format_speed(speed)).green()
     );
 
-    print_pattern_warning(estimate.risk, effective_pattern_chars(pattern));
+    warnings::print_pattern_warnings(estimate);
 
     if pattern.has_suffix() || pattern.has_prefix() {
         println!();
-        print_length_guide(chain.id(), effective_pattern_chars(pattern));
+        print_length_guide(chain.id(), estimate.pattern_chars);
     }
     println!();
 }
@@ -588,18 +461,4 @@ fn pause() {
 fn clear_screen() {
     print!("\x1B[2J\x1B[H");
     let _ = std::io::stdout().flush();
-}
-
-fn format_attempts(n: f64) -> String {
-    if n >= 1_000_000_000_000.0 {
-        format!("{:.1}T", n / 1_000_000_000_000.0)
-    } else if n >= 1_000_000_000.0 {
-        format!("{:.1}B", n / 1_000_000_000.0)
-    } else if n >= 1_000_000.0 {
-        format!("{:.1}M", n / 1_000_000.0)
-    } else if n >= 1_000.0 {
-        format!("{:.1}K", n / 1_000.0)
-    } else {
-        format!("{:.0}", n)
-    }
 }

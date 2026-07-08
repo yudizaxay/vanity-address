@@ -60,7 +60,7 @@ fn print_trust_lines() {
     println!(
         "  {} {}",
         "·".cyan(),
-        "Solana + EVM  ·  prefix/suffix  ·  multi-core grinding".dimmed()
+        "13 chains  ·  prefix/suffix  ·  multi-core grinding".dimmed()
     );
     let _ = io::stdout().flush();
 }

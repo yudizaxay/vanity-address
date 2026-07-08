@@ -25,6 +25,7 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 <!-- Project status badges -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/yudizaxay/vanity-address/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/yudizaxay/vanity-address/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/yudizaxay/vanity-address?style=for-the-badge&logo=github&label=Release)](https://github.com/yudizaxay/vanity-address/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Issues](https://img.shields.io/github/issues/yudizaxay/vanity-address?style=for-the-badge&logo=github)](https://github.com/yudizaxay/vanity-address/issues)
 [![Stars](https://img.shields.io/github/stars/yudizaxay/vanity-address?style=for-the-badge&logo=github&color=yellow)](https://github.com/yudizaxay/vanity-address/stargazers)
@@ -77,6 +78,14 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 
 ## 🎬 Demo
 
+<p align="center">
+  <img src="assets/demo-terminal.svg" alt="vanity-address terminal demo — interactive menu, live grind progress, and match output" width="720" />
+</p>
+
+<p align="center">
+  <sub>Interactive menu → chain &amp; pattern wizard → live benchmark → parallel grind → formatted key export</sub>
+</p>
+
 ### Solana
 
 ```bash
@@ -117,6 +126,37 @@ $ vanity-address --chain evm --prefix dead --suffix beef
 ---
 
 ## 📦 Install
+
+### Pre-built binaries (recommended)
+
+Download the latest release for your platform — no Rust toolchain required:
+
+| Platform | Archive |
+| -------- | ------- |
+| **Linux** (x86_64) | [`vanity-address-*-linux-x86_64.tar.gz`](https://github.com/yudizaxay/vanity-address/releases/latest) |
+| **macOS** (Apple Silicon) | [`vanity-address-*-macos-arm64.tar.gz`](https://github.com/yudizaxay/vanity-address/releases/latest) |
+
+```bash
+# Linux example (check Releases page for exact version)
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.2.0/vanity-address-0.2.0-linux-x86_64.tar.gz
+tar xzf vanity-address-0.2.0-linux-x86_64.tar.gz
+cd vanity-address-0.2.0-linux-x86_64
+./vanity-address
+```
+
+```bash
+# macOS (Apple Silicon) example
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.2.0/vanity-address-0.2.0-macos-arm64.tar.gz
+tar xzf vanity-address-0.2.0-macos-arm64.tar.gz
+cd vanity-address-0.2.0-macos-arm64
+./vanity-address
+```
+
+Each archive includes `vanity-address`, `README.md`, `LICENSE`, and a `.sha256` checksum file on the Releases page.
+
+> **Intel Mac?** Build from source below, or use Rosetta with the arm64 binary where supported.
+
+### Build from source
 
 **Requirements:** [Rust](https://rustup.rs/) 1.70+
 
@@ -197,6 +237,9 @@ vanity-address --chain evm --prefix dead --suffix beef
 | `--suffix <PATTERN>` | Address must end with pattern                      | —       |
 | `--exact`            | Exact casing (base58 chains)                       | off     |
 | `--save`             | Append match (incl. private keys) to `vanity-results.txt` | off |
+| `--output <PATH>`    | Custom save file (with `--save` or interactive save) | `vanity-results.txt` |
+| `--no-benchmark`     | Skip 2s speed calibration warm-up before grinding | off |
+| `--force`            | Allow impractical patterns in CLI mode (blocked by default) | off |
 | `-q, --quiet`        | Minimal output (script-friendly)                   | off     |
 | `--threads <N>`      | Override worker threads (auto-detected by default) | auto    |
 | `-h, --help`         | Show help                                          | —       |
@@ -305,7 +348,7 @@ We love contributions — **new blockchains, bug fixes, features, docs, and test
 |----------|------------|
 | Add a blockchain | `vanity-core/src/chains/` + [contributing guide](CONTRIBUTING.md#adding-a-new-blockchain) |
 | Fix a bug / UX issue | Fork → branch → PR with repro steps |
-| Propose a feature | [Open an issue](https://github.com/yudizaxay/vanity-address/issues/new) first for big changes |
+| Propose a feature | [Open a feature request](https://github.com/yudizaxay/vanity-address/issues/new?template=feature_request.yml) for big changes |
 
 ```bash
 git checkout -b feat/my-feature
@@ -334,8 +377,8 @@ This project is licensed under the **[MIT License](LICENSE)** — free for perso
 <br />
 
 [![GitHub](https://img.shields.io/badge/GitHub-yudizaxay%2Fvanity--address-181717?style=flat-square&logo=github)](https://github.com/yudizaxay/vanity-address)
-[![Report Bug](https://img.shields.io/badge/Report-Bug-red?style=flat-square&logo=github)](https://github.com/yudizaxay/vanity-address/issues/new)
-[![Request Feature](https://img.shields.io/badge/Request-Feature-blue?style=flat-square&logo=github)](https://github.com/yudizaxay/vanity-address/issues/new)
+[![Report Bug](https://img.shields.io/badge/Report-Bug-red?style=flat-square&logo=github)](https://github.com/yudizaxay/vanity-address/issues/new?template=bug_report.yml)
+[![Request Feature](https://img.shields.io/badge/Request-Feature-blue?style=flat-square&logo=github)](https://github.com/yudizaxay/vanity-address/issues/new?template=feature_request.yml)
 
 <br />
 

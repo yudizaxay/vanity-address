@@ -84,3 +84,16 @@ impl ChainGrinder for TronGrinder {
         "Base58 — Tron addresses start with T."
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::TronGrinder;
+    use crate::chain::ChainGrinder;
+
+    #[test]
+    fn tron_address_starts_with_t() {
+        let g = TronGrinder;
+        let (addr, _) = g.grind_attempt();
+        assert!(addr.starts_with('T'));
+    }
+}

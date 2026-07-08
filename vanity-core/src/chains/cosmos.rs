@@ -108,3 +108,23 @@ impl ChainGrinder for CosmosGrinder {
         "Bech32 data chars, or full address including prefix (e.g. cosmos1…)."
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::CosmosGrinder;
+    use crate::chain::ChainGrinder;
+
+    #[test]
+    fn cosmos_address_has_prefix() {
+        let g = CosmosGrinder::cosmos();
+        let (addr, _) = g.grind_attempt();
+        assert!(addr.starts_with("cosmos1"));
+    }
+
+    #[test]
+    fn osmo_address_has_prefix() {
+        let g = CosmosGrinder::osmosis();
+        let (addr, _) = g.grind_attempt();
+        assert!(addr.starts_with("osmo1"));
+    }
+}

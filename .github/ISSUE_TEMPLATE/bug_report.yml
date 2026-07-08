@@ -1,0 +1,85 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please do **not** paste private keys or `vanity-results.txt` contents.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Interactive menu
+        - CLI flags
+        - Grinding / performance
+        - Pattern matching
+        - Key export / save
+        - Specific blockchain
+        - Build / CI
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `vanity-address -V`, or commit SHA if built from source
+      placeholder: "0.2.0"
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: OS / platform
+      placeholder: "macOS 15 · Apple M2 · 16 GB RAM"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Exact command or menu path
+      placeholder: |
+        1. Run `vanity-address --chain sol --suffix axay`
+        2. Wait for match
+        3. Press N on save prompt
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Terminal output (optional)
+      description: Redact any private keys before pasting
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues before opening this
+          required: true
+        - label: I did not include private keys in this report
+          required: true

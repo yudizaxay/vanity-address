@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contributing guide
+    url: https://github.com/yudizaxay/vanity-address/blob/main/CONTRIBUTING.md
+    about: How to add chains, run tests, and open PRs
+  - name: Security note
+    url: https://github.com/yudizaxay/vanity-address#-security
+    about: Keys are local-only — never share private keys in issues
