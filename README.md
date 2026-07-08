@@ -297,18 +297,26 @@ Longer patterns = exponentially harder. Start short, verify, then go longer.
 
 ## 🤝 Contributing
 
-We love contributions! See [CONTRIBUTING.md](CONTRIBUTING.md).
+We love contributions — **new blockchains, bug fixes, features, docs, and tests** are all welcome!
+
+📖 **[CONTRIBUTING.md](CONTRIBUTING.md)** — full guide (add a chain, PR checklist, code style)
+
+| Want to… | Start here |
+|----------|------------|
+| Add a blockchain | `vanity-core/src/chains/` + [contributing guide](CONTRIBUTING.md#adding-a-new-blockchain) |
+| Fix a bug / UX issue | Fork → branch → PR with repro steps |
+| Propose a feature | [Open an issue](https://github.com/yudizaxay/vanity-address/issues/new) first for big changes |
 
 ```bash
 git checkout -b feat/my-feature
-cargo build --release
-cargo test
-cargo clippy -- -D warnings
+cargo fmt && cargo test && cargo clippy -- -D warnings
 ```
 
+PRs use the [pull request template](.github/PULL_REQUEST_TEMPLATE.md) — fill it in so reviewers can merge faster.
+
 1. Fork the repo
-2. Create your branch
-3. Commit changes
+2. Create your branch (`feat/…`, `fix/…`, `docs/…`)
+3. Commit with a clear message
 4. Push and open a PR
 
 ---

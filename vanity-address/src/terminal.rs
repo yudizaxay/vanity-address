@@ -50,6 +50,9 @@ pub enum MenuChoice {
     Selected(u32),
 }
 
+/// How long to wait for the next digit when `1` could mean option 1 or 10–13.
+const MULTI_DIGIT_WAIT_MS: u64 = 2_000;
+
 /// Whether another digit could still produce a valid selection ≤ max.
 fn can_extend(value: u32, max: u32) -> bool {
     value > 0 && value.saturating_mul(10) <= max
@@ -102,10 +105,10 @@ pub fn read_menu_choice(prompt: &str, min: u32, max: u32, allow_back: bool) -> M
             print!("{c}");
             let _ = io::stdout().flush();
 
-            // Wait for more digits only when needed (e.g. [1] vs [10–13]).
+            // Wait for more digits when ambiguous (e.g. [1] vs [10–13]).
             while can_extend(value, max) {
-                if !event::poll(Duration::from_millis(450)).unwrap_or(false) {
-                    break; // timeout → accept single digit
+                if !event::poll(Duration::from_millis(MULTI_DIGIT_WAIT_MS)).unwrap_or(false) {
+                    break; // idle timeout → accept what we have (e.g. 1 = Solana)
                 }
                 let Ok(Event::Key(KeyEvent { code, kind, .. })) = event::read() else {
                     break;
@@ -144,17 +147,32 @@ pub fn read_menu_choice(prompt: &str, min: u32, max: u32, allow_back: bool) -> M
     choice
 }
 
-/// Read y/n — `y` confirms, `n`/Esc/Enter declines. Esc on confirm screen = back.
-pub fn read_yes_no_key(prompt: &str, esc_is_back: bool) -> Option<bool> {
+fn is_enter(code: KeyCode) -> bool {
+    matches!(
+        code,
+        KeyCode::Enter | KeyCode::Char('\r') | KeyCode::Char('\n')
+    )
+}
+
+/// Read y/n — `y` confirms, `n`/Esc declines. Esc may mean “back” when `esc_is_back`.
+/// `enter_confirms`: Enter / Return key counts as Yes (e.g. summary “start grinding”).
+pub fn read_yes_no_key(prompt: &str, esc_is_back: bool, enter_confirms: bool) -> Option<bool> {
     print!("{prompt}");
     let _ = io::stdout().flush();
 
     enable_raw_mode().expect("terminal raw mode");
     let result = loop {
         if let Ok(Event::Key(KeyEvent {
-            code, modifiers, ..
+            code,
+            modifiers,
+            kind,
+            ..
         })) = event::read()
         {
+            if !is_press(kind) {
+                continue;
+            }
+
             if modifiers.contains(KeyModifiers::CONTROL) && code == KeyCode::Char('c') {
                 handle_ctrl_c();
             }
@@ -168,9 +186,13 @@ pub fn read_yes_no_key(prompt: &str, esc_is_back: bool) -> Option<bool> {
                     let _ = writeln_str("n");
                     break Some(false);
                 }
-                KeyCode::Enter => {
-                    println!();
-                    break Some(false);
+                code if is_enter(code) => {
+                    if enter_confirms {
+                        let _ = writeln_str("↵");
+                    } else {
+                        println!();
+                    }
+                    break Some(enter_confirms);
                 }
                 KeyCode::Esc if esc_is_back => {
                     let _ = writeln_str("← back");

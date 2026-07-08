@@ -87,6 +87,14 @@ fn run_wizard() -> Option<InteractiveConfig> {
                     println!("  {}  {}", format!("[{}]", i + 1).green(), label);
                 }
                 println!("  {}  Back to main menu", "[0]".dimmed());
+                if MENU_CHAINS.len() > 9 {
+                    println!();
+                    println!(
+                        "  {}",
+                        "Tip: [10–13] type both digits within 2s · [1] then Enter for Solana"
+                            .dimmed()
+                    );
+                }
                 println!();
 
                 let max = MENU_CHAINS.len() as u32;
@@ -250,32 +258,51 @@ fn run_wizard() -> Option<InteractiveConfig> {
 
                 let profile = SystemProfile::detect();
                 let expected = chain.expected_attempts(&pattern);
-                let estimate = TimeEstimate::from_attempts(expected, &profile, chain.id());
+                let estimate = TimeEstimate::from_attempts(expected, &profile, chain.id(), &pattern);
 
                 banner::print_compact();
                 print_summary(&chain, &pattern, &estimate, &profile);
-                println!("  {}  Start grinding", "[y]".green().bold());
+
+                if estimate.risk == PatternRisk::Impractical {
+                    println!();
+                    println!(
+                        "  {}  {}",
+                        "[y] / Enter".yellow().bold(),
+                        "Start anyway (not recommended)".yellow()
+                    );
+                } else {
+                    println!("  {}  Start grinding", "[y] / Enter".green().bold());
+                }
                 println!("  {}  Back to edit", "[Esc]".dimmed());
                 println!();
 
-                match read_yes_no_key("  Press [y/N]: ", true) {
-                    Some(true) => {
-                        return Some(InteractiveConfig {
-                            chain,
-                            prefix,
-                            suffix,
-                            exact,
-                        });
+                let start = match read_yes_no_key("  Press [y/Enter]: ", true, true) {
+                    Some(true) if estimate.risk == PatternRisk::Impractical => {
+                        println!();
+                        println!(
+                            "  {}",
+                            "⛔ Last chance — this grind may never finish.".red().bold()
+                        );
+                        read_yes_no_key("  Really start? [y/N]: ", false, false) == Some(true)
                     }
-                    Some(false) => return None,
-                    None => {
-                        step = if chain.supports_exact_case() {
-                            WizardStep::CaseMode
-                        } else {
-                            WizardStep::Pattern
-                        };
-                    }
+                    Some(true) => true,
+                    _ => false,
+                };
+
+                if start {
+                    return Some(InteractiveConfig {
+                        chain,
+                        prefix,
+                        suffix,
+                        exact,
+                    });
                 }
+
+                step = if chain.supports_exact_case() {
+                    WizardStep::CaseMode
+                } else {
+                    WizardStep::Pattern
+                };
             }
         }
     }
@@ -319,27 +346,67 @@ struct TimeEstimate {
     time_label: String,
     difficulty: String,
     difficulty_bars: String,
+    risk: PatternRisk,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum PatternRisk {
+    None,
+    Caution,
+    Long,
+    Impractical,
+}
+
+impl PatternRisk {
+    fn assess(attempts: f64, pattern_chars: usize, avg_secs: f64) -> Self {
+        if attempts >= 1e15 || pattern_chars >= 10 || avg_secs >= 86400.0 * 365.0 * 10.0 {
+            PatternRisk::Impractical
+        } else if attempts >= 1e12 || pattern_chars >= 8 || avg_secs >= 86400.0 * 30.0 {
+            PatternRisk::Long
+        } else if attempts >= 1e9 || pattern_chars >= 6 || avg_secs >= 86400.0 {
+            PatternRisk::Caution
+        } else {
+            PatternRisk::None
+        }
+    }
+}
+
+fn format_duration(avg_secs: f64) -> String {
+    if avg_secs < 5.0 {
+        "a few seconds".to_string()
+    } else if avg_secs < 60.0 {
+        format!("~{:.0} seconds", avg_secs)
+    } else if avg_secs < 3_600.0 {
+        format!("~{:.0} minutes", avg_secs / 60.0)
+    } else if avg_secs < 86_400.0 {
+        format!("~{:.1} hours", avg_secs / 3_600.0)
+    } else if avg_secs < 86_400.0 * 30.0 {
+        format!("~{:.0} days", avg_secs / 86_400.0)
+    } else if avg_secs < 86_400.0 * 365.0 {
+        format!("~{:.0} months", avg_secs / (86_400.0 * 30.0))
+    } else if avg_secs < 86_400.0 * 365.0 * 100.0 {
+        format!("~{:.0} years", avg_secs / (86_400.0 * 365.0))
+    } else {
+        "centuries+ — not practical on one machine".to_string()
+    }
+}
+
+fn effective_pattern_chars(pattern: &vanity_core::Pattern) -> usize {
+    let prefix = pattern
+        .prefix_match
+        .strip_prefix("0x")
+        .unwrap_or(&pattern.prefix_match);
+    prefix.len() + pattern.suffix_match.len()
 }
 
 impl TimeEstimate {
-    fn from_attempts(attempts: f64, profile: &SystemProfile, chain_id: &str) -> Self {
+    fn from_attempts(attempts: f64, profile: &SystemProfile, chain_id: &str, pattern: &vanity_core::Pattern) -> Self {
         let keys_per_sec = profile.estimated_keys_per_sec(chain_id);
         let avg_secs = attempts / keys_per_sec;
         let attempts_label = format_attempts(attempts);
-
-        let time_label = if avg_secs < 5.0 {
-            "a few seconds".to_string()
-        } else if avg_secs < 60.0 {
-            format!("~{:.0} seconds", avg_secs)
-        } else if avg_secs < 3_600.0 {
-            format!("~{:.0} minutes", avg_secs / 60.0)
-        } else if avg_secs < 86_400.0 {
-            format!("~{:.1} hours", avg_secs / 3_600.0)
-        } else if avg_secs < 86_400.0 * 30.0 {
-            format!("~{:.0} days", avg_secs / 86_400.0)
-        } else {
-            "weeks to months (very long!)".to_string()
-        };
+        let time_label = format_duration(avg_secs);
+        let pattern_chars = effective_pattern_chars(pattern);
+        let risk = PatternRisk::assess(attempts, pattern_chars, avg_secs);
 
         let (difficulty, filled) = match attempts {
             a if a < 100_000.0 => ("Easy", 2),
@@ -354,6 +421,54 @@ impl TimeEstimate {
             time_label,
             difficulty: difficulty.to_string(),
             difficulty_bars: format!("{}{}", "█".repeat(filled), "░".repeat(10 - filled)),
+            risk,
+        }
+    }
+}
+
+fn print_pattern_warning(risk: PatternRisk, pattern_chars: usize) {
+    match risk {
+        PatternRisk::None => {}
+        PatternRisk::Caution => {
+            println!();
+            println!(
+                "  {} {}",
+                "⚠".yellow().bold(),
+                "This pattern may take hours or longer. 4–6 characters is usually realistic."
+                    .yellow()
+            );
+        }
+        PatternRisk::Long => {
+            println!();
+            println!(
+                "  {} {}",
+                "⚠".red().bold(),
+                "Long pattern — weeks or months on this machine. Strongly consider shortening it."
+                    .red()
+            );
+        }
+        PatternRisk::Impractical => {
+            println!();
+            println!(
+                "  {} {}",
+                "⛔".red().bold(),
+                format!(
+                    "{pattern_chars} characters is NOT practical on a single PC (years to centuries+)."
+                )
+                .red()
+                .bold()
+            );
+            println!(
+                "  {}",
+                "Vanity grinds are probabilistic — you will almost certainly never find a match."
+                    .red()
+                    .dimmed()
+            );
+            println!(
+                "  {}",
+                "Recommended: 2–4 chars suffix/prefix · 6 max for patient grinds."
+                    .dimmed()
+            );
         }
     }
 }
@@ -377,7 +492,13 @@ fn print_summary(
     println!(
         "  {:<14} {}",
         "Est. time:".dimmed(),
-        estimate.time_label.green()
+        if estimate.risk == PatternRisk::Impractical {
+            estimate.time_label.red().bold()
+        } else if estimate.risk == PatternRisk::Long {
+            estimate.time_label.yellow()
+        } else {
+            estimate.time_label.green()
+        }
     );
     println!(
         "  {:<14} {} {}",
@@ -417,12 +538,37 @@ fn print_summary(
         format!("~{} keys/sec on this machine", format_speed(speed)).green()
     );
 
-    if pattern.has_suffix() && !pattern.has_prefix() {
+    print_pattern_warning(estimate.risk, effective_pattern_chars(pattern));
+
+    if pattern.has_suffix() || pattern.has_prefix() {
         println!();
-        let len = pattern.suffix.len();
-        print_length_guide(chain.id(), len);
+        print_length_guide(chain.id(), effective_pattern_chars(pattern));
     }
     println!();
+}
+
+fn print_length_guide(chain_id: &str, len: usize) {
+    println!("  {}", format!("{len}-char pattern guide:").dimmed());
+    let hex_chains = ["evm", "aptos", "sui", "near"];
+    if hex_chains.contains(&chain_id) {
+        match len {
+            0..=3 => println!("    ✓ Great length — usually seconds to minutes"),
+            4..=5 => println!("    ✓ OK — minutes to ~1 hour"),
+            6..=7 => println!("    ⚠ Getting long — hours to days"),
+            8..=9 => println!("    ⚠ Very long — days to weeks+"),
+            _ => println!("    ⛔ Too long for a single machine — use ≤6 chars"),
+        }
+        println!("    Rule of thumb: 2→sec · 4→min · 6→~30min · 8+→hours+");
+    } else {
+        match len {
+            0..=3 => println!("    ✓ Great length — usually seconds to minutes"),
+            4..=5 => println!("    ✓ OK — minutes to ~1 hour"),
+            6..=7 => println!("    ⚠ Getting long — hours to days"),
+            8..=9 => println!("    ⚠ Very long — days to weeks+"),
+            _ => println!("    ⛔ Too long for a single machine — use ≤6 chars"),
+        }
+        println!("    Rule of thumb: 2→sec · 4→min · 6→~1hr · 8+→days+");
+    }
 }
 
 fn format_speed(n: f64) -> String {
@@ -432,16 +578,6 @@ fn format_speed(n: f64) -> String {
         format!("{:.0}K", n / 1_000.0)
     } else {
         format!("{:.0}", n)
-    }
-}
-
-fn print_length_guide(chain_id: &str, len: usize) {
-    println!("  {}", format!("{len}-char pattern guide:").dimmed());
-    let hex_chains = ["evm", "aptos", "sui", "near"];
-    if hex_chains.contains(&chain_id) {
-        println!("    2 chars → seconds · 4 → ~1 min · 6 → ~30 min · 8+ → hours");
-    } else {
-        println!("    2 chars → seconds · 4 → ~1 min · 6 → ~1 hour · 8+ → days");
     }
 }
 

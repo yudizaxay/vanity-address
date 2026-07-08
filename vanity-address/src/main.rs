@@ -61,6 +61,22 @@ struct RunConfig {
     prompt_save: bool,
 }
 
+impl Clone for RunConfig {
+    fn clone(&self) -> Self {
+        Self {
+            chain: self.chain.clone(),
+            prefix: self.prefix.clone(),
+            suffix: self.suffix.clone(),
+            exact: self.exact,
+            quiet: self.quiet,
+            threads: self.threads,
+            compact_header: self.compact_header,
+            save: self.save,
+            prompt_save: self.prompt_save,
+        }
+    }
+}
+
 impl Cli {
     fn uses_direct_mode(&self) -> bool {
         self.chain.is_some()
@@ -253,7 +269,7 @@ fn run_grind(config: RunConfig) {
         true
     } else if config.prompt_save && !config.quiet {
         println!();
-        terminal::read_yes_no_key("  Save keys to vanity-results.txt? [y/N]: ", false)
+        terminal::read_yes_no_key("  Save keys to vanity-results.txt? [y/N]: ", false, false)
             .unwrap_or(false)
     } else {
         false
@@ -496,23 +512,33 @@ fn main() {
             return;
         };
 
-        run_grind(RunConfig {
-            chain: config.chain,
-            prefix: config.prefix,
-            suffix: config.suffix,
+        let grind_config = RunConfig {
+            chain: config.chain.clone(),
+            prefix: config.prefix.clone(),
+            suffix: config.suffix.clone(),
             exact: config.exact,
             quiet: false,
             threads: None,
             compact_header: true,
             save: false,
             prompt_save: true,
-        });
+        };
 
-        println!();
-        let again = terminal::read_yes_no_key("  Grind another? [y/N]: ", false).unwrap_or(false);
+        loop {
+            run_grind(grind_config.clone());
 
-        if !again {
-            terminal::peace_out();
+            println!();
+            let generate_more = terminal::read_yes_no_key(
+                "  Generate another address? [y/N]: ",
+                false,
+                false,
+            )
+            .unwrap_or(false);
+
+            if generate_more {
+                continue;
+            }
+            // N → back to main menu (Start / Help / Exit)
             break;
         }
     }
