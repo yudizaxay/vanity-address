@@ -16,7 +16,8 @@ pub struct KeypairResult {
 /// Lightweight per-attempt state — export formats are built only on a match.
 pub enum GrindAttempt {
     Solana(solana_sdk::signature::Keypair),
-    Evm([u8; 32]),
+    /// secp256k1 / ed25519 secret key bytes (chain-specific finalize)
+    Secret32([u8; 32]),
 }
 
 pub trait ChainGrinder: Send + Sync + Clone {

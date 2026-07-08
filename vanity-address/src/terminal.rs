@@ -1,8 +1,9 @@
 use colored::Colorize;
-use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers};
+use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use std::io::{self, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 
 static PEACE_OUT_SHOWN: AtomicBool = AtomicBool::new(false);
 
@@ -49,7 +50,18 @@ pub enum MenuChoice {
     Selected(u32),
 }
 
-/// Read a single key — digit selects, `0` or Esc goes back (if allowed).
+/// Whether another digit could still produce a valid selection ≤ max.
+fn can_extend(value: u32, max: u32) -> bool {
+    value > 0 && value.saturating_mul(10) <= max
+}
+
+fn is_press(kind: KeyEventKind) -> bool {
+    // Older terminals may not report kind; treat anything that isn't Release/Repeat as press.
+    !matches!(kind, KeyEventKind::Release | KeyEventKind::Repeat)
+}
+
+/// Read a digit selection. Unambiguous digits (e.g. 1–3 when max=3) select immediately.
+/// Ambiguous prefixes (e.g. `1` when max=13) wait briefly for a second digit or Enter.
 pub fn read_menu_choice(prompt: &str, min: u32, max: u32, allow_back: bool) -> MenuChoice {
     print!("{prompt}");
     let _ = io::stdout().flush();
@@ -57,9 +69,16 @@ pub fn read_menu_choice(prompt: &str, min: u32, max: u32, allow_back: bool) -> M
     enable_raw_mode().expect("terminal raw mode");
     let choice = loop {
         if let Ok(Event::Key(KeyEvent {
-            code, modifiers, ..
+            code,
+            modifiers,
+            kind,
+            ..
         })) = event::read()
         {
+            if !is_press(kind) {
+                continue;
+            }
+
             if modifiers.contains(KeyModifiers::CONTROL) && code == KeyCode::Char('c') {
                 handle_ctrl_c();
             }
@@ -69,14 +88,56 @@ pub fn read_menu_choice(prompt: &str, min: u32, max: u32, allow_back: bool) -> M
                 break MenuChoice::Back;
             }
 
-            if let KeyCode::Char(c) = code {
-                if let Some(digit) = c.to_digit(10) {
-                    if (min..=max).contains(&digit) {
-                        let _ = writeln_char(c);
-                        break MenuChoice::Selected(digit);
+            let KeyCode::Char(c) = code else {
+                continue;
+            };
+            let Some(digit) = c.to_digit(10) else {
+                continue;
+            };
+            if digit == 0 {
+                continue;
+            }
+
+            let mut value = digit;
+            print!("{c}");
+            let _ = io::stdout().flush();
+
+            // Wait for more digits only when needed (e.g. [1] vs [10–13]).
+            while can_extend(value, max) {
+                if !event::poll(Duration::from_millis(450)).unwrap_or(false) {
+                    break; // timeout → accept single digit
+                }
+                let Ok(Event::Key(KeyEvent { code, kind, .. })) = event::read() else {
+                    break;
+                };
+                if !is_press(kind) {
+                    continue;
+                }
+                match code {
+                    KeyCode::Enter => break,
+                    KeyCode::Char(next) => {
+                        if let Some(d) = next.to_digit(10) {
+                            let next_val = value * 10 + d;
+                            if next_val <= max {
+                                value = next_val;
+                                print!("{next}");
+                                let _ = io::stdout().flush();
+                            }
+                        } else {
+                            break;
+                        }
                     }
+                    _ => break,
                 }
             }
+
+            println!();
+            if (min..=max).contains(&value) {
+                break MenuChoice::Selected(value);
+            }
+            // Out of range — clear and wait for another key.
+            print!("\r{prompt}");
+            let _ = io::stdout().flush();
         }
     };
     disable_raw_mode().expect("terminal restore");
@@ -188,11 +249,6 @@ pub fn wait_for_key(message: &str) {
     }
     disable_raw_mode().expect("terminal restore");
     println!();
-}
-
-fn writeln_char(c: char) -> io::Result<()> {
-    println!("{c}");
-    io::stdout().flush()
 }
 
 fn writeln_str(s: &str) -> io::Result<()> {

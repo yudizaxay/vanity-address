@@ -100,7 +100,10 @@ impl SystemProfile {
     }
 
     pub fn estimated_keys_per_sec(&self, chain_id: &str) -> f64 {
-        let per_thread = if chain_id == "evm" { 35_000.0 } else { 80_000.0 };
+        let per_thread = match chain_id {
+            "evm" | "aptos" | "sui" | "near" => 35_000.0,
+            _ => 80_000.0,
+        };
         per_thread * self.worker_threads as f64
     }
 }

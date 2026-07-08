@@ -6,7 +6,7 @@
 
 **Fast, local, multi-chain vanity address generator**
 
-Generate Solana and EVM keypairs whose public address matches your desired prefix and/or suffix — entirely on your machine. No servers. No tracking. Keys never leave your device.
+Generate multi-chain keypairs whose public address matches your desired prefix and/or suffix — entirely on your machine. No servers. No tracking. Keys never leave your device.
 
 <br />
 
@@ -15,6 +15,8 @@ Generate Solana and EVM keypairs whose public address matches your desired prefi
 ![Rust](https://img.shields.io/badge/Rust-1.70+-orange?style=for-the-badge&logo=rust&logoColor=white)
 ![Solana](https://img.shields.io/badge/Solana-Supported-9945FF?style=for-the-badge&logo=solana&logoColor=white)
 ![Ethereum](https://img.shields.io/badge/EVM-Supported-3C3C3D?style=for-the-badge&logo=ethereum&logoColor=white)
+![Bitcoin](https://img.shields.io/badge/Bitcoin-Supported-F7931A?style=for-the-badge&logo=bitcoin&logoColor=white)
+![13+ Chains](https://img.shields.io/badge/Chains-13+-blue?style=for-the-badge)
 ![Rayon](https://img.shields.io/badge/Rayon-Parallel-DEA584?style=for-the-badge&logo=rust&logoColor=white)
 ![Clap](https://img.shields.io/badge/Clap-CLI-00C853?style=for-the-badge)
 
@@ -190,10 +192,11 @@ vanity-address --chain evm --prefix dead --suffix beef
 
 | Flag                 | Description                                        | Default |
 | -------------------- | -------------------------------------------------- | ------- |
-| `--chain <sol\|evm>` | Blockchain to grind for                            | `sol`   |
+| `--chain <ID>`       | Blockchain: `sol`, `evm`, `btc`, `ltc`, `doge`, `trx`, `cosmos`, `osmo`, `xrp`, `xlm`, `aptos`, `sui`, `near` | `sol`   |
 | `--prefix <PATTERN>` | Address must start with pattern                    | —       |
 | `--suffix <PATTERN>` | Address must end with pattern                      | —       |
-| `--exact`            | Exact casing (Solana only)                         | off     |
+| `--exact`            | Exact casing (base58 chains)                       | off     |
+| `--save`             | Append match (incl. private keys) to `vanity-results.txt` | off |
 | `-q, --quiet`        | Minimal output (script-friendly)                   | off     |
 | `--threads <N>`      | Override worker threads (auto-detected by default) | auto    |
 | `-h, --help`         | Show help                                          | —       |
@@ -201,8 +204,9 @@ vanity-address --chain evm --prefix dead --suffix beef
 
 > **Pattern rules**
 >
-> - **Solana:** base58 only. Invalid chars: `0`, `O`, `I`, `l`
-> - **EVM:** hex (`0-9`, `a-f`). Optional `0x` prefix
+> - **Base58 chains** (Solana, Bitcoin, Litecoin, Dogecoin, Tron, Ripple, Stellar): no `0`, `O`, `I`, `l` (Solana alphabet); Ripple uses its own alphabet
+> - **Bech32** (Cosmos, Osmosis): `qpzry9x8gf2tvdw0s3jn54khce6mua7l` or full address with `cosmos1` / `osmo1` prefix
+> - **Hex chains** (EVM, Aptos, Sui, NEAR): `0-9`, `a-f`; EVM/Aptos/Sui accept optional `0x` prefix
 
 ---
 
@@ -213,10 +217,10 @@ vanity-address --chain evm --prefix dead --suffix beef
 │          vanity-address CLI         │
 ├─────────────────────────────────────┤
 │           vanity-core lib           │
-│  ┌─────────┐ ┌─────────┐ ┌───────┐ │
-│  │ Solana  │ │   EVM   │ │ Future│ │
-│  │ Grinder │ │ Grinder │ │ Chain │ │
-│  └─────────┘ └─────────┘ └───────┘ │
+│  ┌────────┐ ┌─────┐ ┌──────────┐ ┌─────┐ │
+│  │ Solana │ │ EVM │ │ Bitcoin… │ │ +10 │ │
+│  │Grinder │ │Grind│ │ Grinders │ │more │ │
+│  └────────┘ └─────┘ └──────────┘ └─────┘ │
 │         ChainGrinder trait          │
 └─────────────────────────────────────┘
 ```
@@ -285,7 +289,8 @@ Longer patterns = exponentially harder. Start short, verify, then go longer.
 - [x] Polished CLI (colors, progress, `--chain`)
 - [x] Auto system detection (CPU + memory tuned thread pool)
 - [ ] Desktop UI ([Tauri](https://tauri.app/))
-- [ ] Bitcoin, Cosmos, and more chains
+- [x] Bitcoin, Litecoin, Dogecoin, Tron, Cosmos, Osmosis, Ripple, Stellar, Aptos, Sui, NEAR
+- [ ] Cardano, TON (complex address formats)
 - [ ] Regex patterns for power users
 
 ---

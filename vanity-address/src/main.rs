@@ -2,27 +2,14 @@ mod banner;
 mod menu;
 mod terminal;
 
-use clap::{Parser, ValueEnum};
+use clap::Parser;
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 use menu::run as run_interactive;
+use std::fs::OpenOptions;
 use std::io::{self, Write};
-use vanity_core::{grind, Chain, ChainGrinder, SystemProfile};
-
-#[derive(Clone, ValueEnum)]
-enum ChainArg {
-    Sol,
-    Evm,
-}
-
-impl From<ChainArg> for Chain {
-    fn from(arg: ChainArg) -> Self {
-        match arg {
-            ChainArg::Sol => Chain::Solana(Default::default()),
-            ChainArg::Evm => Chain::Evm(Default::default()),
-        }
-    }
-}
+use std::path::Path;
+use vanity_core::{grind, Chain, ChainGrinder, GrindResult, Pattern, SystemProfile};
 
 #[derive(Parser)]
 #[command(
@@ -35,8 +22,9 @@ impl From<ChainArg> for Chain {
                   Run without flags for the interactive menu."
 )]
 struct Cli {
-    #[arg(long, value_enum)]
-    chain: Option<ChainArg>,
+    /// Blockchain: sol, evm, btc, ltc, doge, trx, cosmos, osmo, xrp, xlm, aptos, sui, near
+    #[arg(long)]
+    chain: Option<String>,
 
     #[arg(long)]
     prefix: Option<String>,
@@ -52,6 +40,10 @@ struct Cli {
 
     #[arg(long)]
     threads: Option<usize>,
+
+    /// Append match to vanity-results.txt (private keys — keep this file safe)
+    #[arg(long)]
+    save: bool,
 }
 
 struct RunConfig {
@@ -61,6 +53,12 @@ struct RunConfig {
     exact: bool,
     quiet: bool,
     threads: Option<usize>,
+    /// Skip the big system dump (interactive already showed a summary).
+    compact_header: bool,
+    /// Auto-save without prompting (CLI --save).
+    save: bool,
+    /// After grind, ask whether to save (interactive).
+    prompt_save: bool,
 }
 
 impl Cli {
@@ -71,17 +69,25 @@ impl Cli {
             || self.exact
             || self.quiet
             || self.threads.is_some()
+            || self.save
     }
 
-    fn into_run_config(self) -> RunConfig {
-        RunConfig {
-            chain: self.chain.map(Into::into).unwrap_or(Chain::Solana(Default::default())),
+    fn into_run_config(self) -> Result<RunConfig, String> {
+        let chain = match self.chain {
+            Some(id) => Chain::from_id(&id)?,
+            None => Chain::Solana(Default::default()),
+        };
+        Ok(RunConfig {
+            chain,
             prefix: self.prefix,
             suffix: self.suffix,
             exact: self.exact,
             quiet: self.quiet,
             threads: self.threads,
-        }
+            compact_header: false,
+            save: self.save,
+            prompt_save: false,
+        })
     }
 }
 
@@ -105,7 +111,11 @@ fn run_grind(config: RunConfig) {
     let chain = config.chain;
 
     if config.exact && !chain.supports_exact_case() {
-        print_error("--exact is only supported for Solana (chain: sol)");
+        print_error(&format!(
+            "--exact is not supported for {} (chain: {})",
+            chain.display_name(),
+            chain.id()
+        ));
         std::process::exit(1);
     }
 
@@ -133,50 +143,62 @@ fn run_grind(config: RunConfig) {
     }
 
     if !config.quiet {
-        println!();
-        println!(
-            "  {}  {}",
-            "System".dimmed(),
-            profile.summary_line().cyan()
-        );
-        println!(
-            "  {}  {}",
-            "CPU".dimmed(),
-            profile.cpu_description()
-        );
-        println!(
-            "  {}  {}",
-            "Workers".dimmed(),
-            profile.worker_description().green()
-        );
-        println!(
-            "  {}  {}",
-            "Chain".dimmed(),
-            chain.display_name().bold()
-        );
-        println!(
-            "  {}  {}",
-            "Target".dimmed(),
-            pattern.description().bold()
-        );
-        println!(
-            "  {}  {}",
-            "Mode".dimmed(),
-            pattern.case_mode()
-        );
-        println!(
-            "  {}  ~{} attempts (average)",
-            "Expected".dimmed(),
-            format_attempts(expected).yellow()
-        );
-        println!(
-            "  {}  {}",
-            "Hint".dimmed(),
-            chain.pattern_hint().dimmed()
-        );
-        println!();
-        println!("{}", "Grinding...  (Ctrl+C to stop)".dimmed());
-        println!();
+        if config.compact_header {
+            println!();
+            println!(
+                "  {}  {} · {}",
+                "Grinding".cyan().bold(),
+                chain.display_name().bold(),
+                pattern.description().dimmed()
+            );
+            println!("  {}", "(Ctrl+C to stop)".dimmed());
+            println!();
+        } else {
+            println!();
+            println!(
+                "  {}  {}",
+                "System".dimmed(),
+                profile.summary_line().cyan()
+            );
+            println!(
+                "  {}  {}",
+                "CPU".dimmed(),
+                profile.cpu_description()
+            );
+            println!(
+                "  {}  {}",
+                "Workers".dimmed(),
+                profile.worker_description().green()
+            );
+            println!(
+                "  {}  {}",
+                "Chain".dimmed(),
+                chain.display_name().bold()
+            );
+            println!(
+                "  {}  {}",
+                "Target".dimmed(),
+                pattern.description().bold()
+            );
+            println!(
+                "  {}  {}",
+                "Mode".dimmed(),
+                pattern.case_mode()
+            );
+            println!(
+                "  {}  ~{} attempts (average)",
+                "Expected".dimmed(),
+                format_attempts(expected).yellow()
+            );
+            println!(
+                "  {}  {}",
+                "Hint".dimmed(),
+                chain.pattern_hint().dimmed()
+            );
+            println!();
+            println!("{}", "Grinding...  (Ctrl+C to stop)".dimmed());
+            println!();
+        }
     }
 
     let pb = if config.quiet {
@@ -194,7 +216,7 @@ fn run_grind(config: RunConfig) {
 
     let result = match grind(
         chain.clone(),
-        pattern,
+        pattern.clone(),
         &profile,
         |attempts, rate, eta_min| {
             if let Some(ref bar) = pb {
@@ -218,61 +240,238 @@ fn run_grind(config: RunConfig) {
         bar.finish_and_clear();
     }
 
-    if !config.quiet {
-        println!();
-        println!("{}", " Match found! ".black().on_green().bold());
-        println!();
-        println!(
-            "  {}  {}",
-            "Address".green().bold(),
-            result.keypair.address.bold().white()
-        );
-        println!(
-            "  {}  {:.2}s",
-            "Time".dimmed(),
-            result.elapsed_secs
-        );
-        println!(
-            "  {}  {} ({:.0} keys/s)",
-            "Attempts".dimmed(),
-            result.attempts,
-            result.attempts as f64 / result.elapsed_secs
-        );
-        println!();
-        println!("{}", " Private Keys ".black().on_red().bold());
-        println!(
-            "  {}",
-            "Never share these with anyone.".red().dimmed()
-        );
-        println!();
-    } else {
+    if config.quiet {
         println!("{}", result.keypair.address);
+        for export in &result.keypair.exports {
+            println!("{}: {}", export.label, export.value);
+        }
+    } else {
+        print_success(&result, &pattern);
     }
 
-    for export in &result.keypair.exports {
-        if config.quiet {
-            println!("{}: {}", export.label, export.value);
-        } else {
-            println!(
-                "  {}  {}",
-                export.label.dimmed(),
-                export.value.bold()
-            );
-            if let Some(ref hint) = export.hint {
-                println!("         {}", hint.dimmed());
+    let should_save = if config.save {
+        true
+    } else if config.prompt_save && !config.quiet {
+        println!();
+        terminal::read_yes_no_key("  Save keys to vanity-results.txt? [y/N]: ", false)
+            .unwrap_or(false)
+    } else {
+        false
+    };
+
+    if should_save {
+        match save_result(&chain, &pattern, &result) {
+            Ok(path) => {
+                if !config.quiet {
+                    println!(
+                        "  {}  {}",
+                        "Saved →".green().bold(),
+                        path.cyan()
+                    );
+                    println!(
+                        "  {}",
+                        "This file contains private keys — do not commit or share it.".red().dimmed()
+                    );
+                }
             }
+            Err(e) => print_error(&format!("could not save results: {e}")),
         }
     }
 
-    if !config.quiet {
-        println!();
+    let _ = io::stdout().flush();
+}
+
+fn print_success(result: &GrindResult, pattern: &Pattern) {
+    let rate = if result.elapsed_secs > 0.0 {
+        result.attempts as f64 / result.elapsed_secs
+    } else {
+        0.0
+    };
+
+    println!();
+    println!("  {}", "✓ MATCH FOUND".black().on_green().bold());
+    println!();
+
+    // ── Public address ──────────────────────────────────────────
+    println!("  {}", "── Public Address ──".bold().cyan());
+    println!();
+    println!("  {}", highlight_address(&result.keypair.address, pattern));
+    println!();
+    println!(
+        "  {:<12} {}",
+        "Found in".dimmed(),
+        format!("{:.2}s", result.elapsed_secs).green()
+    );
+    println!(
+        "  {:<12} {}  ({:.0} keys/s)",
+        "Attempts".dimmed(),
+        format_number(result.attempts).yellow(),
+        rate
+    );
+    println!();
+
+    // ── Private keys ────────────────────────────────────────────
+    println!("  {}", "── Private Keys ──".bold().red());
+    println!(
+        "  {}",
+        "⚠  Never share these. Anyone with them can drain the wallet.".red().dimmed()
+    );
+    println!();
+
+    let label_width = result
+        .keypair
+        .exports
+        .iter()
+        .map(|e| e.label.len())
+        .max()
+        .unwrap_or(12)
+        .max(12);
+
+    for export in &result.keypair.exports {
         println!(
-            "  {}",
-            "Verify the address before sending funds.".yellow().dimmed()
+            "  {:<width$}  {}",
+            export.label.dimmed(),
+            export.value.bold().white(),
+            width = label_width
         );
+        if let Some(ref hint) = export.hint {
+            println!(
+                "  {:width$}  {}",
+                "",
+                hint.dimmed(),
+                width = label_width
+            );
+        }
+        println!();
     }
 
-    let _ = io::stdout().flush();
+    // ── Copy-friendly plain block ───────────────────────────────
+    println!("  {}", "── Copy / Paste ──".bold().dimmed());
+    println!();
+    println!("  Address: {}", result.keypair.address);
+    for export in &result.keypair.exports {
+        println!("  {}: {}", export.label, export.value);
+    }
+    println!();
+
+    println!(
+        "  {}",
+        "Verify the address in your wallet before sending funds.".yellow().dimmed()
+    );
+}
+
+/// Render address with matched prefix/suffix highlighted in green.
+fn highlight_address(address: &str, pattern: &Pattern) -> String {
+    let ignore_case = pattern.ignore_case;
+    let prefix = &pattern.prefix_match;
+    let suffix = &pattern.suffix_match;
+
+    let starts = !prefix.is_empty()
+        && address.len() >= prefix.len()
+        && if ignore_case {
+            address[..prefix.len()].eq_ignore_ascii_case(prefix)
+        } else {
+            address.starts_with(prefix.as_str())
+        };
+
+    let ends = !suffix.is_empty()
+        && address.len() >= suffix.len()
+        && if ignore_case {
+            address[address.len() - suffix.len()..].eq_ignore_ascii_case(suffix)
+        } else {
+            address.ends_with(suffix.as_str())
+        };
+
+    let mid_start = if starts { prefix.len() } else { 0 };
+    let mid_end = if ends {
+        address.len() - suffix.len()
+    } else {
+        address.len()
+    };
+
+    // Guard overlapping prefix/suffix.
+    let mid_end = mid_end.max(mid_start);
+
+    let mut out = String::new();
+    if starts {
+        out.push_str(&address[..mid_start].green().bold().to_string());
+    }
+    if mid_start < mid_end {
+        out.push_str(&address[mid_start..mid_end].bold().white().to_string());
+    }
+    if ends {
+        out.push_str(&address[mid_end..].green().bold().to_string());
+    }
+    out
+}
+
+fn format_number(n: u64) -> String {
+    let s = n.to_string();
+    let mut out = String::new();
+    for (i, c) in s.chars().rev().enumerate() {
+        if i > 0 && i % 3 == 0 {
+            out.push(',');
+        }
+        out.push(c);
+    }
+    out.chars().rev().collect()
+}
+
+const RESULTS_FILE: &str = "vanity-results.txt";
+
+fn save_result(chain: &Chain, pattern: &Pattern, result: &GrindResult) -> io::Result<String> {
+    let path = Path::new(RESULTS_FILE);
+    let mut file = OpenOptions::new().create(true).append(true).open(path)?;
+
+    let timestamp = chrono_timestamp();
+    writeln!(file, "━")?;
+    writeln!(file, "vanity-address match · {timestamp}")?;
+    writeln!(file, "chain:   {}", chain.display_name())?;
+    writeln!(file, "target:  {}", pattern.description())?;
+    writeln!(file, "mode:    {}", pattern.case_mode())?;
+    writeln!(
+        file,
+        "stats:   {} attempts in {:.2}s",
+        result.attempts, result.elapsed_secs
+    )?;
+    writeln!(file)?;
+    writeln!(file, "Address: {}", result.keypair.address)?;
+    for export in &result.keypair.exports {
+        writeln!(file, "{}: {}", export.label, export.value)?;
+    }
+    writeln!(file)?;
+    writeln!(
+        file,
+        "WARNING: This file contains private keys. Never commit or share it."
+    )?;
+    writeln!(file)?;
+
+    Ok(RESULTS_FILE.to_string())
+}
+
+fn chrono_timestamp() -> String {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let secs = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    // Rough UTC calendar date without pulling in chrono.
+    // Algorithm: Howard Hinnant days_from_civil inverse.
+    let z = (secs / 86_400) as i64 + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 } / 146_097;
+    let doe = (z - era * 146_097) as u64;
+    let yoe = (doe - doe / 1_460 + doe / 36_524 - doe / 146_096) / 365;
+    let y = yoe as i64 + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    let y = if m <= 2 { y + 1 } else { y };
+    let tod = secs % 86_400;
+    let h = tod / 3600;
+    let min = (tod % 3600) / 60;
+    let s = tod % 60;
+    format!("{y:04}-{m:02}-{d:02} {h:02}:{min:02}:{s:02} UTC")
 }
 
 fn main() {
@@ -281,7 +480,13 @@ fn main() {
     let cli = Cli::parse();
 
     if cli.uses_direct_mode() {
-        run_grind(cli.into_run_config());
+        match cli.into_run_config() {
+            Ok(config) => run_grind(config),
+            Err(e) => {
+                print_error(&e);
+                std::process::exit(1);
+            }
+        }
         return;
     }
 
@@ -298,6 +503,9 @@ fn main() {
             exact: config.exact,
             quiet: false,
             threads: None,
+            compact_header: true,
+            save: false,
+            prompt_save: true,
         });
 
         println!();

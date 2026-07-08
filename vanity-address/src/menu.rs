@@ -2,7 +2,7 @@ use crate::banner;
 use crate::terminal::{peace_out, read_line_with_escape, read_menu_choice, read_yes_no_key, wait_for_key, MenuChoice};
 use colored::Colorize;
 use std::io::Write;
-use vanity_core::{Chain, ChainGrinder, SystemProfile};
+use vanity_core::{Chain, ChainGrinder, SystemProfile, MENU_CHAINS};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum WizardStep {
@@ -83,22 +83,22 @@ fn run_wizard() -> Option<InteractiveConfig> {
                 banner::print_compact();
                 println!("{}", "── Step 1/4 · Select blockchain ──".bold().cyan());
                 println!();
-                println!("  {}  Solana  (base58 · Phantom, Solflare)", "[1]".green());
-                println!("  {}  EVM     (0x hex · MetaMask)", "[2]".green());
+                for (i, (_, label)) in MENU_CHAINS.iter().enumerate() {
+                    println!("  {}  {}", format!("[{}]", i + 1).green(), label);
+                }
                 println!("  {}  Back to main menu", "[0]".dimmed());
                 println!();
 
-                match read_menu_choice("  Press [0-2]: ", 1, 2, true) {
+                let max = MENU_CHAINS.len() as u32;
+                let prompt = format!("  Press [0-{max}]: ");
+                match read_menu_choice(&prompt, 1, max, true) {
                     MenuChoice::Back => return None,
-                    MenuChoice::Selected(1) => {
-                        chain = Chain::Solana(Default::default());
-                        step = WizardStep::MatchKind;
+                    MenuChoice::Selected(n) => {
+                        if let Some(selected) = Chain::from_menu_index((n - 1) as usize) {
+                            chain = selected;
+                            step = WizardStep::MatchKind;
+                        }
                     }
-                    MenuChoice::Selected(2) => {
-                        chain = Chain::Evm(Default::default());
-                        step = WizardStep::MatchKind;
-                    }
-                    _ => {}
                 }
             }
 
@@ -291,8 +291,10 @@ fn show_help() {
     println!("  prefix or suffix — e.g. ending in 'axay'.");
     println!();
     println!("  {}", "Chains".bold());
-    println!("  • Solana  — base58 (no 0, O, I, l)");
-    println!("  • EVM     — hex (0-9, a-f)");
+    for (id, label) in MENU_CHAINS {
+        println!("  • {id} — {label}");
+    }
+    println!("  • Cardano, TON — coming soon");
     println!();
     println!("  {}", "Security".bold().red());
     println!("  • 100% local · no internet");
@@ -321,8 +323,7 @@ struct TimeEstimate {
 
 impl TimeEstimate {
     fn from_attempts(attempts: f64, profile: &SystemProfile, chain_id: &str) -> Self {
-        let per_thread = if chain_id == "evm" { 35_000.0 } else { 80_000.0 };
-        let keys_per_sec = per_thread * profile.worker_threads as f64;
+        let keys_per_sec = profile.estimated_keys_per_sec(chain_id);
         let avg_secs = attempts / keys_per_sec;
         let attempts_label = format_attempts(attempts);
 
@@ -436,7 +437,8 @@ fn format_speed(n: f64) -> String {
 
 fn print_length_guide(chain_id: &str, len: usize) {
     println!("  {}", format!("{len}-char pattern guide:").dimmed());
-    if chain_id == "evm" {
+    let hex_chains = ["evm", "aptos", "sui", "near"];
+    if hex_chains.contains(&chain_id) {
         println!("    2 chars → seconds · 4 → ~1 min · 6 → ~30 min · 8+ → hours");
     } else {
         println!("    2 chars → seconds · 4 → ~1 min · 6 → ~1 hour · 8+ → days");

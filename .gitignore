@@ -3,3 +3,5 @@
 .DS_Store
 .env
 plan.md
+vanity-results.txt
+*.keys.txt
