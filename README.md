@@ -140,6 +140,35 @@ cargo install --path vanity-address
 
 ## 🚀 Usage
 
+### Interactive mode (default)
+
+Just run — no flags needed:
+
+```bash
+./target/release/vanity-address
+```
+
+```
+╔══════════════════════════════════════════╗
+║         vanity-address  v0.2.0           ║
+╚══════════════════════════════════════════╝
+
+  [1]  Start a new grind
+  [2]  Help & pattern rules
+  [3]  Exit
+
+  Choose option [1-3]:
+```
+
+The wizard walks you through: **chain → prefix/suffix → pattern → estimate → confirm → grind**.
+
+### Direct mode (power users / scripts)
+
+```bash
+vanity-address --chain sol --suffix axay
+vanity-address --chain evm --prefix dead --suffix beef -q
+```
+
 ### Solana
 
 ```bash

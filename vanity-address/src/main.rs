@@ -1,14 +1,17 @@
+mod banner;
+mod menu;
+mod terminal;
+
 use clap::{Parser, ValueEnum};
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
+use menu::run as run_interactive;
 use std::io::{self, Write};
 use vanity_core::{grind, Chain, ChainGrinder, SystemProfile};
 
 #[derive(Clone, ValueEnum)]
 enum ChainArg {
-    /// Solana (base58 addresses)
     Sol,
-    /// EVM / Ethereum (0x hex addresses)
     Evm,
 }
 
@@ -28,33 +31,58 @@ impl From<ChainArg> for Chain {
     author,
     about = "Fast, local multi-chain vanity address generator",
     long_about = "Generate cryptocurrency keypairs whose public address matches a prefix \
-                  and/or suffix pattern. All keys are generated locally on your machine — \
-                  nothing is ever sent over the network."
+                  and/or suffix pattern. All keys are generated locally on your machine.\n\n\
+                  Run without flags for the interactive menu."
 )]
 struct Cli {
-    /// Blockchain to grind addresses for
-    #[arg(long, value_enum, default_value = "sol")]
-    chain: ChainArg,
+    #[arg(long, value_enum)]
+    chain: Option<ChainArg>,
 
-    /// Address must start with this pattern
     #[arg(long)]
     prefix: Option<String>,
 
-    /// Address must end with this pattern
     #[arg(long)]
     suffix: Option<String>,
 
-    /// Require exact casing (Solana only — EVM is always lowercase hex)
     #[arg(long)]
     exact: bool,
 
-    /// Minimal output — only print keys on success
     #[arg(short, long)]
     quiet: bool,
 
-    /// Override worker thread count (default: auto-detected from CPU + memory)
     #[arg(long)]
     threads: Option<usize>,
+}
+
+struct RunConfig {
+    chain: Chain,
+    prefix: Option<String>,
+    suffix: Option<String>,
+    exact: bool,
+    quiet: bool,
+    threads: Option<usize>,
+}
+
+impl Cli {
+    fn uses_direct_mode(&self) -> bool {
+        self.chain.is_some()
+            || self.prefix.is_some()
+            || self.suffix.is_some()
+            || self.exact
+            || self.quiet
+            || self.threads.is_some()
+    }
+
+    fn into_run_config(self) -> RunConfig {
+        RunConfig {
+            chain: self.chain.map(Into::into).unwrap_or(Chain::Solana(Default::default())),
+            prefix: self.prefix,
+            suffix: self.suffix,
+            exact: self.exact,
+            quiet: self.quiet,
+            threads: self.threads,
+        }
+    }
 }
 
 fn format_attempts(n: f64) -> String {
@@ -69,47 +97,22 @@ fn format_attempts(n: f64) -> String {
     }
 }
 
-fn print_banner(quiet: bool) {
-    if quiet {
-        return;
-    }
-    println!(
-        "{}",
-        "vanity-address".bold().cyan()
-    );
-    println!(
-        "{}",
-        "Local multi-chain vanity address generator".dimmed()
-    );
-    println!();
-}
-
 fn print_error(msg: &str) {
     eprintln!("{} {}", "error:".red().bold(), msg);
 }
 
-fn print_success_header(quiet: bool) {
-    if quiet {
-        return;
-    }
-    println!();
-    println!("{}", " Match found! ".black().on_green().bold());
-    println!();
-}
+fn run_grind(config: RunConfig) {
+    let chain = config.chain;
 
-fn main() {
-    let cli = Cli::parse();
-    let chain: Chain = cli.chain.into();
-
-    if cli.exact && !chain.supports_exact_case() {
+    if config.exact && !chain.supports_exact_case() {
         print_error("--exact is only supported for Solana (chain: sol)");
         std::process::exit(1);
     }
 
     let pattern = match chain.build_pattern(
-        cli.prefix.as_deref(),
-        cli.suffix.as_deref(),
-        cli.exact,
+        config.prefix.as_deref(),
+        config.suffix.as_deref(),
+        config.exact,
     ) {
         Ok(p) => p,
         Err(e) => {
@@ -121,7 +124,7 @@ fn main() {
     let expected = chain.expected_attempts(&pattern);
 
     let mut profile = SystemProfile::detect();
-    if let Some(threads) = cli.threads {
+    if let Some(threads) = config.threads {
         if threads == 0 {
             print_error("--threads must be at least 1");
             std::process::exit(1);
@@ -129,13 +132,22 @@ fn main() {
         profile = profile.with_threads(threads);
     }
 
-    print_banner(cli.quiet);
-
-    if !cli.quiet {
+    if !config.quiet {
+        println!();
         println!(
             "  {}  {}",
             "System".dimmed(),
             profile.summary_line().cyan()
+        );
+        println!(
+            "  {}  {}",
+            "CPU".dimmed(),
+            profile.cpu_description()
+        );
+        println!(
+            "  {}  {}",
+            "Workers".dimmed(),
+            profile.worker_description().green()
         );
         println!(
             "  {}  {}",
@@ -167,7 +179,7 @@ fn main() {
         println!();
     }
 
-    let pb = if cli.quiet {
+    let pb = if config.quiet {
         None
     } else {
         let bar = ProgressBar::new_spinner();
@@ -206,9 +218,10 @@ fn main() {
         bar.finish_and_clear();
     }
 
-    print_success_header(cli.quiet);
-
-    if !cli.quiet {
+    if !config.quiet {
+        println!();
+        println!("{}", " Match found! ".black().on_green().bold());
+        println!();
         println!(
             "  {}  {}",
             "Address".green().bold(),
@@ -237,7 +250,7 @@ fn main() {
     }
 
     for export in &result.keypair.exports {
-        if cli.quiet {
+        if config.quiet {
             println!("{}: {}", export.label, export.value);
         } else {
             println!(
@@ -251,7 +264,7 @@ fn main() {
         }
     }
 
-    if !cli.quiet {
+    if !config.quiet {
         println!();
         println!(
             "  {}",
@@ -260,4 +273,39 @@ fn main() {
     }
 
     let _ = io::stdout().flush();
+}
+
+fn main() {
+    terminal::install_ctrlc_handler();
+
+    let cli = Cli::parse();
+
+    if cli.uses_direct_mode() {
+        run_grind(cli.into_run_config());
+        return;
+    }
+
+    // Interactive old-school menu mode (default)
+    loop {
+        let Some(config) = run_interactive() else {
+            return;
+        };
+
+        run_grind(RunConfig {
+            chain: config.chain,
+            prefix: config.prefix,
+            suffix: config.suffix,
+            exact: config.exact,
+            quiet: false,
+            threads: None,
+        });
+
+        println!();
+        let again = terminal::read_yes_no_key("  Grind another? [y/N]: ", false).unwrap_or(false);
+
+        if !again {
+            terminal::peace_out();
+            break;
+        }
+    }
 }

@@ -64,15 +64,7 @@ impl SystemProfile {
     }
 
     pub fn summary_line(&self) -> String {
-        let cores = match self.physical_cpus {
-            Some(physical) if physical != self.logical_cpus => {
-                format!(
-                    "{} logical / {} physical",
-                    self.logical_cpus, physical
-                )
-            }
-            _ => format!("{} cores", self.logical_cpus),
-        };
+        let cores = self.cpu_description();
 
         format!(
             "{cores} · {:.1} GB RAM ({:.1} GB free) · {} workers · memory: {}",
@@ -81,6 +73,35 @@ impl SystemProfile {
             self.worker_threads,
             self.memory_pressure,
         )
+    }
+
+    pub fn cpu_description(&self) -> String {
+        match self.physical_cpus {
+            Some(physical) if physical != self.logical_cpus => {
+                format!("{} logical · {} physical", self.logical_cpus, physical)
+            }
+            Some(physical) => format!("{physical} cores"),
+            None => format!("{} cores", self.logical_cpus),
+        }
+    }
+
+    pub fn worker_description(&self) -> String {
+        let reserved = self.logical_cpus.saturating_sub(self.worker_threads);
+        if reserved > 0 {
+            format!(
+                "{} threads grinding · {} core{} reserved for OS",
+                self.worker_threads,
+                reserved,
+                if reserved == 1 { "" } else { "s" }
+            )
+        } else {
+            format!("{} threads (all cores)", self.worker_threads)
+        }
+    }
+
+    pub fn estimated_keys_per_sec(&self, chain_id: &str) -> f64 {
+        let per_thread = if chain_id == "evm" { 35_000.0 } else { 80_000.0 };
+        per_thread * self.worker_threads as f64
     }
 }
 

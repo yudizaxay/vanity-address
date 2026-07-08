@@ -8,4 +8,4 @@ pub use chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 pub use chains::{Chain, EvmGrinder, SolanaGrinder};
 pub use grinder::{grind, GrindResult};
 pub use pattern::Pattern;
-pub use system::{build_thread_pool, SystemProfile};
+pub use system::{build_thread_pool, MemoryPressure, SystemProfile};
