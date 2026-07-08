@@ -13,10 +13,22 @@ pub struct KeypairResult {
     pub exports: Vec<KeyExport>,
 }
 
+/// Lightweight per-attempt state — export formats are built only on a match.
+pub enum GrindAttempt {
+    Solana(solana_sdk::signature::Keypair),
+    Evm([u8; 32]),
+}
+
 pub trait ChainGrinder: Send + Sync + Clone {
     fn id(&self) -> &'static str;
     fn display_name(&self) -> &'static str;
-    fn generate_keypair(&self) -> KeypairResult;
+
+    /// Generate address + retain secret material for finalize on match.
+    fn grind_attempt(&self) -> (String, GrindAttempt);
+
+    /// Build export formats from a winning attempt (called once on success).
+    fn finalize(&self, attempt: GrindAttempt) -> KeypairResult;
+
     fn build_pattern(
         &self,
         prefix: Option<&str>,

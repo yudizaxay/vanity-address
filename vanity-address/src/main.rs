@@ -2,7 +2,7 @@ use clap::{Parser, ValueEnum};
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 use std::io::{self, Write};
-use vanity_core::{grind, Chain, ChainGrinder};
+use vanity_core::{grind, Chain, ChainGrinder, SystemProfile};
 
 #[derive(Clone, ValueEnum)]
 enum ChainArg {
@@ -51,6 +51,10 @@ struct Cli {
     /// Minimal output — only print keys on success
     #[arg(short, long)]
     quiet: bool,
+
+    /// Override worker thread count (default: auto-detected from CPU + memory)
+    #[arg(long)]
+    threads: Option<usize>,
 }
 
 fn format_attempts(n: f64) -> String {
@@ -116,9 +120,23 @@ fn main() {
 
     let expected = chain.expected_attempts(&pattern);
 
+    let mut profile = SystemProfile::detect();
+    if let Some(threads) = cli.threads {
+        if threads == 0 {
+            print_error("--threads must be at least 1");
+            std::process::exit(1);
+        }
+        profile = profile.with_threads(threads);
+    }
+
     print_banner(cli.quiet);
 
     if !cli.quiet {
+        println!(
+            "  {}  {}",
+            "System".dimmed(),
+            profile.summary_line().cyan()
+        );
         println!(
             "  {}  {}",
             "Chain".dimmed(),
@@ -162,10 +180,10 @@ fn main() {
         Some(bar)
     };
 
-    let result = grind(
+    let result = match grind(
         chain.clone(),
         pattern,
-        250_000,
+        &profile,
         |attempts, rate, eta_min| {
             if let Some(ref bar) = pb {
                 bar.set_message(format!(
@@ -176,16 +194,17 @@ fn main() {
                 ));
             }
         },
-    );
+    ) {
+        Ok(r) => r,
+        Err(e) => {
+            print_error(&e);
+            std::process::exit(1);
+        }
+    };
 
     if let Some(ref bar) = pb {
         bar.finish_and_clear();
     }
-
-    let Some(result) = result else {
-        print_error("grinding stopped before a match was found");
-        std::process::exit(1);
-    };
 
     print_success_header(cli.quiet);
 

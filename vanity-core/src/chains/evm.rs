@@ -1,4 +1,4 @@
-use crate::chain::{ChainGrinder, KeyExport, KeypairResult};
+use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::{matches_both, Pattern};
 use rand::rngs::OsRng;
 use secp256k1::{Secp256k1, SecretKey};
@@ -51,14 +51,25 @@ impl ChainGrinder for EvmGrinder {
         "EVM (Ethereum)"
     }
 
-    fn generate_keypair(&self) -> KeypairResult {
+    fn grind_attempt(&self) -> (String, GrindAttempt) {
         let mut rng = OsRng;
         let secret_key = SecretKey::new(&mut rng);
         let address = Self::derive_address(&secret_key);
-        let secret_bytes = secret_key.secret_bytes();
+        (address, GrindAttempt::Evm(secret_key.secret_bytes()))
+    }
+
+    fn finalize(&self, attempt: GrindAttempt) -> KeypairResult {
+        let GrindAttempt::Evm(secret_bytes) = attempt else {
+            panic!("evm finalize called with wrong attempt type");
+        };
+        let address = {
+            let secret_key = SecretKey::from_slice(&secret_bytes)
+                .expect("valid secp256k1 secret");
+            Self::derive_address(&secret_key)
+        };
 
         KeypairResult {
-            address: address.clone(),
+            address,
             exports: vec![
                 KeyExport {
                     label: "Private Key (hex)".into(),

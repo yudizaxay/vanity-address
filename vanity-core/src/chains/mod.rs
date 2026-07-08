@@ -4,7 +4,7 @@ mod solana;
 pub use evm::EvmGrinder;
 pub use solana::SolanaGrinder;
 
-use crate::chain::ChainGrinder;
+use crate::chain::{ChainGrinder, GrindAttempt, KeypairResult};
 use crate::pattern::Pattern;
 
 #[derive(Clone)]
@@ -42,10 +42,17 @@ impl ChainGrinder for Chain {
         }
     }
 
-    fn generate_keypair(&self) -> crate::chain::KeypairResult {
+    fn grind_attempt(&self) -> (String, GrindAttempt) {
         match self {
-            Chain::Solana(g) => g.generate_keypair(),
-            Chain::Evm(g) => g.generate_keypair(),
+            Chain::Solana(g) => g.grind_attempt(),
+            Chain::Evm(g) => g.grind_attempt(),
+        }
+    }
+
+    fn finalize(&self, attempt: GrindAttempt) -> KeypairResult {
+        match self {
+            Chain::Solana(g) => g.finalize(attempt),
+            Chain::Evm(g) => g.finalize(attempt),
         }
     }
 

@@ -1,4 +1,4 @@
-use crate::chain::{ChainGrinder, KeyExport, KeypairResult};
+use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::{matches_both, Pattern};
 use solana_sdk::signature::{Keypair, Signer};
 
@@ -42,12 +42,20 @@ impl ChainGrinder for SolanaGrinder {
         "Solana"
     }
 
-    fn generate_keypair(&self) -> KeypairResult {
+    fn grind_attempt(&self) -> (String, GrindAttempt) {
         let keypair = Keypair::new();
+        let address = keypair.pubkey().to_string();
+        (address, GrindAttempt::Solana(keypair))
+    }
+
+    fn finalize(&self, attempt: GrindAttempt) -> KeypairResult {
+        let GrindAttempt::Solana(keypair) = attempt else {
+            panic!("solana finalize called with wrong attempt type");
+        };
         let address = keypair.pubkey().to_string();
 
         KeypairResult {
-            address: address.clone(),
+            address,
             exports: vec![
                 KeyExport {
                     label: "Private Key (hex)".into(),
