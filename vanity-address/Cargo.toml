@@ -18,7 +18,7 @@ path = "src/main.rs"
 [dependencies]
 vanity-core = { path = "../vanity-core", version = "0.3.0" }
 clap = { version = "4", features = ["derive", "color"] }
-colored = "2"
+colored = "3"
 indicatif = "0.17"
 crossterm = "0.28"
 ctrlc = "3.4"
