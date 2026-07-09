@@ -19,6 +19,7 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 ![13+ Chains](https://img.shields.io/badge/Chains-13+-blue?style=for-the-badge)
 ![Rayon](https://img.shields.io/badge/Rayon-Parallel-DEA584?style=for-the-badge&logo=rust&logoColor=white)
 ![Clap](https://img.shields.io/badge/Clap-CLI-00C853?style=for-the-badge)
+![Tauri](https://img.shields.io/badge/Tauri-Desktop-FFC131?style=for-the-badge&logo=tauri&logoColor=white)
 
 <br />
 
@@ -70,6 +71,7 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 | ⚡ **Blazing fast**  | Multi-core parallel grinding via [rayon](https://github.com/rayon-rs/rayon) |
 | 🔌 **Extensible**    | `ChainGrinder` trait — add chains without touching core                     |
 | 🖥️ **Great CLI**     | Colors, spinner, ETA, quiet mode for scripts                                |
+| 🪟 **Desktop app**   | **Vanity Address** — Tauri UI with the same wizard flow as the CLI          |
 | 📦 **Open source**   | MIT licensed, contributions welcome                                         |
 | 🛡️ **Transparent**   | Full source code — audit before you trust                                   |
 
@@ -84,7 +86,7 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 </p>
 
 <p align="center">
-  <sub>Interactive menu → chain &amp; pattern wizard → live benchmark → parallel grind → formatted key export</sub>
+  <sub>CLI interactive menu or <strong>Vanity Address</strong> desktop app — chain wizard → live benchmark → grind → export keys</sub>
 </p>
 
 ### Solana
@@ -128,9 +130,11 @@ $ vanity-address --chain evm --prefix dead --suffix beef
 
 ## 📦 Install
 
-### Pre-built binaries (recommended)
+### Pre-built CLI binaries (recommended)
 
-Download the latest release for your platform — no Rust toolchain required:
+Download the latest **CLI** release for your platform — no Rust toolchain required:
+
+> **Desktop app:** build from source in [`vanity-app/`](#-desktop-app) (`npm run tauri build`). Pre-built `.dmg` / `.AppImage` bundles are not on GitHub Releases yet — only the CLI tarballs below.
 
 | Platform | Archive |
 | -------- | ------- |
@@ -153,7 +157,7 @@ cd vanity-address-0.2.0-macos-arm64
 ./vanity-address
 ```
 
-Each archive includes `vanity-address`, `README.md`, `LICENSE`, and a `.sha256` checksum file on the Releases page.
+Each archive includes the **CLI** binary (`vanity-address`), `README.md`, `LICENSE`, and a `.sha256` checksum file on the Releases page.
 
 > **Intel Mac?** Build from source below, or use Rosetta with the arm64 binary where supported.
 
@@ -276,22 +280,49 @@ New chain = one file + trait implementation in `vanity-core/src/chains/`. Both t
 
 ## 🖥 Desktop App
 
-A native desktop UI built with [Tauri](https://tauri.app/), reusing `vanity-core` directly (`vanity-app/`). Same wizard flow as the CLI — pick a chain, enter a prefix/suffix, watch live progress, reveal and copy keys, save to a file you choose.
+**Vanity Address** is the native desktop UI (`vanity-app/`), built with [Tauri 2](https://tauri.app/) and wired directly to `vanity-core` — no duplicated chain logic.
+
+### Wizard flow (same as CLI)
+
+```text
+Home → Chain → Pattern (suffix/prefix/both) → Summary → Grind → Result
+         ↑ Help              ↑ system info + warnings    ↑ stop anytime
+```
+
+| Feature | Desktop |
+| ------- | ------- |
+| 13 chains | ✅ |
+| Live estimate + difficulty | ✅ |
+| Impractical-pattern warning + double confirm | ✅ |
+| 2s speed benchmark before grind | ✅ |
+| Stop mid-grind | ✅ |
+| Masked keys + reveal / copy all | ✅ |
+| Native save dialog | ✅ |
+
+### Requirements
+
+- [Rust](https://rustup.rs/) 1.70+ (same as CLI)
+- [Node.js](https://nodejs.org/) 18+
+- macOS or Linux for `tauri build` (see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/))
+
+### Run / build
 
 ```bash
 cd vanity-app
 npm install
-npm run tauri dev      # run in development
-npm run tauri build    # produce a native installer/bundle
+npm run tauri dev      # development (hot reload)
+npm run tauri build    # native .app / .dmg (macOS) or .deb / .AppImage (Linux)
 ```
 
-Grinding runs on a background thread and can be stopped mid-run; keys stay masked until you click reveal, and saving prompts a native file dialog rather than writing anywhere automatically.
+Output lands in `vanity-app/src-tauri/target/release/bundle/`.
+
+Grinding runs on a background thread; keys stay masked until you click **Reveal**, and **Save** opens a native file picker (nothing is written automatically).
 
 ---
 
 ## ⚡ Performance
 
-On startup, **vanity-address probes your system** (CPU cores, RAM) and configures an optimized rayon thread pool before grinding:
+On startup, **vanity-address** (CLI and desktop app) probes your system (CPU cores, RAM) and runs a **2-second benchmark** when grinding starts for an honest ETA:
 
 | Signal              | Behavior                                                                       |
 | ------------------- | ------------------------------------------------------------------------------ |

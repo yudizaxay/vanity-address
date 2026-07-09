@@ -32,5 +32,6 @@ Each tarball contains:
 ## Notes
 
 - Tags must match `v*` (e.g. `v0.2.0`) to trigger the workflow
+- **CLI only** today — desktop bundles (`vanity-app/`) are built locally via `npm run tauri build`
 - Intel macOS runners are not available on GitHub Actions; Apple Silicon (`macos-arm64`) is the prebuilt macOS target
 - Linux builds target `x86_64-unknown-linux-gnu` (glibc)
