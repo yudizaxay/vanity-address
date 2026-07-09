@@ -78,6 +78,13 @@ cargo install vanity-address
 ## Notes
 
 - Tags must match `v*` (e.g. `v0.3.0`) to trigger the workflow
+- **CI green ≠ Release published** — push to `main` only runs CI; Release runs on **tag push** or manual dispatch
+- **Manual release (no tag push):** Actions → **Release** → **Run workflow** → enter version `0.3.0` → Run
+- After CI fixes, **move the tag** to the latest commit or run workflow manually from `main`:
+  ```bash
+  git tag -fa v0.3.0 -m "v0.3.0"
+  git push origin v0.3.0 --force   # requires yudizaxay account
+  ```
 - Desktop `.dmg` is built on macOS arm64 runners only
 - Intel macOS CLI is cross-compiled on `macos-latest` with `x86_64-apple-darwin`
 - Linux builds target `x86_64-unknown-linux-gnu` (glibc)

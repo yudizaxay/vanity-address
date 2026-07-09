@@ -4,12 +4,20 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g. 0.3.0)"
+        required: true
+        default: "0.3.0"
 
 permissions:
   contents: write
 
 env:
   CARGO_TERM_COLOR: always
+  # Tag push → v0.3.0 | manual run → input version
+  RELEASE_VERSION: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', github.event.inputs.version) || github.ref_name }}
 
 jobs:
   build-cli:
@@ -62,7 +70,7 @@ jobs:
         if: matrix.archive == 'tar'
         shell: bash
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${RELEASE_VERSION#v}"
           ARCHIVE="vanity-address-${VERSION}-${{ matrix.name }}"
           mkdir -p "dist/${ARCHIVE}"
           cp "target/${{ matrix.target }}/release/${{ matrix.bin }}" "dist/${ARCHIVE}/vanity-address"
@@ -74,7 +82,7 @@ jobs:
         if: matrix.archive == 'zip'
         shell: pwsh
         run: |
-          $VERSION = $env:GITHUB_REF_NAME.TrimStart('v')
+          $VERSION = $env:RELEASE_VERSION.TrimStart('v')
           $ARCHIVE = "vanity-address-$VERSION-${{ matrix.name }}"
           New-Item -ItemType Directory -Force -Path "dist/$ARCHIVE" | Out-Null
           Copy-Item "target/${{ matrix.target }}/release/${{ matrix.bin }}" "dist/$ARCHIVE/vanity-address.exe"
@@ -118,7 +126,7 @@ jobs:
 
       - name: Package desktop archive
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${RELEASE_VERSION#v}"
           ARCHIVE="vanity-address-${VERSION}-macos-arm64-desktop"
           mkdir -p "dist/${ARCHIVE}"
 
@@ -167,6 +175,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.RELEASE_VERSION }}
           generate_release_notes: true
           files: dist/*
           body_path: CHANGELOG.md
