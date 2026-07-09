@@ -11,8 +11,8 @@ use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use vanity_core::{
-    benchmark, format_attempts, grind, grind_estimate, Chain, ChainGrinder, GrindResult,
-    Pattern, PatternRisk, SystemProfile,
+    benchmark, format_attempts, grind, grind_estimate, CancelToken, Chain, ChainGrinder,
+    GrindResult, Pattern, PatternRisk, SystemProfile,
 };
 
 const BENCHMARK_SECS: f64 = 2.0;
@@ -324,6 +324,7 @@ fn run_grind(config: RunConfig) {
         chain.clone(),
         pattern.clone(),
         &profile,
+        &CancelToken::new(),
         |attempts, rate, eta_min| {
             if let Some(ref bar) = pb {
                 bar.set_message(format!(

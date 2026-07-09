@@ -1,5 +1,5 @@
 [workspace]
-members = ["vanity-core", "vanity-address"]
+members = ["vanity-core", "vanity-address", "vanity-app/src-tauri"]
 resolver = "2"
 
 [profile.release]

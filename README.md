@@ -38,6 +38,7 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 [Install](#-install) ·
 [Usage](#-usage) ·
 [Architecture](#-architecture) ·
+[Desktop App](#-desktop-app) ·
 [Security](#-security) ·
 [Contributing](#-contributing)
 
@@ -256,19 +257,35 @@ vanity-address --chain evm --prefix dead --suffix beef
 ## 🏗 Architecture
 
 ```text
-┌─────────────────────────────────────┐
-│          vanity-address CLI         │
-├─────────────────────────────────────┤
-│           vanity-core lib           │
-│  ┌────────┐ ┌─────┐ ┌──────────┐ ┌─────┐ │
-│  │ Solana │ │ EVM │ │ Bitcoin… │ │ +10 │ │
-│  │Grinder │ │Grind│ │ Grinders │ │more │ │
-│  └────────┘ └─────┘ └──────────┘ └─────┘ │
-│         ChainGrinder trait          │
-└─────────────────────────────────────┘
+┌───────────────────┐   ┌───────────────────┐
+│  vanity-address    │   │    vanity-app      │
+│      (CLI)         │   │  (Tauri desktop UI)│
+├───────────────────┴───┴───────────────────┤
+│                vanity-core lib              │
+│  ┌────────┐ ┌─────┐ ┌──────────┐ ┌───────┐ │
+│  │ Solana │ │ EVM │ │ Bitcoin… │ │  +10  │ │
+│  │Grinder │ │Grind│ │ Grinders │ │ more  │ │
+│  └────────┘ └─────┘ └──────────┘ └───────┘ │
+│              ChainGrinder trait             │
+└─────────────────────────────────────────────┘
 ```
 
-New chain = one file + trait implementation in `vanity-core/src/chains/`.
+New chain = one file + trait implementation in `vanity-core/src/chains/`. Both the CLI and the desktop UI are thin frontends over the same `vanity-core` grinding engine — no chain logic is duplicated.
+
+---
+
+## 🖥 Desktop App
+
+A native desktop UI built with [Tauri](https://tauri.app/), reusing `vanity-core` directly (`vanity-app/`). Same wizard flow as the CLI — pick a chain, enter a prefix/suffix, watch live progress, reveal and copy keys, save to a file you choose.
+
+```bash
+cd vanity-app
+npm install
+npm run tauri dev      # run in development
+npm run tauri build    # produce a native installer/bundle
+```
+
+Grinding runs on a background thread and can be stopped mid-run; keys stay masked until you click reveal, and saving prompts a native file dialog rather than writing anywhere automatically.
 
 ---
 
@@ -331,7 +348,7 @@ Longer patterns = exponentially harder. Start short, verify, then go longer.
 - [x] Multi-chain `ChainGrinder` architecture
 - [x] Polished CLI (colors, progress, `--chain`)
 - [x] Auto system detection (CPU + memory tuned thread pool)
-- [ ] Desktop UI ([Tauri](https://tauri.app/))
+- [x] Desktop UI ([Tauri](https://tauri.app/)) — `vanity-app/`
 - [x] Bitcoin, Litecoin, Dogecoin, Tron, Cosmos, Osmosis, Ripple, Stellar, Aptos, Sui, NEAR
 - [ ] Cardano, TON (complex address formats)
 - [ ] Regex patterns for power users

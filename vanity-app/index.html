@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vanity Address</title>
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <span class="topbar-title">Vanity Address</span>
+        <span class="topbar-sub">v0.2.0 · local, offline vanity keypair generator</span>
+      </header>
+
+      <div class="screen-stack">
+      <!-- Home (CLI main menu) -->
+      <section id="screen-home" class="screen screen-centered is-active">
+        <div class="splash-box">
+          <img src="/logo.png" alt="Vanity Address" class="splash-logo" width="96" height="96" />
+          <div class="splash-frame">Vanity Address · v0.2.0</div>
+          <p class="splash-tagline">multi-chain vanity address generator</p>
+        </div>
+        <ul class="trust-list">
+          <li>Keys generated &amp; stored on this machine only</li>
+          <li>No internet — fully offline, nothing ever uploaded</li>
+          <li>13 chains · prefix/suffix · multi-core grinding</li>
+        </ul>
+        <div class="home-actions">
+          <button id="btn-start" class="primary wide">Start a new grind</button>
+          <button id="btn-help" class="secondary wide">Help &amp; pattern rules</button>
+        </div>
+      </section>
+
+      <!-- Help -->
+      <section id="screen-help" class="screen">
+        <button class="back" data-back="home">&larr; Back</button>
+        <h1>Help &amp; pattern rules</h1>
+        <div class="help-body">
+          <h2>What is Vanity Address?</h2>
+          <p>Generates wallet addresses matching a custom prefix or suffix — e.g. ending in <code>axay</code>.</p>
+          <h2>Security</h2>
+          <ul>
+            <li>100% local · no internet</li>
+            <li><strong>Never share your private key</strong></li>
+            <li>Verify the address before sending funds</li>
+          </ul>
+          <h2>Pattern tips</h2>
+          <ul>
+            <li><strong>Base58 chains</strong> (Solana, BTC, Tron…): no <code>0</code>, <code>O</code>, <code>I</code>, <code>l</code></li>
+            <li><strong>Hex chains</strong> (EVM, Aptos, Sui, NEAR): <code>0-9</code>, <code>a-f</code></li>
+            <li>Start with 2–4 characters; 6+ can take hours to never</li>
+          </ul>
+          <p id="help-chains" class="hint"></p>
+        </div>
+      </section>
+
+      <!-- Chain -->
+      <section id="screen-chain" class="screen">
+        <button class="back" data-back="home">&larr; Back</button>
+        <h1>Step 1 · Choose a chain</h1>
+        <div id="chain-grid" class="chain-grid"></div>
+      </section>
+
+      <!-- Pattern -->
+      <section id="screen-pattern" class="screen">
+        <button class="back" data-back="chain">&larr; Change chain</button>
+        <h1>Step 2 · <span id="pattern-chain-name"></span></h1>
+
+        <div class="match-tabs" role="tablist">
+          <button class="tab active" data-kind="suffix" role="tab">Suffix</button>
+          <button class="tab" data-kind="prefix" role="tab">Prefix</button>
+          <button class="tab" data-kind="both" role="tab">Both</button>
+        </div>
+
+        <div class="field-row">
+          <label class="field" id="field-prefix">
+            <span class="field-label">Prefix</span>
+            <input id="input-prefix" type="text" autocomplete="off" spellcheck="false" disabled />
+          </label>
+          <label class="field" id="field-suffix">
+            <span class="field-label">Suffix</span>
+            <input id="input-suffix" type="text" autocomplete="off" spellcheck="false" />
+          </label>
+        </div>
+
+        <label class="checkbox-row" id="exact-row">
+          <input id="input-exact" type="checkbox" />
+          <span>Exact case</span>
+        </label>
+
+        <p id="pattern-hint" class="hint"></p>
+        <p id="pattern-error" class="error" hidden></p>
+
+        <div id="estimate-box" class="estimate-box" hidden>
+          <div class="estimate-row">
+            <span class="estimate-label">Target</span>
+            <span id="estimate-target"></span>
+          </div>
+          <div class="estimate-row">
+            <span class="estimate-label">Difficulty</span>
+            <span id="estimate-difficulty"></span>
+          </div>
+          <div class="estimate-row">
+            <span class="estimate-label">Est. attempts</span>
+            <span id="estimate-attempts"></span>
+          </div>
+          <div class="estimate-row">
+            <span class="estimate-label">Est. time</span>
+            <span id="estimate-time"></span>
+          </div>
+          <p id="estimate-length-guide" class="hint estimate-guide" hidden></p>
+          <p id="estimate-risk-note" class="risk-note" hidden></p>
+        </div>
+
+        <button id="btn-continue" class="primary" disabled>Continue to summary</button>
+      </section>
+
+      <!-- Summary (CLI confirm step) -->
+      <section id="screen-summary" class="screen">
+        <button class="back" data-back="pattern">&larr; Edit pattern</button>
+        <h1>Step 3 · Summary</h1>
+
+        <div class="summary-block">
+          <h2>Pattern</h2>
+          <div class="summary-row"><span>Chain</span><span id="sum-chain"></span></div>
+          <div class="summary-row"><span>Target</span><span id="sum-target"></span></div>
+          <div class="summary-row"><span>Mode</span><span id="sum-mode"></span></div>
+          <div class="summary-row"><span>Attempts</span><span id="sum-attempts"></span></div>
+          <div class="summary-row"><span>Est. time</span><span id="sum-time"></span></div>
+          <div class="summary-row"><span>Difficulty</span><span id="sum-difficulty"></span></div>
+        </div>
+
+        <div class="summary-block">
+          <h2>Your system</h2>
+          <div class="summary-row"><span>CPU</span><span id="sum-cpu"></span></div>
+          <div class="summary-row"><span>Workers</span><span id="sum-workers"></span></div>
+          <div class="summary-row"><span>RAM</span><span id="sum-ram"></span></div>
+          <div class="summary-row"><span>Memory</span><span id="sum-memory"></span></div>
+          <div class="summary-row"><span>Est. speed</span><span id="sum-speed"></span></div>
+        </div>
+
+        <p id="sum-warning" class="risk-note" hidden></p>
+        <p id="sum-length-guide" class="hint" hidden></p>
+
+        <div id="confirm-impractical" class="confirm-box" hidden>
+          <p class="confirm-title">⛔ Last chance — this grind may never finish.</p>
+          <p class="hint">Really start this impractical pattern?</p>
+        </div>
+
+        <div class="summary-actions">
+          <button id="btn-grind" class="primary">Start grinding</button>
+        </div>
+      </section>
+
+      <!-- Grind -->
+      <section id="screen-grind" class="screen">
+        <h1>Grinding&hellip;</h1>
+        <p id="grind-target" class="hint"></p>
+
+        <div class="grind-status">
+          <div class="spinner" id="grind-spinner"></div>
+          <div class="grind-stats">
+            <div id="grind-phase" class="grind-phase">Calibrating&hellip;</div>
+            <div id="grind-line" class="grind-line" hidden>
+              <span id="grind-attempts"></span> keys ·
+              <span id="grind-rate"></span> keys/s ·
+              ~<span id="grind-eta"></span> remaining
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-stop" class="danger">Stop</button>
+      </section>
+
+      <!-- Result -->
+      <section id="screen-result" class="screen">
+        <h1 class="match-title">✓ Match found</h1>
+
+        <div class="address-box">
+          <span id="result-address" class="address"></span>
+          <button class="copy-btn" data-copy-target="result-address">Copy</button>
+        </div>
+
+        <div class="result-meta">
+          <span id="result-stats"></span>
+        </div>
+
+        <div class="key-warning">
+          Never share these keys with anyone. Anyone with them can drain the wallet.
+        </div>
+
+        <div id="result-exports" class="exports"></div>
+
+        <div class="copy-all-box">
+          <button id="btn-copy-all" class="secondary">Copy all keys</button>
+        </div>
+
+        <div class="result-actions">
+          <button id="btn-save" class="secondary">Save to file&hellip;</button>
+          <button id="btn-again" class="primary">Grind another</button>
+          <button id="btn-home" class="secondary">New grind</button>
+        </div>
+      </section>
+      </div>
+
+      <div id="toast" class="toast" hidden></div>
+    </main>
+  </body>
+</html>
