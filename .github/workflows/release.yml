@@ -4,16 +4,24 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g. 0.3.0)"
+        required: true
+        default: "0.3.0"
 
 permissions:
   contents: write
 
 env:
   CARGO_TERM_COLOR: always
+  # Tag push → v0.3.0 | manual run → input version
+  RELEASE_VERSION: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', github.event.inputs.version) || github.ref_name }}
 
 jobs:
   build-cli:
-    name: CLI (${{ matrix.name }})
+    name: CLI (${{ matrix.asset_label }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -22,21 +30,25 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             name: linux-x86_64
+            asset_label: Linux-CLI
             archive: tar
             bin: vanity-address
           - os: macos-latest
             target: aarch64-apple-darwin
             name: macos-arm64
+            asset_label: Mac-AppleSilicon-CLI
             archive: tar
             bin: vanity-address
           - os: macos-latest
             target: x86_64-apple-darwin
             name: macos-x86_64
+            asset_label: Mac-Intel-CLI
             archive: tar
             bin: vanity-address
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             name: windows-x86_64
+            asset_label: Windows-CLI
             archive: zip
             bin: vanity-address.exe
 
@@ -62,35 +74,37 @@ jobs:
         if: matrix.archive == 'tar'
         shell: bash
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          ARCHIVE="vanity-address-${VERSION}-${{ matrix.name }}"
-          mkdir -p "dist/${ARCHIVE}"
-          cp "target/${{ matrix.target }}/release/${{ matrix.bin }}" "dist/${ARCHIVE}/vanity-address"
-          cp README.md LICENSE SECURITY.md "dist/${ARCHIVE}/"
-          tar -czf "dist/${ARCHIVE}.tar.gz" -C dist "${ARCHIVE}"
-          shasum -a 256 "dist/${ARCHIVE}.tar.gz" > "dist/${ARCHIVE}.tar.gz.sha256"
+          VERSION="${RELEASE_VERSION#v}"
+          ASSET="VanityAddress-${VERSION}-${{ matrix.asset_label }}"
+          STAGING="dist/_pack-${ASSET}"
+          mkdir -p "${STAGING}"
+          cp "target/${{ matrix.target }}/release/${{ matrix.bin }}" "${STAGING}/vanity-address"
+          cp README.md LICENSE SECURITY.md "${STAGING}/"
+          tar -czf "dist/${ASSET}.tar.gz" -C "${STAGING}" .
+          shasum -a 256 "dist/${ASSET}.tar.gz" > "dist/${ASSET}.tar.gz.sha256"
 
       - name: Package archive (zip)
         if: matrix.archive == 'zip'
-        shell: bash
+        shell: pwsh
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          ARCHIVE="vanity-address-${VERSION}-${{ matrix.name }}"
-          mkdir -p "dist/${ARCHIVE}"
-          cp "target/${{ matrix.target }}/release/${{ matrix.bin }}" "dist/${ARCHIVE}/vanity-address.exe"
-          cp README.md LICENSE SECURITY.md "dist/${ARCHIVE}/"
-          cd "dist/${ARCHIVE}" && zip -r "../${ARCHIVE}.zip" .
-          cd ../..
-          shasum -a 256 "dist/${ARCHIVE}.zip" > "dist/${ARCHIVE}.zip.sha256"
+          $VERSION = $env:RELEASE_VERSION.TrimStart('v')
+          $ASSET = "VanityAddress-$VERSION-${{ matrix.asset_label }}"
+          $STAGING = "dist/_pack-$ASSET"
+          New-Item -ItemType Directory -Force -Path $STAGING | Out-Null
+          Copy-Item "target/${{ matrix.target }}/release/${{ matrix.bin }}" "$STAGING/vanity-address.exe"
+          Copy-Item README.md, LICENSE, SECURITY.md $STAGING/
+          Compress-Archive -Path "$STAGING/*" -DestinationPath "dist/$ASSET.zip" -Force
+          $hash = (Get-FileHash "dist/$ASSET.zip" -Algorithm SHA256).Hash.ToLower()
+          "${hash}  ${ASSET}.zip" | Set-Content -Path "dist/$ASSET.zip.sha256" -NoNewline
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
         with:
           name: cli-${{ matrix.name }}
-          path: dist/*.*
+          path: dist/VanityAddress-*.*
 
   build-desktop:
-    name: Desktop (macOS .dmg)
+    name: Desktop (Mac Apple Silicon .dmg)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v5
@@ -114,30 +128,36 @@ jobs:
 
       - name: Build desktop bundle
         working-directory: vanity-app
-        run: npm run tauri build
+        run: npm run tauri build -- --bundles dmg
 
-      - name: Package desktop archive
+      - name: Package desktop .dmg
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          BUNDLE_DIR="vanity-app/src-tauri/target/release/bundle"
-          ARCHIVE="vanity-address-${VERSION}-macos-arm64-desktop"
-          mkdir -p "dist/${ARCHIVE}"
-          DMG=$(find "${BUNDLE_DIR}/dmg" -name "*.dmg" -print -quit)
-          if [ -z "$DMG" ]; then
-            echo "No .dmg found in ${BUNDLE_DIR}/dmg/"
-            find "${BUNDLE_DIR}" -type f || true
-            exit 1
-          fi
-          cp "$DMG" "dist/${ARCHIVE}/"
-          cp README.md LICENSE SECURITY.md "dist/${ARCHIVE}/"
-          tar -czf "dist/${ARCHIVE}.tar.gz" -C dist "${ARCHIVE}"
-          shasum -a 256 "dist/${ARCHIVE}.tar.gz" > "dist/${ARCHIVE}.tar.gz.sha256"
+          VERSION="${RELEASE_VERSION#v}"
+          ASSET="VanityAddress-${VERSION}-Mac-AppleSilicon-Desktop.dmg"
+          mkdir -p dist
+
+          for BUNDLE_DIR in "target/release/bundle" "vanity-app/src-tauri/target/release/bundle"; do
+            if [ -d "${BUNDLE_DIR}/dmg" ]; then
+              DMG=$(find "${BUNDLE_DIR}/dmg" -name "*.dmg" -print -quit)
+              if [ -n "$DMG" ]; then
+                echo "Found DMG at ${DMG}"
+                cp "$DMG" "dist/${ASSET}"
+                shasum -a 256 "dist/${ASSET}" > "dist/${ASSET}.sha256"
+                exit 0
+              fi
+            fi
+          done
+
+          echo "No .dmg found in workspace bundle directories"
+          find target -name "*.dmg" 2>/dev/null || true
+          find vanity-app -name "*.dmg" 2>/dev/null || true
+          exit 1
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
         with:
           name: desktop-macos-arm64
-          path: dist/*.*
+          path: dist/VanityAddress-*.*
 
   release:
     name: Publish GitHub Release
@@ -155,9 +175,18 @@ jobs:
       - name: List release files
         run: ls -la dist/
 
+      - name: Compose release notes
+        run: |
+          {
+            cat .github/release-downloads.md
+            echo ""
+            cat CHANGELOG.md
+          } > dist/RELEASE_NOTES.md
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
-          files: dist/*
-          body_path: CHANGELOG.md
+          tag_name: ${{ env.RELEASE_VERSION }}
+          generate_release_notes: false
+          files: dist/VanityAddress-*.*
+          body_path: dist/RELEASE_NOTES.md
