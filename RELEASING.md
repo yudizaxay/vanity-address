@@ -27,15 +27,15 @@ git push origin v0.3.0
 
 ## Release assets
 
-| Asset | Platform |
-| ----- | -------- |
-| `vanity-address-<ver>-linux-x86_64.tar.gz` | Linux CLI |
-| `vanity-address-<ver>-macos-arm64.tar.gz` | macOS Apple Silicon CLI |
-| `vanity-address-<ver>-macos-x86_64.tar.gz` | macOS Intel CLI |
-| `vanity-address-<ver>-windows-x86_64.zip` | Windows CLI |
-| `vanity-address-<ver>-macos-arm64-desktop.tar.gz` | Desktop `.dmg` + docs |
+| Asset on GitHub | Who should download |
+| --------------- | ------------------- |
+| `VanityAddress-<ver>-Mac-AppleSilicon-Desktop.dmg` | Mac M1–M4 — desktop app |
+| `VanityAddress-<ver>-Mac-AppleSilicon-CLI.tar.gz` | Mac M1–M4 — terminal |
+| `VanityAddress-<ver>-Mac-Intel-CLI.tar.gz` | Intel Mac — terminal |
+| `VanityAddress-<ver>-Windows-CLI.zip` | Windows — terminal |
+| `VanityAddress-<ver>-Linux-CLI.tar.gz` | Linux — terminal |
 
-Each archive includes matching `.sha256` checksum files.
+Each binary has a matching `.sha256` checksum file (optional).
 
 ## Archive contents (CLI)
 
