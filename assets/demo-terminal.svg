@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="920" height="560" viewBox="0 0 920 560" role="img" aria-label="vanity-address terminal demo">
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="560" viewBox="0 0 920 560" role="img" aria-label="Vanity Address terminal demo">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#1a1d24"/>
@@ -14,13 +14,13 @@
   <circle cx="20" cy="18" r="6" fill="#ff5f57"/>
   <circle cx="40" cy="18" r="6" fill="#febc2e"/>
   <circle cx="60" cy="18" r="6" fill="#28c840"/>
-  <text x="84" y="22" fill="#6b7280" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">vanity-address  zsh  120×32</text>
+  <text x="84" y="22" fill="#6b7280" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="12">Vanity Address &#8212; zsh &#8212; 120x32</text>
 
-  <g font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="14" xml:space="preserve">
-    <text x="28" y="72" fill="#67e8f9" font-weight="700">  TPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPW</text>
-    <text x="28" y="94" fill="#67e8f9" font-weight="700">  Q      vanity-address  ·  v0.2.0            Q</text>
-    <text x="28" y="116" fill="#67e8f9">  Q   multi-chain vanity address generator    Q</text>
-    <text x="28" y="138" fill="#67e8f9" font-weight="700">  ZPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP]</text>
+  <g font-family="ui-monospace, Menlo, Consolas, monospace" font-size="14">
+    <text x="28" y="72" fill="#67e8f9" font-weight="700">  +------------------------------------------+</text>
+    <text x="28" y="94" fill="#67e8f9" font-weight="700">  |      Vanity Address  &#183;  v0.2.0        |</text>
+    <text x="28" y="116" fill="#67e8f9">  |   multi-chain vanity address generator   |</text>
+    <text x="28" y="138" fill="#67e8f9" font-weight="700">  +------------------------------------------+</text>
 
     <text x="28" y="176" fill="#9ca3af">  [1]  Start a new grind</text>
     <text x="28" y="198" fill="#9ca3af">  [2]  Help &amp; pattern rules</text>
@@ -36,15 +36,15 @@
     <text x="28" y="362" fill="#9ca3af">  Measured</text>
     <text x="120" y="362" fill="#4ade80">~2.1M keys/sec</text>
 
-    <text x="28" y="404" fill="#22d3ee"></text>
+    <text x="28" y="404" fill="#22d3ee">*</text>
     <text x="44" y="404" fill="#e5e7eb"> 12.4M keys | </text>
     <text x="168" y="404" fill="#4ade80">2,198,421 keys/s</text>
     <text x="318" y="404" fill="#e5e7eb"> | ~5 min remaining</text>
 
     <text x="28" y="448" fill="#4ade80" font-weight="700"> Match found!</text>
     <text x="28" y="476" fill="#9ca3af">  Address</text>
-    <text x="120" y="476" fill="#f3f4f6" font-weight="700">7xKp&Qaxay</text>
+    <text x="120" y="476" fill="#f3f4f6" font-weight="700">7xKp&#8230;Qaxay</text>
     <text x="28" y="498" fill="#9ca3af">  Time</text>
-    <text x="120" y="498" fill="#e5e7eb">142.31s · 312,847,291 attempts</text>
+    <text x="120" y="498" fill="#e5e7eb">142.31s &#183; 312,847,291 attempts</text>
   </g>
 </svg>

@@ -4,7 +4,7 @@ Maintainers cut releases by pushing a version tag. GitHub Actions builds binarie
 
 ## Checklist
 
-1. Ensure `main` is green on CI (`cargo test`, `cargo clippy -- -D warnings`)
+1. Ensure `main` is green on CI (`cargo fmt --check`, `cargo test`, `cargo clippy -- -D warnings`, `vanity-app` npm build)
 2. Bump version in `vanity-address/Cargo.toml` if needed
 3. Update `CHANGELOG.md` with the new version section
 4. Commit, push to `main`

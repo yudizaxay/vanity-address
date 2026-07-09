@@ -31,7 +31,11 @@ impl CancelToken {
 }
 
 /// Run a short warm-up grind to measure real keys/sec on this machine.
-pub fn benchmark<G: ChainGrinder>(grinder: G, profile: &SystemProfile, duration_secs: f64) -> Result<f64, String> {
+pub fn benchmark<G: ChainGrinder>(
+    grinder: G,
+    profile: &SystemProfile,
+    duration_secs: f64,
+) -> Result<f64, String> {
     let duration_secs = duration_secs.clamp(0.5, 10.0);
     let pool = build_thread_pool(profile)?;
     let counter = AtomicU64::new(0);

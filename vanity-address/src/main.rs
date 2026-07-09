@@ -187,8 +187,11 @@ fn run_grind(config: RunConfig) {
         profile = profile.with_threads(threads);
     }
 
-    let pre_estimate =
-        grind_estimate(expected, profile.estimated_keys_per_sec(chain.id()), &pattern);
+    let pre_estimate = grind_estimate(
+        expected,
+        profile.estimated_keys_per_sec(chain.id()),
+        &pattern,
+    );
 
     // CLI direct mode: warn and block impractical patterns unless --force.
     if !config.compact_header && !config.quiet {
@@ -239,10 +242,7 @@ fn run_grind(config: RunConfig) {
             }
             Err(e) => {
                 if !config.compact_header {
-                    eprintln!(
-                        "  {}  benchmark skipped ({e})",
-                        "warn:".yellow().bold(),
-                    );
+                    eprintln!("  {}  benchmark skipped ({e})", "warn:".yellow().bold(),);
                 }
             }
         }
@@ -261,46 +261,22 @@ fn run_grind(config: RunConfig) {
             println!();
         } else {
             println!();
-            println!(
-                "  {}  {}",
-                "System".dimmed(),
-                profile.summary_line().cyan()
-            );
-            println!(
-                "  {}  {}",
-                "CPU".dimmed(),
-                profile.cpu_description()
-            );
+            println!("  {}  {}", "System".dimmed(), profile.summary_line().cyan());
+            println!("  {}  {}", "CPU".dimmed(), profile.cpu_description());
             println!(
                 "  {}  {}",
                 "Workers".dimmed(),
                 profile.worker_description().green()
             );
-            println!(
-                "  {}  {}",
-                "Chain".dimmed(),
-                chain.display_name().bold()
-            );
-            println!(
-                "  {}  {}",
-                "Target".dimmed(),
-                pattern.description().bold()
-            );
-            println!(
-                "  {}  {}",
-                "Mode".dimmed(),
-                pattern.case_mode()
-            );
+            println!("  {}  {}", "Chain".dimmed(), chain.display_name().bold());
+            println!("  {}  {}", "Target".dimmed(), pattern.description().bold());
+            println!("  {}  {}", "Mode".dimmed(), pattern.case_mode());
             println!(
                 "  {}  ~{} attempts (average)",
                 "Expected".dimmed(),
                 format_attempts(expected).yellow()
             );
-            println!(
-                "  {}  {}",
-                "Hint".dimmed(),
-                chain.pattern_hint().dimmed()
-            );
+            println!("  {}  {}", "Hint".dimmed(), chain.pattern_hint().dimmed());
             println!();
             println!("{}", "Grinding...  (Ctrl+C to stop)".dimmed());
             println!();
@@ -360,17 +336,13 @@ fn run_grind(config: RunConfig) {
         .output
         .clone()
         .unwrap_or_else(|| PathBuf::from(DEFAULT_RESULTS_FILE));
-    let save_prompt = format!(
-        "  Save keys to {}? [y/N]: ",
-        output_path.display()
-    );
+    let save_prompt = format!("  Save keys to {}? [y/N]: ", output_path.display());
 
     let should_save = if config.save {
         true
     } else if config.prompt_save && !config.quiet {
         println!();
-        terminal::read_yes_no_key(&save_prompt, false, false)
-            .unwrap_or(false)
+        terminal::read_yes_no_key(&save_prompt, false, false).unwrap_or(false)
     } else {
         false
     };
@@ -379,14 +351,12 @@ fn run_grind(config: RunConfig) {
         match save_result(&output_path, &chain, &pattern, &result) {
             Ok(path) => {
                 if !config.quiet {
-                    println!(
-                        "  {}  {}",
-                        "Saved →".green().bold(),
-                        path.cyan()
-                    );
+                    println!("  {}  {}", "Saved →".green().bold(), path.cyan());
                     println!(
                         "  {}",
-                        "This file contains private keys — do not commit or share it.".red().dimmed()
+                        "This file contains private keys — do not commit or share it."
+                            .red()
+                            .dimmed()
                     );
                 }
             }
@@ -430,7 +400,9 @@ fn print_success(result: &GrindResult, pattern: &Pattern) {
     println!("  {}", "── Private Keys ──".bold().red());
     println!(
         "  {}",
-        "⚠  Never share these. Anyone with them can drain the wallet.".red().dimmed()
+        "⚠  Never share these. Anyone with them can drain the wallet."
+            .red()
+            .dimmed()
     );
     println!();
 
@@ -451,12 +423,7 @@ fn print_success(result: &GrindResult, pattern: &Pattern) {
             width = label_width
         );
         if let Some(ref hint) = export.hint {
-            println!(
-                "  {:width$}  {}",
-                "",
-                hint.dimmed(),
-                width = label_width
-            );
+            println!("  {:width$}  {}", "", hint.dimmed(), width = label_width);
         }
         println!();
     }
@@ -472,7 +439,9 @@ fn print_success(result: &GrindResult, pattern: &Pattern) {
 
     println!(
         "  {}",
-        "Verify the address in your wallet before sending funds.".yellow().dimmed()
+        "Verify the address in your wallet before sending funds."
+            .yellow()
+            .dimmed()
     );
 }
 
@@ -633,12 +602,9 @@ fn main() {
             run_grind(grind_config.clone());
 
             println!();
-            let generate_more = terminal::read_yes_no_key(
-                "  Generate another address? [y/N]: ",
-                false,
-                false,
-            )
-            .unwrap_or(false);
+            let generate_more =
+                terminal::read_yes_no_key("  Generate another address? [y/N]: ", false, false)
+                    .unwrap_or(false);
 
             if generate_more {
                 continue;

@@ -6,11 +6,9 @@ use secp256k1::{Secp256k1, SecretKey};
 use sha2::{Digest, Sha256};
 use solana_sdk::signature::{Keypair, SeedDerivable};
 
-pub const BASE58_ALPHABET: &str =
-    "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+pub const BASE58_ALPHABET: &str = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
-pub const RIPPLE_ALPHABET: &str =
-    "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkvCFzzQuvGM5ZX";
+pub const RIPPLE_ALPHABET: &str = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkvCFzzQuvGM5ZX";
 
 /// Bech32 data charset (cosmos1… addresses).
 pub const BECH32_CHARSET: &str = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
@@ -98,9 +96,7 @@ pub fn validate_chars(label: &str, pattern: &str, allowed: &str) -> Result<Strin
     }
     for c in pattern.chars() {
         if !allowed.contains(c) {
-            return Err(format!(
-                "'{label}' contains '{c}' — allowed: {allowed}"
-            ));
+            return Err(format!("'{label}' contains '{c}' — allowed: {allowed}"));
         }
     }
     Ok(pattern.to_string())
@@ -183,9 +179,7 @@ pub fn build_hex_pattern(
         }
         for c in normalized.chars() {
             if !c.is_ascii_hexdigit() {
-                return Err(format!(
-                    "'{label}' contains '{c}' — must be hex (0-9, a-f)"
-                ));
+                return Err(format!("'{label}' contains '{c}' — must be hex (0-9, a-f)"));
             }
         }
         Ok(normalized)
@@ -276,7 +270,10 @@ where
 {
     let keypair = Keypair::new();
     let address = derive(&keypair);
-    (address, GrindAttempt::Secret32(secret32_from_keypair(&keypair)))
+    (
+        address,
+        GrindAttempt::Secret32(secret32_from_keypair(&keypair)),
+    )
 }
 
 pub fn keypair_from_secret(secret: [u8; 32]) -> Keypair {

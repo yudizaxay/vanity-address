@@ -38,8 +38,7 @@ impl ChainGrinder for TronGrinder {
 
     fn finalize(&self, attempt: GrindAttempt) -> KeypairResult {
         let secret_bytes = secret_from_attempt(attempt);
-        let secret_key =
-            SecretKey::from_slice(&secret_bytes).expect("valid secp256k1 secret");
+        let secret_key = SecretKey::from_slice(&secret_bytes).expect("valid secp256k1 secret");
         let address = Self::derive_address(&secret_key);
 
         KeypairResult {

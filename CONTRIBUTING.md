@@ -15,9 +15,10 @@ cargo clippy -- -D warnings
 Before opening a PR, run:
 
 ```bash
-cargo fmt
+cargo fmt --all
 cargo test
 cargo clippy -- -D warnings
+cd vanity-app && npm ci && npm run build && cd ..
 ```
 
 ---
@@ -152,9 +153,10 @@ cargo run -- --chain your_id --suffix ab
 
 Copy into your PR (or use the [PR template](.github/PULL_REQUEST_TEMPLATE.md)):
 
-- [ ] `cargo fmt` applied
+- [ ] `cargo fmt --all` applied (CI runs `cargo fmt --all -- --check`)
 - [ ] `cargo test` passes
 - [ ] `cargo clippy -- -D warnings` passes
+- [ ] `vanity-app`: `npm ci && npm run build` passes (if UI changed)
 - [ ] README updated (if chains, flags, or UX changed)
 - [ ] No private keys, `vanity-results.txt`, `.env`, or `target/` committed
 - [ ] New chain: address derivation verified against official wallet/docs

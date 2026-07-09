@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.png" alt="vanity-address logo" width="160" />
+<img src="assets/logo.svg" alt="Vanity Address logo" width="160" />
 
 # vanity-address
 
@@ -82,7 +82,7 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 ## 🎬 Demo
 
 <p align="center">
-  <img src="assets/demo-terminal.svg" alt="vanity-address terminal demo — interactive menu, live grind progress, and match output" width="720" />
+  <img src="assets/demo-terminal.svg" alt="Vanity Address terminal demo — interactive menu, live grind progress, and match output" width="720" />
 </p>
 
 <p align="center">
@@ -398,9 +398,38 @@ We love contributions — **new blockchains, bug fixes, features, docs, and test
 | Fix a bug / UX issue | Fork → branch → PR with repro steps |
 | Propose a feature | [Open a feature request](https://github.com/yudizaxay/vanity-address/issues/new?template=feature_request.yml) for big changes |
 
+### Development checks
+
+Before opening a PR, run the same checks as [CI](.github/workflows/ci.yml):
+
+```bash
+# Format Rust (apply fixes)
+cargo fmt --all
+
+# Format check only — what CI runs (no file changes)
+cargo fmt --all -- --check
+
+# Tests
+cargo test -p vanity-core -p vanity-address
+cargo test -p vanity-app
+
+# Lint
+cargo clippy -p vanity-core -p vanity-address -- -D warnings
+cargo clippy -p vanity-app -- -D warnings
+
+# Desktop frontend (TypeScript + Vite)
+cd vanity-app && npm ci && npm run build && cd ..
+```
+
+**One-liner** (quick pre-push):
+
+```bash
+cargo fmt --all && cargo test && cargo clippy -- -D warnings && cd vanity-app && npm ci && npm run build && cd ..
+```
+
 ```bash
 git checkout -b feat/my-feature
-cargo fmt && cargo test && cargo clippy -- -D warnings
+# … make changes, then run the checks above …
 ```
 
 PRs use the [pull request template](.github/PULL_REQUEST_TEMPLATE.md) — fill it in so reviewers can merge faster.

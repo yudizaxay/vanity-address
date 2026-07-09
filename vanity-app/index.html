@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="/src/styles.css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <title>Vanity Address</title>
     <script type="module" src="/src/main.ts" defer></script>
   </head>
@@ -11,15 +11,18 @@
   <body>
     <main class="app">
       <header class="topbar">
-        <span class="topbar-title">Vanity Address</span>
-        <span class="topbar-sub">v0.2.0 · local, offline vanity keypair generator</span>
+        <img src="/logo.svg" alt="" class="topbar-logo" width="32" height="32" />
+        <div class="topbar-text">
+          <span class="topbar-title">Vanity Address</span>
+          <span class="topbar-sub">v0.2.0 · local, offline vanity keypair generator</span>
+        </div>
       </header>
 
       <div class="screen-stack">
       <!-- Home (CLI main menu) -->
       <section id="screen-home" class="screen screen-centered is-active">
         <div class="splash-box">
-          <img src="/logo.png" alt="Vanity Address" class="splash-logo" width="96" height="96" />
+          <img src="/logo.svg" alt="Vanity Address" class="splash-logo" width="120" height="120" />
           <div class="splash-frame">Vanity Address · v0.2.0</div>
           <p class="splash-tagline">multi-chain vanity address generator</p>
         </div>

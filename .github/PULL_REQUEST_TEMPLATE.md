@@ -28,7 +28,7 @@
 ## Testing
 
 ```bash
-cargo fmt
+cargo fmt --all
 cargo test
 cargo clippy -- -D warnings
 ```

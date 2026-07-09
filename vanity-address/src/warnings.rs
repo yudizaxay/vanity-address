@@ -42,8 +42,7 @@ pub fn print_pattern_warnings(estimate: &GrindEstimate) {
             );
             println!(
                 "  {}",
-                "Recommended: 2–4 chars suffix/prefix · 6 max for patient grinds."
-                    .dimmed()
+                "Recommended: 2–4 chars suffix/prefix · 6 max for patient grinds.".dimmed()
             );
         }
     }

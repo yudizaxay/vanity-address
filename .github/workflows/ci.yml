@@ -15,13 +15,18 @@ jobs:
     name: CLI & core (Linux)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
 
       - name: Build release
         run: cargo build --release -p vanity-address
@@ -37,13 +42,28 @@ jobs:
     name: Desktop app (macOS)
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: vanity-app/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: vanity-app
+        run: npm ci
+
+      - name: Typecheck and build frontend
+        working-directory: vanity-app
+        run: npm run build
 
       - name: Run tests
         run: cargo test -p vanity-app

@@ -1,9 +1,13 @@
 use crate::banner;
-use crate::terminal::{peace_out, read_line_with_escape, read_menu_choice, read_yes_no_key, wait_for_key, MenuChoice};
+use crate::terminal::{
+    peace_out, read_line_with_escape, read_menu_choice, read_yes_no_key, wait_for_key, MenuChoice,
+};
 use crate::warnings;
 use colored::Colorize;
 use std::io::Write;
-use vanity_core::{grind_estimate, Chain, ChainGrinder, GrindEstimate, PatternRisk, SystemProfile, MENU_CHAINS};
+use vanity_core::{
+    grind_estimate, Chain, ChainGrinder, GrindEstimate, PatternRisk, SystemProfile, MENU_CHAINS,
+};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum WizardStep {
@@ -244,11 +248,8 @@ fn run_wizard() -> Option<InteractiveConfig> {
             }
 
             WizardStep::Summary => {
-                let pattern = match chain.build_pattern(
-                    prefix.as_deref(),
-                    suffix.as_deref(),
-                    exact,
-                ) {
+                let pattern = match chain.build_pattern(prefix.as_deref(), suffix.as_deref(), exact)
+                {
                     Ok(p) => p,
                     Err(e) => {
                         show_error(&e);
@@ -354,8 +355,16 @@ fn print_summary(
 ) {
     println!("{}", "── Summary ──".bold().yellow());
     println!();
-    println!("  {:<14} {}", "Chain:".dimmed(), chain.display_name().bold());
-    println!("  {:<14} {}", "Target:".dimmed(), pattern.description().bold());
+    println!(
+        "  {:<14} {}",
+        "Chain:".dimmed(),
+        chain.display_name().bold()
+    );
+    println!(
+        "  {:<14} {}",
+        "Target:".dimmed(),
+        pattern.description().bold()
+    );
     println!("  {:<14} {}", "Mode:".dimmed(), pattern.case_mode());
     println!(
         "  {:<14} {}",
@@ -408,7 +417,11 @@ fn print_summary(
     println!(
         "  {:<14} {}",
         "Est. speed:".dimmed(),
-        format!("~{} keys/sec on this machine (estimated)", format_speed(speed)).green()
+        format!(
+            "~{} keys/sec on this machine (estimated)",
+            format_speed(speed)
+        )
+        .green()
     );
 
     warnings::print_pattern_warnings(estimate);

@@ -3,8 +3,8 @@ use crate::pattern::Pattern;
 use solana_sdk::signature::{Keypair, Signer};
 
 use super::util::{
-    build_hex_pattern, expected_from_pattern, grind_ed25519, hex_combinations, matches_pattern,
-    keypair_from_secret, secret_from_attempt,
+    build_hex_pattern, expected_from_pattern, grind_ed25519, hex_combinations, keypair_from_secret,
+    matches_pattern, secret_from_attempt,
 };
 
 #[derive(Clone, Default)]

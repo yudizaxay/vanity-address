@@ -80,15 +80,28 @@ pub struct EstimateResult {
     ignore_case: bool,
 }
 
-fn build_pattern_checked(chain: &Chain, prefix: &str, suffix: &str, exact: bool) -> Result<Pattern, String> {
+fn build_pattern_checked(
+    chain: &Chain,
+    prefix: &str,
+    suffix: &str,
+    exact: bool,
+) -> Result<Pattern, String> {
     if exact && !chain.supports_exact_case() {
         return Err(format!(
             "Exact case is not supported for {}",
             chain.display_name()
         ));
     }
-    let prefix = if prefix.is_empty() { None } else { Some(prefix) };
-    let suffix = if suffix.is_empty() { None } else { Some(suffix) };
+    let prefix = if prefix.is_empty() {
+        None
+    } else {
+        Some(prefix)
+    };
+    let suffix = if suffix.is_empty() {
+        None
+    } else {
+        Some(suffix)
+    };
     if prefix.is_none() && suffix.is_none() {
         return Err("Enter a prefix and/or suffix".to_string());
     }
@@ -149,7 +162,11 @@ pub fn estimate(
     let pattern = build_pattern_checked(&chain, &prefix, &suffix, exact)?;
     let expected = chain.expected_attempts(&pattern);
     let profile = SystemProfile::detect();
-    let est = grind_estimate(expected, profile.estimated_keys_per_sec(chain.id()), &pattern);
+    let est = grind_estimate(
+        expected,
+        profile.estimated_keys_per_sec(chain.id()),
+        &pattern,
+    );
 
     let warning = risk_warning(&est);
     let length_guide = if pattern.has_prefix() || pattern.has_suffix() {
@@ -225,7 +242,10 @@ pub fn start_grind(
     force: bool,
 ) -> Result<(), String> {
     {
-        let mut job = state.job.lock().map_err(|_| "internal lock error".to_string())?;
+        let mut job = state
+            .job
+            .lock()
+            .map_err(|_| "internal lock error".to_string())?;
         if job.is_some() {
             return Err("A grind is already running".to_string());
         }
@@ -233,7 +253,11 @@ pub fn start_grind(
         let pattern = build_pattern_checked(&chain_parsed, &prefix, &suffix, exact)?;
         let expected = chain_parsed.expected_attempts(&pattern);
         let profile = SystemProfile::detect();
-        let pre = grind_estimate(expected, profile.estimated_keys_per_sec(chain_parsed.id()), &pattern);
+        let pre = grind_estimate(
+            expected,
+            profile.estimated_keys_per_sec(chain_parsed.id()),
+            &pattern,
+        );
         if pre.risk == PatternRisk::Impractical && !force {
             return Err(
                 "Pattern is not practical on a single machine. Shorten it or confirm to start anyway."
@@ -252,13 +276,23 @@ pub fn start_grind(
     Ok(())
 }
 
-fn run_grind_job(app: AppHandle, chain: Chain, pattern: Pattern, mut profile: SystemProfile, cancel: CancelToken) {
+fn run_grind_job(
+    app: AppHandle,
+    chain: Chain,
+    pattern: Pattern,
+    mut profile: SystemProfile,
+    cancel: CancelToken,
+) {
     let _ = app.emit("grind-calibrating", ());
 
     if let Ok(rate) = benchmark(chain.clone(), &profile, BENCHMARK_SECS) {
         profile = profile.with_benchmark(rate);
         let expected = chain.expected_attempts(&pattern);
-        let calibrated = grind_estimate(expected, profile.estimated_keys_per_sec(chain.id()), &pattern);
+        let calibrated = grind_estimate(
+            expected,
+            profile.estimated_keys_per_sec(chain.id()),
+            &pattern,
+        );
         let _ = app.emit(
             "grind-speed",
             SpeedPayload {
@@ -344,7 +378,10 @@ fn clear_job(app: &AppHandle) {
 
 #[tauri::command]
 pub fn stop_grind(state: State<AppState>) -> Result<(), String> {
-    let job = state.job.lock().map_err(|_| "internal lock error".to_string())?;
+    let job = state
+        .job
+        .lock()
+        .map_err(|_| "internal lock error".to_string())?;
     match job.as_ref() {
         Some(cancel) => {
             cancel.cancel();
@@ -372,7 +409,10 @@ pub struct SaveResultArgs {
 }
 
 #[tauri::command]
-pub async fn save_result(app: AppHandle, payload: SaveResultArgs) -> Result<Option<String>, String> {
+pub async fn save_result(
+    app: AppHandle,
+    payload: SaveResultArgs,
+) -> Result<Option<String>, String> {
     let SaveResultArgs {
         chain_display_name,
         pattern_description,

@@ -32,6 +32,16 @@ npm run tauri build
 
 The `.app` / `.dmg` (macOS) or `.deb` / `.AppImage` (Linux) lands in `src-tauri/target/release/bundle/`.
 
+### App icons
+
+UI uses `assets/logo.svg` (also copied to `public/logo.svg`). To refresh dock/menu icons after a logo change:
+
+```bash
+rsvg-convert -w 1024 -h 1024 ../assets/logo.svg -o ../assets/logo-icon.png
+npx tauri icon ../assets/logo-icon.png -o src-tauri/icons
+cp ../assets/logo.svg public/logo.svg
+```
+
 ## Architecture
 
 | Layer | Role |

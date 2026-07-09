@@ -4,8 +4,8 @@ use bech32::{encode, Bech32, Hrp};
 use secp256k1::SecretKey;
 
 use super::util::{
-    bech32_combinations, build_base58_pattern, expected_from_pattern, grind_secp256k1,
-    hash160, matches_pattern, secret_from_attempt, BECH32_CHARSET,
+    bech32_combinations, build_base58_pattern, expected_from_pattern, grind_secp256k1, hash160,
+    matches_pattern, secret_from_attempt, BECH32_CHARSET,
 };
 
 #[derive(Clone)]
@@ -56,19 +56,16 @@ impl ChainGrinder for CosmosGrinder {
 
     fn finalize(&self, attempt: GrindAttempt) -> KeypairResult {
         let secret_bytes = secret_from_attempt(attempt);
-        let secret_key =
-            SecretKey::from_slice(&secret_bytes).expect("valid secp256k1 secret");
+        let secret_key = SecretKey::from_slice(&secret_bytes).expect("valid secp256k1 secret");
         let address = self.derive(&secret_key);
 
         KeypairResult {
             address,
-            exports: vec![
-                KeyExport {
-                    label: "Private Key (hex)".into(),
-                    value: hex::encode(secret_bytes),
-                    hint: Some("Keplr / Leap wallet import".into()),
-                },
-            ],
+            exports: vec![KeyExport {
+                label: "Private Key (hex)".into(),
+                value: hex::encode(secret_bytes),
+                hint: Some("Keplr / Leap wallet import".into()),
+            }],
         }
     }
 

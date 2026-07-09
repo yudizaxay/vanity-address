@@ -37,12 +37,7 @@ impl Pattern {
     }
 }
 
-pub fn matches_at(
-    address: &str,
-    pattern: &str,
-    ignore_case: bool,
-    at_start: bool,
-) -> bool {
+pub fn matches_at(address: &str, pattern: &str, ignore_case: bool, at_start: bool) -> bool {
     if pattern.is_empty() {
         return true;
     }
@@ -67,12 +62,7 @@ pub fn matches_at(
     }
 }
 
-pub fn matches_both(
-    address: &str,
-    prefix: &str,
-    suffix: &str,
-    ignore_case: bool,
-) -> bool {
+pub fn matches_both(address: &str, prefix: &str, suffix: &str, ignore_case: bool) -> bool {
     matches_at(address, prefix, ignore_case, true)
         && matches_at(address, suffix, ignore_case, false)
 }

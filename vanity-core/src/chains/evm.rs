@@ -41,8 +41,7 @@ impl ChainGrinder for EvmGrinder {
     fn finalize(&self, attempt: GrindAttempt) -> KeypairResult {
         let secret_bytes = secret_from_attempt(attempt);
         let address = {
-            let secret_key = SecretKey::from_slice(&secret_bytes)
-                .expect("valid secp256k1 secret");
+            let secret_key = SecretKey::from_slice(&secret_bytes).expect("valid secp256k1 secret");
             Self::derive_address(&secret_key)
         };
 
@@ -112,13 +111,7 @@ mod tests {
     fn evm_matches_address() {
         let g = EvmGrinder;
         let p = g.build_pattern(Some("dead"), Some("beef"), false).unwrap();
-        assert!(g.matches(
-            "0xdead000000000000000000000000000000beef",
-            &p
-        ));
-        assert!(!g.matches(
-            "0xbeef000000000000000000000000000000dead",
-            &p
-        ));
+        assert!(g.matches("0xdead000000000000000000000000000000beef", &p));
+        assert!(!g.matches("0xbeef000000000000000000000000000000dead", &p));
     }
 }

@@ -11,7 +11,7 @@ All notable changes to this project are documented here.
   - Wizard: home → chain → pattern → summary → grind → result
   - Live estimates, system profile, impractical-pattern warnings + double confirm
   - Background grinding with stop, masked keys, copy-all, native save dialog
-  - Branded window title and custom app icons from `assets/logo.png`
+  - Branded window title and custom app icons from `assets/logo.svg`
 - Interactive CLI menu wizard with pattern estimates, difficulty bars, and impractical-pattern warnings
 - Live **2-second speed benchmark** before grinding for honest ETA
 - CLI flags: `--output`, `--no-benchmark`, `--force`

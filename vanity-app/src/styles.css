@@ -36,12 +36,25 @@ body {
 
 .topbar {
   display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0.85rem 1.5rem;
   border-bottom: 1px solid var(--border);
   background: var(--bg-panel);
   -webkit-app-region: drag;
+}
+
+.topbar-logo {
+  flex-shrink: 0;
+  display: block;
+  -webkit-app-region: no-drag;
+}
+
+.topbar-text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  min-width: 0;
 }
 
 .topbar-title {
@@ -462,8 +475,8 @@ button.danger:hover {
 .splash-logo {
   display: block;
   margin: 0 auto 1rem;
-  width: 96px;
-  height: 96px;
+  width: 120px;
+  height: 120px;
   object-fit: contain;
 }
 
