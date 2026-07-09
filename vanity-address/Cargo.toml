@@ -20,7 +20,7 @@ vanity-core = { path = "../vanity-core", version = "0.3.0" }
 clap = { version = "4", features = ["derive", "color"] }
 colored = "2"
 indicatif = "0.17"
-crossterm = "0.28"
+crossterm = "0.29"
 ctrlc = "3.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
