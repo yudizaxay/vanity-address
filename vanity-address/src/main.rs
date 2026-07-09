@@ -380,7 +380,8 @@ fn run_grind(config: RunConfig) {
             }
         }
         if let Err(e) = print_success_json(
-            &chain,
+            chain.id(),
+            chain.display_name(),
             &pattern,
             &result,
             measured_keys_per_sec,

@@ -2,7 +2,7 @@
 
 use serde::Serialize;
 use std::io::{self, Write};
-use vanity_core::{Chain, ChainGrinder, GrindResult, KeyExport, Pattern};
+use vanity_core::{GrindResult, KeyExport, Pattern};
 
 /// Stable error codes for automation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -69,7 +69,8 @@ pub fn print_error_json(msg: &str, code: ErrorCode) -> io::Result<()> {
 }
 
 pub fn print_success_json(
-    chain: &Chain,
+    chain_id: &str,
+    chain_name: &str,
     pattern: &Pattern,
     result: &GrindResult,
     measured_keys_per_sec: Option<f64>,
@@ -83,8 +84,8 @@ pub fn print_success_json(
 
     let payload = SuccessPayload {
         version: env!("CARGO_PKG_VERSION"),
-        chain: chain.id(),
-        chain_name: chain.display_name(),
+        chain: chain_id,
+        chain_name,
         pattern: PatternPayload {
             prefix: &pattern.prefix,
             suffix: &pattern.suffix,
@@ -117,7 +118,17 @@ fn export_payload(export: &KeyExport) -> ExportPayload<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use vanity_core::{KeypairResult, SolanaGrinder};
+    use vanity_core::{KeypairResult, Pattern};
+
+    fn suffix_pattern(suffix: &str) -> Pattern {
+        Pattern {
+            prefix: String::new(),
+            suffix: suffix.to_string(),
+            prefix_match: String::new(),
+            suffix_match: suffix.to_string(),
+            ignore_case: true,
+        }
+    }
 
     #[test]
     fn error_json_has_code_and_message() {
@@ -132,10 +143,7 @@ mod tests {
 
     #[test]
     fn success_json_includes_exports_and_stats() {
-        let chain = Chain::Solana(SolanaGrinder);
-        let pattern = chain
-            .build_pattern(None, Some("ax"), false)
-            .expect("pattern");
+        let pattern = suffix_pattern("ax");
         let result = GrindResult {
             keypair: KeypairResult {
                 address: "7xKpQaxay".into(),
@@ -151,8 +159,8 @@ mod tests {
 
         let payload = SuccessPayload {
             version: "0.3.0",
-            chain: chain.id(),
-            chain_name: chain.display_name(),
+            chain: "sol",
+            chain_name: "Solana",
             pattern: PatternPayload {
                 prefix: &pattern.prefix,
                 suffix: &pattern.suffix,
@@ -179,8 +187,7 @@ mod tests {
 
     #[test]
     fn success_json_omits_optional_fields_when_none() {
-        let chain = Chain::Solana(SolanaGrinder);
-        let pattern = chain.build_pattern(None, Some("a"), false).unwrap();
+        let pattern = suffix_pattern("a");
         let result = GrindResult {
             keypair: KeypairResult {
                 address: "addr".into(),
@@ -192,8 +199,8 @@ mod tests {
 
         let payload = SuccessPayload {
             version: "0.3.0",
-            chain: chain.id(),
-            chain_name: chain.display_name(),
+            chain: "sol",
+            chain_name: "Solana",
             pattern: PatternPayload {
                 prefix: &pattern.prefix,
                 suffix: &pattern.suffix,

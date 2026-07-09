@@ -56,5 +56,5 @@ Rust and npm dependencies are monitored via [Dependabot](.github/dependabot.yml)
 Official CLI releases ship with `.sha256` checksum files. Verify downloads before use:
 
 ```bash
-shasum -a 256 -c vanity-address-*-linux-x86_64.tar.gz.sha256
+shasum -a 256 -c VanityAddress-*-Linux-CLI.tar.gz.sha256
 ```

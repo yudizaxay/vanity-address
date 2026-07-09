@@ -134,46 +134,140 @@ $ vanity-address --chain evm --prefix dead --suffix beef
 
 ## 📦 Install
 
-### Pre-built binaries (recommended)
+### Download from GitHub Releases (recommended)
 
-Download the latest release for your platform — no Rust toolchain required:
+**Latest release:** [github.com/yudizaxay/vanity-address/releases/latest](https://github.com/yudizaxay/vanity-address/releases/latest)
 
-| Platform | CLI archive | Desktop |
-| -------- | ----------- | ------- |
-| **Linux** (x86_64) | [`*-linux-x86_64.tar.gz`](https://github.com/yudizaxay/vanity-address/releases/latest) | build from source |
-| **macOS** (Apple Silicon) | [`*-macos-arm64.tar.gz`](https://github.com/yudizaxay/vanity-address/releases/latest) | [`*-macos-arm64-desktop.tar.gz`](https://github.com/yudizaxay/vanity-address/releases/latest) (`.dmg` inside) |
-| **macOS** (Intel) | [`*-macos-x86_64.tar.gz`](https://github.com/yudizaxay/vanity-address/releases/latest) | build from source |
-| **Windows** (x86_64) | [`*-windows-x86_64.zip`](https://github.com/yudizaxay/vanity-address/releases/latest) | build from source |
+No Rust or Node.js required — pick the file for your platform, download, extract, and run.
+
+#### Which file do I need?
+
+Go to **[Releases](https://github.com/yudizaxay/vanity-address/releases/latest)** and download **one** file:
+
+| I want… | My computer | File to download |
+| ------- | ----------- | ---------------- |
+| **Desktop app** (easiest — window UI) | Mac M1 / M2 / M3 / M4 | `VanityAddress-*-Mac-AppleSilicon-Desktop.dmg` |
+| **Terminal app** | Mac M1 / M2 / M3 / M4 | `VanityAddress-*-Mac-AppleSilicon-CLI.tar.gz` |
+| **Terminal app** | Mac Intel | `VanityAddress-*-Mac-Intel-CLI.tar.gz` |
+| **Terminal app** | Windows 10 / 11 | `VanityAddress-*-Windows-CLI.zip` |
+| **Terminal app** | Linux | `VanityAddress-*-Linux-CLI.tar.gz` |
+
+> **Tip:** `*` = version number (e.g. `0.3.0`). The Releases page shows the full filename.  
+> **Checksum files** (`.sha256`) are optional — for security verification only; most users can skip them.
+
+---
+
+#### Linux (CLI)
 
 ```bash
-# Linux example (check Releases page for exact version)
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.0/vanity-address-0.3.0-linux-x86_64.tar.gz
-tar xzf vanity-address-0.3.0-linux-x86_64.tar.gz
-cd vanity-address-0.3.0-linux-x86_64
+# Replace 0.3.0 with the version on the Releases page if newer
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.0/VanityAddress-0.3.0-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.3.0-Linux-CLI.tar.gz
 ./vanity-address
 ```
 
+Optional — install globally:
+
 ```bash
-# macOS (Apple Silicon) CLI
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.0/vanity-address-0.3.0-macos-arm64.tar.gz
-tar xzf vanity-address-0.3.0-macos-arm64.tar.gz
-cd vanity-address-0.3.0-macos-arm64
+sudo cp vanity-address /usr/local/bin/
+vanity-address --version
+```
+
+---
+
+#### macOS — CLI (Terminal)
+
+**Apple Silicon (M1/M2/M3/M4):**
+
+```bash
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.0/VanityAddress-0.3.0-Mac-AppleSilicon-CLI.tar.gz
+tar xzf VanityAddress-0.3.0-Mac-AppleSilicon-CLI.tar.gz
 ./vanity-address
 ```
 
-```bash
-# Windows (PowerShell) — extract zip, run vanity-address.exe
-```
+**Intel Mac:** download `VanityAddress-*-Mac-Intel-CLI.tar.gz` instead.
 
-Each CLI archive includes the binary, `README.md`, `LICENSE`, `SECURITY.md`, and a `.sha256` checksum file.
-
-Verify downloads:
+If macOS blocks the binary (“unidentified developer” or **“damaged”**):
 
 ```bash
-shasum -a 256 -c vanity-address-*-linux-x86_64.tar.gz.sha256
+xattr -cr ./vanity-address
+./vanity-address
 ```
 
-### Homebrew (macOS / Linux)
+Or: **System Settings → Privacy & Security → Open Anyway**
+
+---
+
+#### macOS — Desktop app (`.dmg`) — recommended for Mac users
+
+1. Download **`VanityAddress-*-Mac-AppleSilicon-Desktop.dmg`** from [Releases](https://github.com/yudizaxay/vanity-address/releases/latest)
+2. **Remove download quarantine** (required for unsigned open-source builds):
+   ```bash
+   xattr -cr ~/Downloads/VanityAddress-*-Mac-AppleSilicon-Desktop.dmg
+   ```
+3. Double-click the `.dmg` → drag **Vanity Address** to **Applications**
+4. Clear quarantine on the installed app, then launch:
+   ```bash
+   xattr -cr "/Applications/Vanity Address.app"
+   open -a "Vanity Address"
+   ```
+
+> **“Vanity Address is damaged and can’t be opened”?**  
+> This is **not** a broken download — macOS Gatekeeper blocks apps that are not Apple-notarized.  
+> Run the `xattr -cr` commands above, or: **right-click** the app → **Open** → **Open** again.  
+> You can also use **System Settings → Privacy & Security → Open Anyway** after the first blocked launch.
+
+> **Apple Silicon Macs only** (M1/M2/M3/M4). Intel Mac or Linux → use the **CLI** above or [build from source](#build-from-source).
+
+---
+
+#### Windows (CLI)
+
+1. Download **`VanityAddress-*-Windows-CLI.zip`** from [Releases](https://github.com/yudizaxay/vanity-address/releases/latest)
+2. Right-click → **Extract All**
+3. Open the extracted folder and double-click **`vanity-address.exe`**, or in PowerShell:
+
+```powershell
+# After extracting the zip — run from the folder that contains vanity-address.exe
+.\vanity-address.exe
+```
+
+4. Optional — add the folder to your PATH for terminal access from anywhere
+
+Windows SmartScreen may warn on first run — click **More info → Run anyway** (unsigned open-source build).
+
+---
+
+#### Verify downloads (checksums)
+
+Every archive on the Releases page ships with a `.sha256` sidecar file.
+
+```bash
+# Linux / macOS (optional)
+shasum -a 256 -c VanityAddress-0.3.0-Linux-CLI.tar.gz.sha256
+```
+
+```powershell
+# Windows (optional) — compare hash manually
+Get-FileHash VanityAddress-0.3.0-Windows-CLI.zip -Algorithm SHA256
+```
+
+---
+
+#### What's inside each archive?
+
+| Archive | Contents |
+| ------- | -------- |
+| `*-CLI.tar.gz` / `*-CLI.zip` | `vanity-address` binary + docs |
+| `*-Desktop.dmg` | Mac desktop app installer (double-click to install) |
+
+**First run:** just execute the binary — interactive menu starts with no flags. See [Usage](#-usage).
+
+---
+
+### Other install methods
+
+#### Homebrew (macOS / Linux)
 
 ```bash
 brew install --build-from-source ./Formula/vanity-address.rb
@@ -360,13 +454,22 @@ Home → Chain → Pattern (suffix/prefix/both) → Summary → Grind → Result
 | Masked keys + reveal / copy all | ✅ |
 | Native save dialog | ✅ |
 
-### Requirements
+### Requirements (build from source only)
 
-- [Rust](https://rustup.rs/) 1.70+ (same as CLI)
-- [Node.js](https://nodejs.org/) 18+
+Pre-built [Releases](https://github.com/yudizaxay/vanity-address/releases/latest) do **not** need Rust or Node.
+
+To compile yourself:
+
+- [Rust](https://rustup.rs/) 1.70+
+- [Node.js](https://nodejs.org/) 18+ (desktop app only)
 - macOS or Linux for `tauri build` (see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/))
 
-### Run / build
+### Install from Releases (macOS desktop)
+
+Download **`VanityAddress-*-Mac-AppleSilicon-Desktop.dmg`** → double-click → drag to Applications.  
+Full steps in [Download from GitHub Releases](#download-from-github-releases-recommended).
+
+### Run / build from source
 
 ```bash
 cd vanity-app
@@ -375,7 +478,7 @@ npm run tauri dev      # development (hot reload)
 npm run tauri build    # native .app / .dmg (macOS) or .deb / .AppImage (Linux)
 ```
 
-Output lands in `vanity-app/src-tauri/target/release/bundle/`.
+Output lands in `target/release/bundle/` (workspace root) or `vanity-app/src-tauri/target/release/bundle/` when built outside the workspace.
 
 Grinding runs on a background thread; keys stay masked until you click **Reveal**, and **Save** opens a native file picker (nothing is written automatically).
 
