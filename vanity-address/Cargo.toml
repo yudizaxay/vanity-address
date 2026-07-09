@@ -19,7 +19,7 @@ path = "src/main.rs"
 vanity-core = { path = "../vanity-core", version = "0.3.0" }
 clap = { version = "4", features = ["derive", "color"] }
 colored = "2"
-indicatif = "0.17"
+indicatif = "0.18"
 crossterm = "0.28"
 ctrlc = "3.4"
 serde = { version = "1", features = ["derive"] }
