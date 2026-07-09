@@ -86,6 +86,10 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 </p>
 
 <p align="center">
+  <img src="assets/demo-desktop.svg" alt="Vanity Address desktop app — wizard summary and live grind progress" width="720" />
+</p>
+
+<p align="center">
   <sub>CLI interactive menu or <strong>Vanity Address</strong> desktop app — chain wizard → live benchmark → grind → export keys</sub>
 </p>
 
@@ -130,36 +134,60 @@ $ vanity-address --chain evm --prefix dead --suffix beef
 
 ## 📦 Install
 
-### Pre-built CLI binaries (recommended)
+### Pre-built binaries (recommended)
 
-Download the latest **CLI** release for your platform — no Rust toolchain required:
+Download the latest release for your platform — no Rust toolchain required:
 
-> **Desktop app:** build from source in [`vanity-app/`](#-desktop-app) (`npm run tauri build`). Pre-built `.dmg` / `.AppImage` bundles are not on GitHub Releases yet — only the CLI tarballs below.
-
-| Platform | Archive |
-| -------- | ------- |
-| **Linux** (x86_64) | [`vanity-address-*-linux-x86_64.tar.gz`](https://github.com/yudizaxay/vanity-address/releases/latest) |
-| **macOS** (Apple Silicon) | [`vanity-address-*-macos-arm64.tar.gz`](https://github.com/yudizaxay/vanity-address/releases/latest) |
+| Platform | CLI archive | Desktop |
+| -------- | ----------- | ------- |
+| **Linux** (x86_64) | [`*-linux-x86_64.tar.gz`](https://github.com/yudizaxay/vanity-address/releases/latest) | build from source |
+| **macOS** (Apple Silicon) | [`*-macos-arm64.tar.gz`](https://github.com/yudizaxay/vanity-address/releases/latest) | [`*-macos-arm64-desktop.tar.gz`](https://github.com/yudizaxay/vanity-address/releases/latest) (`.dmg` inside) |
+| **macOS** (Intel) | [`*-macos-x86_64.tar.gz`](https://github.com/yudizaxay/vanity-address/releases/latest) | build from source |
+| **Windows** (x86_64) | [`*-windows-x86_64.zip`](https://github.com/yudizaxay/vanity-address/releases/latest) | build from source |
 
 ```bash
 # Linux example (check Releases page for exact version)
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.2.0/vanity-address-0.2.0-linux-x86_64.tar.gz
-tar xzf vanity-address-0.2.0-linux-x86_64.tar.gz
-cd vanity-address-0.2.0-linux-x86_64
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.0/vanity-address-0.3.0-linux-x86_64.tar.gz
+tar xzf vanity-address-0.3.0-linux-x86_64.tar.gz
+cd vanity-address-0.3.0-linux-x86_64
 ./vanity-address
 ```
 
 ```bash
-# macOS (Apple Silicon) example
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.2.0/vanity-address-0.2.0-macos-arm64.tar.gz
-tar xzf vanity-address-0.2.0-macos-arm64.tar.gz
-cd vanity-address-0.2.0-macos-arm64
+# macOS (Apple Silicon) CLI
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.0/vanity-address-0.3.0-macos-arm64.tar.gz
+tar xzf vanity-address-0.3.0-macos-arm64.tar.gz
+cd vanity-address-0.3.0-macos-arm64
 ./vanity-address
 ```
 
-Each archive includes the **CLI** binary (`vanity-address`), `README.md`, `LICENSE`, and a `.sha256` checksum file on the Releases page.
+```bash
+# Windows (PowerShell) — extract zip, run vanity-address.exe
+```
 
-> **Intel Mac?** Build from source below, or use Rosetta with the arm64 binary where supported.
+Each CLI archive includes the binary, `README.md`, `LICENSE`, `SECURITY.md`, and a `.sha256` checksum file.
+
+Verify downloads:
+
+```bash
+shasum -a 256 -c vanity-address-*-linux-x86_64.tar.gz.sha256
+```
+
+### Homebrew (macOS / Linux)
+
+```bash
+brew install --build-from-source ./Formula/vanity-address.rb
+```
+
+See [RELEASING.md](RELEASING.md) for tap setup and formula hash updates.
+
+### crates.io
+
+```bash
+cargo install vanity-address
+```
+
+Requires Rust 1.70+. Publishes `vanity-address` + `vanity-core` — see [RELEASING.md](RELEASING.md#publishing-to-cratesio).
 
 ### Build from source
 
@@ -197,7 +225,7 @@ Just run — no flags needed:
 
 ```
 ╔══════════════════════════════════════════╗
-║         vanity-address  v0.2.0           ║
+║         vanity-address  v0.3.0           ║
 ╚══════════════════════════════════════════╝
 
   [1]  Start a new grind
@@ -215,6 +243,38 @@ The wizard walks you through: **chain → prefix/suffix → pattern → estimate
 vanity-address --chain sol --suffix axay
 vanity-address --chain evm --prefix dead --suffix beef -q
 ```
+
+### JSON output (automation)
+
+Use `--json` with `--prefix` and/or `--suffix` for machine-readable stdout (errors go to stderr as JSON):
+
+```bash
+vanity-address --chain sol --suffix ax --json --no-benchmark --force
+```
+
+Example success payload:
+
+```json
+{
+  "version": "0.3.0",
+  "chain": "sol",
+  "chain_name": "Solana",
+  "pattern": {
+    "prefix": "",
+    "suffix": "ax",
+    "description": "ending with 'ax'",
+    "ignore_case": true
+  },
+  "address": "7xKp…Qax",
+  "exports": [{ "label": "Secret Key (base58)", "value": "…" }],
+  "stats": { "attempts": 1200, "elapsed_secs": 0.04, "keys_per_sec": 30000.0 },
+  "measured_keys_per_sec": 2100000.0
+}
+```
+
+> **Security:** JSON includes private keys on stdout. Use only in trusted environments. See [SECURITY.md](SECURITY.md).
+
+Combine with `--save` / `--output` to persist keys; `saved_to` is included in the JSON when saving.
 
 ### Solana
 
@@ -245,7 +305,8 @@ vanity-address --chain evm --prefix dead --suffix beef
 | `--output <PATH>`    | Custom save file (with `--save` or interactive save) | `vanity-results.txt` |
 | `--no-benchmark`     | Skip 2s speed calibration warm-up before grinding | off |
 | `--force`            | Allow impractical patterns in CLI mode (blocked by default) | off |
-| `-q, --quiet`        | Minimal output (script-friendly)                   | off     |
+| `--json`             | Machine-readable JSON on stdout (direct mode)      | off     |
+| `-q, --quiet`        | Minimal plain-text output (script-friendly)        | off     |
 | `--threads <N>`      | Override worker threads (auto-detected by default) | auto    |
 | `-h, --help`         | Show help                                          | —       |
 | `-V, --version`      | Show version                                       | —       |
@@ -403,6 +464,13 @@ We love contributions — **new blockchains, bug fixes, features, docs, and test
 Before opening a PR, run the same checks as [CI](.github/workflows/ci.yml):
 
 ```bash
+make check        # fmt + test + clippy + frontend build
+make check-ci     # same, but fmt-check only (what CI runs)
+```
+
+Or manually:
+
+```bash
 # Format Rust (apply fixes)
 cargo fmt --all
 
@@ -427,9 +495,11 @@ cd vanity-app && npm ci && npm run build && cd ..
 cargo fmt --all && cargo test && cargo clippy -- -D warnings && cd vanity-app && npm ci && npm run build && cd ..
 ```
 
+See [SECURITY.md](SECURITY.md) before reporting vulnerabilities publicly.
+
 ```bash
 git checkout -b feat/my-feature
-# … make changes, then run the checks above …
+# … make changes, then run make check …
 ```
 
 PRs use the [pull request template](.github/PULL_REQUEST_TEMPLATE.md) — fill it in so reviewers can merge faster.

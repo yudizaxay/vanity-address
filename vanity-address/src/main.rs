@@ -1,4 +1,5 @@
 mod banner;
+mod json_output;
 mod menu;
 mod terminal;
 mod warnings;
@@ -6,6 +7,7 @@ mod warnings;
 use clap::Parser;
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
+use json_output::{print_error_json, print_success_json, ErrorCode};
 use menu::run as run_interactive;
 use std::fs::OpenOptions;
 use std::io::{self, Write};
@@ -63,6 +65,10 @@ struct Cli {
     /// Allow impractical patterns in CLI mode (years+ estimated grind time)
     #[arg(long)]
     force: bool,
+
+    /// Machine-readable JSON on stdout (implies direct mode; use with --chain and --suffix/--prefix)
+    #[arg(long)]
+    json: bool,
 }
 
 struct RunConfig {
@@ -81,6 +87,7 @@ struct RunConfig {
     output: Option<PathBuf>,
     no_benchmark: bool,
     force: bool,
+    json: bool,
 }
 
 impl Clone for RunConfig {
@@ -98,6 +105,7 @@ impl Clone for RunConfig {
             output: self.output.clone(),
             no_benchmark: self.no_benchmark,
             force: self.force,
+            json: self.json,
         }
     }
 }
@@ -114,9 +122,14 @@ impl Cli {
             || self.output.is_some()
             || self.no_benchmark
             || self.force
+            || self.json
     }
 
     fn into_run_config(self) -> Result<RunConfig, String> {
+        if self.json && self.prefix.is_none() && self.suffix.is_none() {
+            return Err("--json requires --prefix and/or --suffix".into());
+        }
+
         let chain = match self.chain {
             Some(id) => Chain::from_id(&id)?,
             None => Chain::Solana(Default::default()),
@@ -134,6 +147,7 @@ impl Cli {
             output: self.output.map(PathBuf::from),
             no_benchmark: self.no_benchmark,
             force: self.force,
+            json: self.json,
         })
     }
 }
@@ -152,16 +166,29 @@ fn print_error(msg: &str) {
     eprintln!("{} {}", "error:".red().bold(), msg);
 }
 
+fn exit_error(msg: &str, code: ErrorCode, json: bool) -> ! {
+    if json {
+        let _ = print_error_json(msg, code);
+    } else {
+        print_error(msg);
+    }
+    std::process::exit(1);
+}
+
 fn run_grind(config: RunConfig) {
     let chain = config.chain;
+    let json = config.json;
 
     if config.exact && !chain.supports_exact_case() {
-        print_error(&format!(
-            "--exact is not supported for {} (chain: {})",
-            chain.display_name(),
-            chain.id()
-        ));
-        std::process::exit(1);
+        exit_error(
+            &format!(
+                "--exact is not supported for {} (chain: {})",
+                chain.display_name(),
+                chain.id()
+            ),
+            ErrorCode::ExactNotSupported,
+            json,
+        );
     }
 
     let pattern = match chain.build_pattern(
@@ -170,10 +197,7 @@ fn run_grind(config: RunConfig) {
         config.exact,
     ) {
         Ok(p) => p,
-        Err(e) => {
-            print_error(&e);
-            std::process::exit(1);
-        }
+        Err(e) => exit_error(&e, ErrorCode::InvalidPattern, json),
     };
 
     let expected = chain.expected_attempts(&pattern);
@@ -181,8 +205,11 @@ fn run_grind(config: RunConfig) {
     let mut profile = SystemProfile::detect();
     if let Some(threads) = config.threads {
         if threads == 0 {
-            print_error("--threads must be at least 1");
-            std::process::exit(1);
+            exit_error(
+                "--threads must be at least 1",
+                ErrorCode::InvalidThreads,
+                json,
+            );
         }
         profile = profile.with_threads(threads);
     }
@@ -194,17 +221,26 @@ fn run_grind(config: RunConfig) {
     );
 
     // CLI direct mode: warn and block impractical patterns unless --force.
-    if !config.compact_header && !config.quiet {
+    if !config.compact_header && !config.quiet && !json {
         warnings::print_pattern_warnings(&pre_estimate);
         if pre_estimate.risk == PatternRisk::Impractical && !config.force {
-            print_error(
+            exit_error(
                 "Pattern is not practical on a single machine. Shorten it or pass --force to grind anyway.",
+                ErrorCode::ImpracticalPattern,
+                json,
             );
-            std::process::exit(1);
         }
+    } else if json && pre_estimate.risk == PatternRisk::Impractical && !config.force {
+        exit_error(
+            "Pattern is not practical on a single machine. Shorten it or pass --force to grind anyway.",
+            ErrorCode::ImpracticalPattern,
+            json,
+        );
     }
 
-    if !config.quiet && !config.no_benchmark {
+    let mut measured_keys_per_sec: Option<f64> = None;
+
+    if !config.quiet && !config.no_benchmark && !json {
         if !config.compact_header {
             println!(
                 "  {}  {}",
@@ -214,6 +250,7 @@ fn run_grind(config: RunConfig) {
         }
         match benchmark(chain.clone(), &profile, BENCHMARK_SECS) {
             Ok(rate) => {
+                measured_keys_per_sec = Some(rate);
                 profile = profile.with_benchmark(rate);
                 let calibrated = grind_estimate(
                     expected,
@@ -246,9 +283,14 @@ fn run_grind(config: RunConfig) {
                 }
             }
         }
+    } else if !config.no_benchmark && (json || config.quiet) {
+        if let Ok(rate) = benchmark(chain.clone(), &profile, BENCHMARK_SECS) {
+            measured_keys_per_sec = Some(rate);
+            profile = profile.with_benchmark(rate);
+        }
     }
 
-    if !config.quiet {
+    if !config.quiet && !json {
         if config.compact_header {
             println!();
             println!(
@@ -283,7 +325,7 @@ fn run_grind(config: RunConfig) {
         }
     }
 
-    let pb = if config.quiet {
+    let pb = if config.quiet || json {
         None
     } else {
         let bar = ProgressBar::new_spinner();
@@ -313,14 +355,44 @@ fn run_grind(config: RunConfig) {
         },
     ) {
         Ok(r) => r,
-        Err(e) => {
-            print_error(&e);
-            std::process::exit(1);
-        }
+        Err(e) => exit_error(&e, ErrorCode::GrindFailed, json),
     };
 
     if let Some(ref bar) = pb {
         bar.finish_and_clear();
+    }
+
+    if json {
+        // JSON path: optional auto-save, then emit structured stdout.
+        let output_path = config
+            .output
+            .clone()
+            .unwrap_or_else(|| PathBuf::from(DEFAULT_RESULTS_FILE));
+        let mut saved_to: Option<String> = None;
+        if config.save {
+            match save_result(&output_path, &chain, &pattern, &result) {
+                Ok(path) => saved_to = Some(path),
+                Err(e) => exit_error(
+                    &format!("could not save results: {e}"),
+                    ErrorCode::IoError,
+                    json,
+                ),
+            }
+        }
+        if let Err(e) = print_success_json(
+            &chain,
+            &pattern,
+            &result,
+            measured_keys_per_sec,
+            saved_to.as_deref(),
+        ) {
+            exit_error(
+                &format!("could not serialize JSON: {e}"),
+                ErrorCode::IoError,
+                json,
+            );
+        }
+        return;
     }
 
     if config.quiet {
@@ -565,13 +637,18 @@ fn main() {
     terminal::install_ctrlc_handler();
 
     let cli = Cli::parse();
+    let json = cli.json;
 
     if cli.uses_direct_mode() {
         match cli.into_run_config() {
             Ok(config) => run_grind(config),
             Err(e) => {
-                print_error(&e);
-                std::process::exit(1);
+                let code = if e.contains("Unknown chain") {
+                    ErrorCode::InvalidChain
+                } else {
+                    ErrorCode::InvalidArgs
+                };
+                exit_error(&e, code, json);
             }
         }
         return;
@@ -596,6 +673,7 @@ fn main() {
             output: None,
             no_benchmark: false,
             force: false,
+            json: false,
         };
 
         loop {

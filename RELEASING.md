@@ -4,34 +4,80 @@ Maintainers cut releases by pushing a version tag. GitHub Actions builds binarie
 
 ## Checklist
 
-1. Ensure `main` is green on CI (`cargo fmt --check`, `cargo test`, `cargo clippy -- -D warnings`, `vanity-app` npm build)
-2. Bump version in `vanity-address/Cargo.toml` if needed
+1. Ensure `main` is green on CI (`make check-ci` or see README)
+2. Bump version in **all** packages (keep in sync):
+   - `vanity-core/Cargo.toml`
+   - `vanity-address/Cargo.toml`
+   - `vanity-app/package.json`
+   - `vanity-app/src-tauri/Cargo.toml`
+   - `vanity-app/src-tauri/tauri.conf.json`
+   - `vanity-address/src/banner.rs`, `vanity-app/index.html`, demo SVGs
 3. Update `CHANGELOG.md` with the new version section
-4. Commit, push to `main`
-5. Create and push the tag:
+4. Update `Formula/vanity-address.rb` `url` and `sha256` (see below)
+5. Commit, push to `main`
+6. Create and push the tag:
 
 ```bash
-git tag -a v0.2.0 -m "v0.2.0"
-git push origin v0.2.0
+git tag -a v0.3.0 -m "v0.3.0"
+git push origin v0.3.0
 ```
 
-6. Watch the [Release workflow](https://github.com/yudizaxay/vanity-address/actions/workflows/release.yml)
-7. Verify assets on the [Releases](https://github.com/yudizaxay/vanity-address/releases) page:
-   - `vanity-address-<version>-linux-x86_64.tar.gz`
-   - `vanity-address-<version>-macos-arm64.tar.gz`
-   - matching `.sha256` checksum files
+7. Watch the [Release workflow](https://github.com/yudizaxay/vanity-address/actions/workflows/release.yml)
+8. Verify assets on the [Releases](https://github.com/yudizaxay/vanity-address/releases) page
 
-## Archive contents
+## Release assets
 
-Each tarball contains:
+| Asset | Platform |
+| ----- | -------- |
+| `vanity-address-<ver>-linux-x86_64.tar.gz` | Linux CLI |
+| `vanity-address-<ver>-macos-arm64.tar.gz` | macOS Apple Silicon CLI |
+| `vanity-address-<ver>-macos-x86_64.tar.gz` | macOS Intel CLI |
+| `vanity-address-<ver>-windows-x86_64.zip` | Windows CLI |
+| `vanity-address-<ver>-macos-arm64-desktop.tar.gz` | Desktop `.dmg` + docs |
 
-- `vanity-address` (release binary)
+Each archive includes matching `.sha256` checksum files.
+
+## Archive contents (CLI)
+
+- `vanity-address` binary (or `vanity-address.exe` on Windows)
 - `README.md`
 - `LICENSE`
+- `SECURITY.md`
+
+## Homebrew formula
+
+After tagging, update the formula tarball hash:
+
+```bash
+curl -L "https://github.com/yudizaxay/vanity-address/archive/refs/tags/v0.3.0.tar.gz" | shasum -a 256
+```
+
+Paste the hash into `Formula/vanity-address.rb` and commit (or include in the release commit).
+
+Install locally:
+
+```bash
+brew install --build-from-source ./Formula/vanity-address.rb
+```
+
+## Publishing to crates.io
+
+Publish **`vanity-core` first**, then **`vanity-address`**:
+
+```bash
+cargo publish -p vanity-core
+cargo publish -p vanity-address
+```
+
+Users can then install with:
+
+```bash
+cargo install vanity-address
+```
 
 ## Notes
 
-- Tags must match `v*` (e.g. `v0.2.0`) to trigger the workflow
-- **CLI only** today — desktop bundles (`vanity-app/`) are built locally via `npm run tauri build`
-- Intel macOS runners are not available on GitHub Actions; Apple Silicon (`macos-arm64`) is the prebuilt macOS target
+- Tags must match `v*` (e.g. `v0.3.0`) to trigger the workflow
+- Desktop `.dmg` is built on macOS arm64 runners only
+- Intel macOS CLI is cross-compiled on `macos-latest` with `x86_64-apple-darwin`
 - Linux builds target `x86_64-unknown-linux-gnu` (glibc)

@@ -1,9 +1,15 @@
 [package]
 name = "vanity-core"
-version = "0.1.0"
+version = "0.3.0"
 edition = "2021"
 description = "Multi-chain vanity address grinding core library"
 license = "MIT"
+readme = "../README.md"
+repository = "https://github.com/yudizaxay/vanity-address"
+homepage = "https://github.com/yudizaxay/vanity-address"
+documentation = "https://docs.rs/vanity-core"
+keywords = ["vanity", "cryptocurrency", "wallet", "blockchain", "keypair"]
+categories = ["cryptography"]
 
 [dependencies]
 rayon = "1.7"

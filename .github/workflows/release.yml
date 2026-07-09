@@ -12,8 +12,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    name: Build (${{ matrix.name }})
+  build-cli:
+    name: CLI (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -22,9 +22,23 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             name: linux-x86_64
+            archive: tar
+            bin: vanity-address
           - os: macos-latest
             target: aarch64-apple-darwin
             name: macos-arm64
+            archive: tar
+            bin: vanity-address
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            name: macos-x86_64
+            archive: tar
+            bin: vanity-address
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            name: windows-x86_64
+            archive: zip
+            bin: vanity-address.exe
 
     steps:
       - uses: actions/checkout@v5
@@ -40,33 +54,94 @@ jobs:
       - name: Build release binary
         run: cargo build --release --target ${{ matrix.target }} -p vanity-address
 
-      - name: Strip binary (Linux)
-        if: runner.os == 'Linux'
-        run: strip target/${{ matrix.target }}/release/vanity-address
+      - name: Strip binary (Unix)
+        if: runner.os != 'Windows'
+        run: strip target/${{ matrix.target }}/release/${{ matrix.bin }}
 
-      - name: Strip binary (macOS)
-        if: runner.os == 'macOS'
-        run: strip target/${{ matrix.target }}/release/vanity-address
-
-      - name: Package archive
+      - name: Package archive (tar.gz)
+        if: matrix.archive == 'tar'
+        shell: bash
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           ARCHIVE="vanity-address-${VERSION}-${{ matrix.name }}"
           mkdir -p "dist/${ARCHIVE}"
-          cp "target/${{ matrix.target }}/release/vanity-address" "dist/${ARCHIVE}/"
-          cp README.md LICENSE "dist/${ARCHIVE}/"
+          cp "target/${{ matrix.target }}/release/${{ matrix.bin }}" "dist/${ARCHIVE}/vanity-address"
+          cp README.md LICENSE SECURITY.md "dist/${ARCHIVE}/"
+          tar -czf "dist/${ARCHIVE}.tar.gz" -C dist "${ARCHIVE}"
+          shasum -a 256 "dist/${ARCHIVE}.tar.gz" > "dist/${ARCHIVE}.tar.gz.sha256"
+
+      - name: Package archive (zip)
+        if: matrix.archive == 'zip'
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ARCHIVE="vanity-address-${VERSION}-${{ matrix.name }}"
+          mkdir -p "dist/${ARCHIVE}"
+          cp "target/${{ matrix.target }}/release/${{ matrix.bin }}" "dist/${ARCHIVE}/vanity-address.exe"
+          cp README.md LICENSE SECURITY.md "dist/${ARCHIVE}/"
+          cd "dist/${ARCHIVE}" && zip -r "../${ARCHIVE}.zip" .
+          cd ../..
+          shasum -a 256 "dist/${ARCHIVE}.zip" > "dist/${ARCHIVE}.zip.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: cli-${{ matrix.name }}
+          path: dist/*.*
+
+  build-desktop:
+    name: Desktop (macOS .dmg)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: vanity-app/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: vanity-app
+        run: npm ci
+
+      - name: Build desktop bundle
+        working-directory: vanity-app
+        run: npm run tauri build
+
+      - name: Package desktop archive
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          BUNDLE_DIR="vanity-app/src-tauri/target/release/bundle"
+          ARCHIVE="vanity-address-${VERSION}-macos-arm64-desktop"
+          mkdir -p "dist/${ARCHIVE}"
+          DMG=$(find "${BUNDLE_DIR}/dmg" -name "*.dmg" -print -quit)
+          if [ -z "$DMG" ]; then
+            echo "No .dmg found in ${BUNDLE_DIR}/dmg/"
+            find "${BUNDLE_DIR}" -type f || true
+            exit 1
+          fi
+          cp "$DMG" "dist/${ARCHIVE}/"
+          cp README.md LICENSE SECURITY.md "dist/${ARCHIVE}/"
           tar -czf "dist/${ARCHIVE}.tar.gz" -C dist "${ARCHIVE}"
           shasum -a 256 "dist/${ARCHIVE}.tar.gz" > "dist/${ARCHIVE}.tar.gz.sha256"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
         with:
-          name: ${{ matrix.name }}
-          path: dist/*.tar.gz*
+          name: desktop-macos-arm64
+          path: dist/*.*
 
   release:
     name: Publish GitHub Release
-    needs: build
+    needs: [build-cli, build-desktop]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -83,6 +158,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: false
+          generate_release_notes: true
           files: dist/*
           body_path: CHANGELOG.md

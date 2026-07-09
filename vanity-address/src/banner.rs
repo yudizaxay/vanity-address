@@ -15,7 +15,7 @@ pub fn print_compact() {
     println!(
         "  {}  {}",
         "vanity-address".cyan().bold(),
-        "v0.2.0".dimmed()
+        "v0.3.0".dimmed()
     );
     println!(
         "  {}",
@@ -31,7 +31,7 @@ fn print_title_block() {
     );
     println!(
         "  {}",
-        "║      vanity-address  ·  v0.2.0            ║"
+        "║      vanity-address  ·  v0.3.0            ║"
             .cyan()
             .bold()
     );

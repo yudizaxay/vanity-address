@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="640" viewBox="0 0 920 640" role="img" aria-label="Vanity Address desktop app demo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#151b23"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+  <rect width="920" height="640" rx="16" fill="url(#bg)" filter="url(#shadow)"/>
+  <rect x="1" y="1" width="918" height="638" rx="15" fill="none" stroke="#2a323d" stroke-width="1"/>
+  <rect x="0" y="0" width="920" height="40" rx="16" fill="#151b23"/>
+  <circle cx="22" cy="20" r="6" fill="#ff5f57"/>
+  <circle cx="42" cy="20" r="6" fill="#febc2e"/>
+  <circle cx="62" cy="20" r="6" fill="#28c840"/>
+  <text x="88" y="24" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13" font-weight="600">Vanity Address</text>
+  <text x="220" y="24" fill="#6e7681" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="11">v0.3.0 &#183; local, offline vanity keypair generator</text>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">
+    <text x="460" y="108" fill="#39c5cf" font-size="22" font-weight="700" text-anchor="middle">Step 3 &#183; Summary</text>
+    <text x="460" y="136" fill="#8b949e" font-size="13" text-anchor="middle">Review before grinding</text>
+
+    <rect x="120" y="168" width="680" height="200" rx="12" fill="#0a0e14" stroke="#2a323d"/>
+    <text x="148" y="204" fill="#8b949e" font-size="12">Chain</text>
+    <text x="280" y="204" fill="#e6edf3" font-size="14" font-weight="600">Solana</text>
+    <text x="148" y="236" fill="#8b949e" font-size="12">Target</text>
+    <text x="280" y="236" fill="#e6edf3" font-size="14" font-weight="600">ending with &#8216;axay&#8217;</text>
+    <text x="148" y="268" fill="#8b949e" font-size="12">Expected</text>
+    <text x="280" y="268" fill="#d29922" font-size="14" font-weight="600">~656.4M attempts</text>
+    <text x="148" y="300" fill="#8b949e" font-size="12">Est. time</text>
+    <text x="280" y="300" fill="#3fb950" font-size="14" font-weight="600">~5 min (after 2s benchmark)</text>
+    <text x="148" y="340" fill="#8b949e" font-size="12">System</text>
+    <text x="280" y="340" fill="#e6edf3" font-size="13">8 cores &#183; 16 GB RAM &#183; 7 workers</text>
+
+    <rect x="300" y="400" width="320" height="44" rx="8" fill="#238636"/>
+    <text x="460" y="428" fill="#ffffff" font-size="15" font-weight="600" text-anchor="middle">Start grinding</text>
+
+    <rect x="120" y="480" width="680" height="120" rx="12" fill="#0a0e14" stroke="#2a323d"/>
+    <text x="148" y="516" fill="#3fb950" font-size="14" font-weight="700">Grinding&#8230;</text>
+    <text x="148" y="548" fill="#e6edf3" font-size="13">12.4M keys</text>
+    <text x="248" y="548" fill="#8b949e" font-size="13">|</text>
+    <text x="268" y="548" fill="#3fb950" font-size="13" font-weight="600">2,198,421 keys/s</text>
+    <text x="420" y="548" fill="#8b949e" font-size="13">| ~5 min remaining</text>
+    <rect x="148" y="564" width="624" height="8" rx="4" fill="#21262d"/>
+    <rect x="148" y="564" width="280" height="8" rx="4" fill="#39c5cf"/>
+    <rect x="620" y="500" width="88" height="32" rx="6" fill="#3d1f20" stroke="#f85149"/>
+    <text x="664" y="521" fill="#f85149" font-size="12" font-weight="600" text-anchor="middle">Stop</text>
+  </g>
+</svg>

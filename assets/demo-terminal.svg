@@ -18,7 +18,7 @@
 
   <g font-family="ui-monospace, Menlo, Consolas, monospace" font-size="14">
     <text x="28" y="72" fill="#67e8f9" font-weight="700">  +------------------------------------------+</text>
-    <text x="28" y="94" fill="#67e8f9" font-weight="700">  |      Vanity Address  &#183;  v0.2.0        |</text>
+    <text x="28" y="94" fill="#67e8f9" font-weight="700">  |      Vanity Address  &#183;  v0.3.0        |</text>
     <text x="28" y="116" fill="#67e8f9">  |   multi-chain vanity address generator   |</text>
     <text x="28" y="138" fill="#67e8f9" font-weight="700">  +------------------------------------------+</text>
 

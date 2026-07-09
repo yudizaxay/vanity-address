@@ -15,11 +15,21 @@ cargo clippy -- -D warnings
 Before opening a PR, run:
 
 ```bash
+make check
+# or CI-equivalent:
+make check-ci
+```
+
+Equivalent manual steps:
+
+```bash
 cargo fmt --all
 cargo test
 cargo clippy -- -D warnings
 cd vanity-app && npm ci && npm run build && cd ..
 ```
+
+See [SECURITY.md](SECURITY.md) for vulnerability reporting — do not open public issues for sensitive findings.
 
 ---
 

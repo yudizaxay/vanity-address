@@ -2,6 +2,32 @@
 
 All notable changes to this project are documented here.
 
+## [0.3.0] - 2026-07-09
+
+### Added
+
+- **`--json` CLI flag** — machine-readable stdout for scripts and automation (errors on stderr as JSON)
+- **Makefile** — `make fmt`, `make test`, `make check`, `make check-ci`, `make desktop-build`
+- **SECURITY.md** — vulnerability reporting and private-key handling policy
+- **Dependabot** — weekly Rust/npm and monthly GitHub Actions updates
+- **Homebrew formula** — `Formula/vanity-address.rb` (build from source or tap)
+- **Desktop demo asset** — `assets/demo-desktop.svg` for README
+- **Release binaries:**
+  - Windows x86_64 (`.zip`)
+  - macOS Intel x86_64 (`.tar.gz`)
+  - macOS desktop `.dmg` bundle (arm64, in release tarball)
+- **crates.io metadata** on `vanity-core` and `vanity-address` for publishing
+
+### Changed
+
+- Workspace version unified to **0.3.0** (`vanity-core`, CLI, desktop app)
+- README: install options (Homebrew, cargo install, JSON mode), desktop demo, `make check`
+- Release workflow builds CLI for 4 platforms + desktop `.dmg`
+
+### Security
+
+- Documented JSON output may include private keys on stdout — use in trusted environments only
+
 ## [0.2.0] - 2026-07-09
 
 ### Added
@@ -34,4 +60,5 @@ All notable changes to this project are documented here.
 - Keys are generated locally; no network calls
 - `vanity-results.txt` is gitignored — never commit private keys
 
+[0.3.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.0
 [0.2.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.2.0
