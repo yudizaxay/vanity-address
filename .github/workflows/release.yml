@@ -98,7 +98,7 @@ jobs:
           "${hash}  ${ASSET}.zip" | Set-Content -Path "dist/$ASSET.zip.sha256" -NoNewline
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: cli-${{ matrix.name }}
           path: dist/VanityAddress-*.*
@@ -154,7 +154,7 @@ jobs:
           exit 1
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: desktop-macos-arm64
           path: dist/VanityAddress-*.*
