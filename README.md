@@ -187,22 +187,35 @@ tar xzf VanityAddress-0.3.0-Mac-AppleSilicon-CLI.tar.gz
 
 **Intel Mac:** download `VanityAddress-*-Mac-Intel-CLI.tar.gz` instead.
 
-If macOS blocks the binary (“unidentified developer”):
+If macOS blocks the binary (“unidentified developer” or **“damaged”**):
 
-```text
-System Settings → Privacy & Security → Open Anyway
+```bash
+xattr -cr ./vanity-address
+./vanity-address
 ```
 
-Or: `xattr -cr ./vanity-address` then run again.
+Or: **System Settings → Privacy & Security → Open Anyway**
 
 ---
 
 #### macOS — Desktop app (`.dmg`) — recommended for Mac users
 
 1. Download **`VanityAddress-*-Mac-AppleSilicon-Desktop.dmg`** from [Releases](https://github.com/yudizaxay/vanity-address/releases/latest)
-2. Double-click the `.dmg` file
-3. Drag **Vanity Address** into **Applications**
-4. Launch from Applications (use **Privacy & Security → Open Anyway** if macOS warns)
+2. **Remove download quarantine** (required for unsigned open-source builds):
+   ```bash
+   xattr -cr ~/Downloads/VanityAddress-*-Mac-AppleSilicon-Desktop.dmg
+   ```
+3. Double-click the `.dmg` → drag **Vanity Address** to **Applications**
+4. Clear quarantine on the installed app, then launch:
+   ```bash
+   xattr -cr "/Applications/Vanity Address.app"
+   open -a "Vanity Address"
+   ```
+
+> **“Vanity Address is damaged and can’t be opened”?**  
+> This is **not** a broken download — macOS Gatekeeper blocks apps that are not Apple-notarized.  
+> Run the `xattr -cr` commands above, or: **right-click** the app → **Open** → **Open** again.  
+> You can also use **System Settings → Privacy & Security → Open Anyway** after the first blocked launch.
 
 > **Apple Silicon Macs only** (M1/M2/M3/M4). Intel Mac or Linux → use the **CLI** above or [build from source](#build-from-source).
 
