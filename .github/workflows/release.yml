@@ -53,7 +53,7 @@ jobs:
             bin: vanity-address.exe
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -98,7 +98,7 @@ jobs:
           "${hash}  ${ASSET}.zip" | Set-Content -Path "dist/$ASSET.zip.sha256" -NoNewline
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: cli-${{ matrix.name }}
           path: dist/VanityAddress-*.*
@@ -107,7 +107,7 @@ jobs:
     name: Desktop (Mac Apple Silicon .dmg)
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -116,7 +116,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -154,7 +154,7 @@ jobs:
           exit 1
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: desktop-macos-arm64
           path: dist/VanityAddress-*.*
@@ -164,10 +164,10 @@ jobs:
     needs: [build-cli, build-desktop]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Download artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
@@ -184,7 +184,7 @@ jobs:
           } > dist/RELEASE_NOTES.md
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
           generate_release_notes: false

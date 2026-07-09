@@ -5,7 +5,15 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    ignore:
+      # Major bumps need manual migration (API breaks in crypto/random crates)
+      - dependency-name: "rand"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "secp256k1"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "sha2"
+        update-types: ["version-update:semver-major"]
     groups:
       rust-minor-patch:
         patterns:
@@ -19,9 +27,13 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
 
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: monthly
+    groups:
+      github-actions:
+        patterns:
+          - "*"

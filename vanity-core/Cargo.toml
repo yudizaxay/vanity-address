@@ -18,7 +18,7 @@ secp256k1 = { version = "0.29", features = ["rand"] }
 sha3 = "0.10"
 sha2 = "0.10"
 ripemd = "0.1"
-bech32 = "0.11"
+bech32 = "0.12"
 blake2 = "0.10"
 stellar-strkey = "0.0.9"
 rand = "0.8"
