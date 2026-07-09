@@ -72,16 +72,16 @@ jobs:
 
       - name: Package archive (zip)
         if: matrix.archive == 'zip'
-        shell: bash
+        shell: pwsh
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          ARCHIVE="vanity-address-${VERSION}-${{ matrix.name }}"
-          mkdir -p "dist/${ARCHIVE}"
-          cp "target/${{ matrix.target }}/release/${{ matrix.bin }}" "dist/${ARCHIVE}/vanity-address.exe"
-          cp README.md LICENSE SECURITY.md "dist/${ARCHIVE}/"
-          cd "dist/${ARCHIVE}" && zip -r "../${ARCHIVE}.zip" .
-          cd ../..
-          shasum -a 256 "dist/${ARCHIVE}.zip" > "dist/${ARCHIVE}.zip.sha256"
+          $VERSION = $env:GITHUB_REF_NAME.TrimStart('v')
+          $ARCHIVE = "vanity-address-$VERSION-${{ matrix.name }}"
+          New-Item -ItemType Directory -Force -Path "dist/$ARCHIVE" | Out-Null
+          Copy-Item "target/${{ matrix.target }}/release/${{ matrix.bin }}" "dist/$ARCHIVE/vanity-address.exe"
+          Copy-Item README.md, LICENSE, SECURITY.md "dist/$ARCHIVE/"
+          Compress-Archive -Path "dist/$ARCHIVE/*" -DestinationPath "dist/$ARCHIVE.zip" -Force
+          $hash = (Get-FileHash "dist/$ARCHIVE.zip" -Algorithm SHA256).Hash.ToLower()
+          "${hash}  ${ARCHIVE}.zip" | Set-Content -Path "dist/$ARCHIVE.zip.sha256" -NoNewline
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
@@ -114,24 +114,33 @@ jobs:
 
       - name: Build desktop bundle
         working-directory: vanity-app
-        run: npm run tauri build
+        run: npm run tauri build -- --bundles dmg
 
       - name: Package desktop archive
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          BUNDLE_DIR="vanity-app/src-tauri/target/release/bundle"
           ARCHIVE="vanity-address-${VERSION}-macos-arm64-desktop"
           mkdir -p "dist/${ARCHIVE}"
-          DMG=$(find "${BUNDLE_DIR}/dmg" -name "*.dmg" -print -quit)
-          if [ -z "$DMG" ]; then
-            echo "No .dmg found in ${BUNDLE_DIR}/dmg/"
-            find "${BUNDLE_DIR}" -type f || true
-            exit 1
-          fi
-          cp "$DMG" "dist/${ARCHIVE}/"
-          cp README.md LICENSE SECURITY.md "dist/${ARCHIVE}/"
-          tar -czf "dist/${ARCHIVE}.tar.gz" -C dist "${ARCHIVE}"
-          shasum -a 256 "dist/${ARCHIVE}.tar.gz" > "dist/${ARCHIVE}.tar.gz.sha256"
+
+          # Cargo workspace builds land in repo-root target/, not vanity-app/src-tauri/target/
+          for BUNDLE_DIR in "target/release/bundle" "vanity-app/src-tauri/target/release/bundle"; do
+            if [ -d "${BUNDLE_DIR}/dmg" ]; then
+              DMG=$(find "${BUNDLE_DIR}/dmg" -name "*.dmg" -print -quit)
+              if [ -n "$DMG" ]; then
+                echo "Found DMG at ${DMG}"
+                cp "$DMG" "dist/${ARCHIVE}/"
+                cp README.md LICENSE SECURITY.md "dist/${ARCHIVE}/"
+                tar -czf "dist/${ARCHIVE}.tar.gz" -C dist "${ARCHIVE}"
+                shasum -a 256 "dist/${ARCHIVE}.tar.gz" > "dist/${ARCHIVE}.tar.gz.sha256"
+                exit 0
+              fi
+            fi
+          done
+
+          echo "No .dmg found in workspace bundle directories"
+          find target -name "*.dmg" 2>/dev/null || true
+          find vanity-app -name "*.dmg" 2>/dev/null || true
+          exit 1
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5

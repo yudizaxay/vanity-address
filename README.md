@@ -375,7 +375,7 @@ npm run tauri dev      # development (hot reload)
 npm run tauri build    # native .app / .dmg (macOS) or .deb / .AppImage (Linux)
 ```
 
-Output lands in `vanity-app/src-tauri/target/release/bundle/`.
+Output lands in `target/release/bundle/` (workspace root) or `vanity-app/src-tauri/target/release/bundle/` when built outside the workspace.
 
 Grinding runs on a background thread; keys stay masked until you click **Reveal**, and **Save** opens a native file picker (nothing is written automatically).
 
