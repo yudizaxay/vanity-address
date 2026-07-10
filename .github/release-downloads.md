@@ -3,17 +3,19 @@
 | I want… | My computer | Download |
 | ------- | ----------- | -------- |
 | **Desktop app** (window UI) | Mac M1 / M2 / M3 / M4 | **VanityAddress-*-Mac-AppleSilicon-Desktop.dmg** |
+| **Desktop app** (window UI) | Windows 10 / 11 | **VanityAddress-*-Windows-Desktop.exe** |
 | **Terminal app** | Mac M1 / M2 / M3 / M4 | **VanityAddress-*-Mac-AppleSilicon-CLI.tar.gz** |
 | **Terminal app** | Mac Intel | **VanityAddress-*-Mac-Intel-CLI.tar.gz** |
 | **Terminal app** | Windows 10/11 | **VanityAddress-*-Windows-CLI.zip** |
 | **Terminal app** | Linux | **VanityAddress-*-Linux-CLI.tar.gz** |
 
-> **Not sure?** Mac with Apple chip → download the **Desktop .dmg** for the easiest start.  
+> **Not sure?** Mac with Apple chip → download the **Desktop .dmg**. Windows → download the **Desktop .exe** installer.  
 > Each file has a matching `.sha256` checksum (optional, for security verification).
 
 ### After downloading
 
 - **`.dmg`** — run `xattr -cr` on the file (see below) → open → drag **Vanity Address** to Applications → `xattr -cr` on the app → launch
+- **Windows Desktop `.exe`** — run the installer → launch **Vanity Address** from the Start menu (SmartScreen may warn — **More info → Run anyway**)
 - **`.zip` / `.tar.gz`** — extract → run `vanity-address` (or `vanity-address.exe` on Windows)
 
 ### macOS: “app is damaged and can’t be opened”
@@ -30,5 +32,3 @@ open -a "Vanity Address"
 Or **right-click → Open** on the app (first launch only).
 
 Full step-by-step guide: [docs/INSTALL.md](../docs/INSTALL.md)
-
----

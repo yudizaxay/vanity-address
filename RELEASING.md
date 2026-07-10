@@ -30,6 +30,7 @@ git push origin v0.3.0
 | Asset on GitHub | Who should download |
 | --------------- | ------------------- |
 | `VanityAddress-<ver>-Mac-AppleSilicon-Desktop.dmg` | Mac M1–M4 — desktop app |
+| `VanityAddress-<ver>-Windows-Desktop.exe` | Windows 10/11 — desktop app (NSIS installer) |
 | `VanityAddress-<ver>-Mac-AppleSilicon-CLI.tar.gz` | Mac M1–M4 — terminal |
 | `VanityAddress-<ver>-Mac-Intel-CLI.tar.gz` | Intel Mac — terminal |
 | `VanityAddress-<ver>-Windows-CLI.zip` | Windows — terminal |
@@ -85,6 +86,6 @@ cargo install vanity-address
   git tag -fa v0.3.0 -m "v0.3.0"
   git push origin v0.3.0 --force   # requires yudizaxay account
   ```
-- Desktop `.dmg` is built on macOS arm64 runners only
+- Desktop `.dmg` is built on macOS arm64 runners; Windows desktop NSIS `.exe` on `windows-latest`
 - Intel macOS CLI is cross-compiled on `macos-latest` with `x86_64-apple-darwin`
 - Linux builds target `x86_64-unknown-linux-gnu` (glibc)

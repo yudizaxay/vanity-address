@@ -71,6 +71,7 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 | I want… | My computer | File |
 | ------- | ----------- | ---- |
 | **Desktop app** | Mac M1–M4 | `VanityAddress-*-Mac-AppleSilicon-Desktop.dmg` |
+| **Desktop app** | Windows 10/11 | `VanityAddress-*-Windows-Desktop.exe` |
 | **CLI** | Mac M1–M4 | `VanityAddress-*-Mac-AppleSilicon-CLI.tar.gz` |
 | **CLI** | Mac Intel | `VanityAddress-*-Mac-Intel-CLI.tar.gz` |
 | **CLI** | Windows | `VanityAddress-*-Windows-CLI.zip` |
@@ -84,9 +85,10 @@ tar xzf VanityAddress-0.3.0-Linux-CLI.tar.gz
 ./vanity-address
 ```
 
-> macOS may block unsigned apps — see [Install guide → Gatekeeper](docs/INSTALL.md#macos-gatekeeper-damaged-app).
+> macOS may block unsigned apps — see [Install guide → Gatekeeper](docs/INSTALL.md#macos-gatekeeper-damaged-app).  
+> Windows SmartScreen may warn — **More info → Run anyway**. Desktop app needs [WebView2](docs/INSTALL.md#windows--desktop-app-installer) (usually already on Windows 11).
 
-📖 **Full guide:** [docs/INSTALL.md](docs/INSTALL.md) — per-platform steps, `.dmg` setup, checksums, Homebrew, crates.io, build from source
+📖 **Full guide:** [docs/INSTALL.md](docs/INSTALL.md) — per-platform steps, `.dmg` / Windows installer, checksums, Homebrew, crates.io, build from source
 
 ---
 
@@ -156,7 +158,7 @@ Home → Chain → Pattern → Summary → Grind → Result
 | Impractical-pattern warning | ✅ |
 | Masked keys + reveal / copy / save | ✅ |
 
-**Install:** download the `.dmg` from [Releases](https://github.com/yudizaxay/vanity-address/releases/latest) — see [docs/INSTALL.md](docs/INSTALL.md#macos--desktop-app-dmg).
+**Install:** download the Mac `.dmg` or Windows `.exe` from [Releases](https://github.com/yudizaxay/vanity-address/releases/latest) — see [docs/INSTALL.md](docs/INSTALL.md).
 
 **Build from source:** `cd vanity-app && npm install && npm run tauri dev`
 

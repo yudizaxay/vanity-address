@@ -59,8 +59,9 @@ fn can_extend(value: u32, max: u32) -> bool {
 }
 
 fn is_press(kind: KeyEventKind) -> bool {
-    // Older terminals may not report kind; treat anything that isn't Release/Repeat as press.
-    !matches!(kind, KeyEventKind::Release | KeyEventKind::Repeat)
+    // Windows emits Press + Release (+ Repeat while held). Only Press should count,
+    // or every character is typed twice (e.g. "axay" → "aaxxaayy").
+    matches!(kind, KeyEventKind::Press)
 }
 
 /// Read a digit selection. Unambiguous digits (e.g. 1–3 when max=3) select immediately.
@@ -219,9 +220,18 @@ pub fn read_line_with_escape(prompt: &str) -> Option<String> {
     let mut buf = String::new();
     let result = loop {
         if let Ok(Event::Key(KeyEvent {
-            code, modifiers, ..
+            code,
+            modifiers,
+            kind,
+            ..
         })) = event::read()
         {
+            // Windows emits Press + Release for every key; only handle Press
+            // or characters type twice (e.g. "axay" → "aaxxaayy").
+            if !is_press(kind) {
+                continue;
+            }
+
             if modifiers.contains(KeyModifiers::CONTROL) && code == KeyCode::Char('c') {
                 handle_ctrl_c();
             }
@@ -231,17 +241,20 @@ pub fn read_line_with_escape(prompt: &str) -> Option<String> {
                     println!();
                     break None;
                 }
-                KeyCode::Enter => {
+                // Windows may report Enter as Char('\r') instead of KeyCode::Enter.
+                code if is_enter(code) => {
                     println!();
                     break Some(buf.trim().to_string());
                 }
                 KeyCode::Backspace | KeyCode::Delete => {
-                    buf.pop();
-                    // erase char on screen
-                    print!("\x08 \x08");
-                    let _ = io::stdout().flush();
+                    if !buf.is_empty() {
+                        buf.pop();
+                        // erase char on screen (works in Windows raw mode)
+                        print!("\x08 \x08");
+                        let _ = io::stdout().flush();
+                    }
                 }
-                KeyCode::Char(c) => {
+                KeyCode::Char(c) if !c.is_control() => {
                     buf.push(c);
                     print!("{c}");
                     let _ = io::stdout().flush();
@@ -260,9 +273,15 @@ pub fn wait_for_key(message: &str) {
     enable_raw_mode().expect("terminal raw mode");
     loop {
         if let Ok(Event::Key(KeyEvent {
-            code, modifiers, ..
+            code,
+            modifiers,
+            kind,
+            ..
         })) = event::read()
         {
+            if !is_press(kind) {
+                continue;
+            }
             if modifiers.contains(KeyModifiers::CONTROL) && code == KeyCode::Char('c') {
                 handle_ctrl_c();
             }

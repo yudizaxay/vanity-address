@@ -13,6 +13,7 @@ No Rust or Node.js required for pre-built downloads — pick your file, extract,
 | I want… | My computer | File to download |
 | ------- | ----------- | ---------------- |
 | **Desktop app** (easiest — window UI) | Mac M1 / M2 / M3 / M4 | `VanityAddress-*-Mac-AppleSilicon-Desktop.dmg` |
+| **Desktop app** (easiest — window UI) | Windows 10 / 11 | `VanityAddress-*-Windows-Desktop.exe` |
 | **Terminal app** | Mac M1 / M2 / M3 / M4 | `VanityAddress-*-Mac-AppleSilicon-CLI.tar.gz` |
 | **Terminal app** | Mac Intel | `VanityAddress-*-Mac-Intel-CLI.tar.gz` |
 | **Terminal app** | Windows 10 / 11 | `VanityAddress-*-Windows-CLI.zip` |
@@ -73,7 +74,20 @@ Recommended for Mac users who prefer a graphical wizard.
    open -a "Vanity Address"
    ```
 
-> **Apple Silicon Macs only** (M1/M2/M3/M4). Intel Mac or Linux → use the **CLI** above or [build from source](#build-from-source).
+> **Apple Silicon Macs only** (M1/M2/M3/M4). Intel Mac → use the **CLI**. Windows → use the [Windows desktop installer](#windows--desktop-app-installer) or CLI. Linux → use the **CLI** or [build from source](#build-from-source).
+
+---
+
+## Windows — Desktop app (installer)
+
+Recommended for Windows users who prefer a graphical wizard.
+
+1. Download **`VanityAddress-*-Windows-Desktop.exe`** from [Releases](https://github.com/yudizaxay/vanity-address/releases/latest)
+2. Double-click the installer
+3. If **Windows SmartScreen** appears → **More info → Run anyway** (unsigned open-source build)
+4. Finish the installer, then launch **Vanity Address** from the Start menu
+
+> Requires **WebView2** (included on Windows 11; the installer can download it on Windows 10 if missing).
 
 ---
 
@@ -135,6 +149,7 @@ Get-FileHash VanityAddress-0.3.0-Windows-CLI.zip -Algorithm SHA256
 | ------- | -------- |
 | `*-CLI.tar.gz` / `*-CLI.zip` | `vanity-address` binary + docs |
 | `*-Desktop.dmg` | Mac desktop app installer (double-click to install) |
+| `*-Windows-Desktop.exe` | Windows desktop NSIS installer (double-click to install) |
 
 **First run:** just execute the binary — interactive menu starts with no flags. See [Usage guide](USAGE.md).
 

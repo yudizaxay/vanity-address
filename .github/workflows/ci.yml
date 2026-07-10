@@ -12,20 +12,29 @@ env:
 jobs:
   # vanity-core + vanity-address — no GTK/WebKit system deps required
   cli:
-    name: CLI & core (Linux)
-    runs-on: ubuntu-latest
+    name: CLI & core (${{ matrix.label }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: Linux
+          - os: windows-latest
+            label: Windows
     steps:
       - uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt
+          components: rustfmt, clippy
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
       - name: Check formatting
+        if: matrix.label == 'Linux'
         run: cargo fmt --all -- --check
 
       - name: Build release
@@ -37,15 +46,25 @@ jobs:
       - name: Clippy
         run: cargo clippy -p vanity-core -p vanity-address -- -D warnings
 
-  # vanity-app (Tauri) needs WebKit/GTK on Linux — validate on macOS instead
+  # vanity-app (Tauri) — validate on macOS + Windows (Linux needs WebKit/GTK)
   desktop:
-    name: Desktop app (macOS)
-    runs-on: macos-latest
+    name: Desktop app (${{ matrix.label }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            label: macOS
+          - os: windows-latest
+            label: Windows
     steps:
       - uses: actions/checkout@v7
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2

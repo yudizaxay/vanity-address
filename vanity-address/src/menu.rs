@@ -4,7 +4,6 @@ use crate::terminal::{
 };
 use crate::warnings;
 use colored::Colorize;
-use std::io::Write;
 use vanity_core::{
     grind_estimate, Chain, ChainGrinder, GrindEstimate, PatternRisk, SystemProfile, MENU_CHAINS,
 };
@@ -472,6 +471,10 @@ fn pause() {
 }
 
 fn clear_screen() {
-    print!("\x1B[2J\x1B[H");
-    let _ = std::io::stdout().flush();
+    // crossterm uses WinAPI on Windows (ANSI escape alone can fail in older consoles).
+    let _ = crossterm::execute!(
+        std::io::stdout(),
+        crossterm::terminal::Clear(crossterm::terminal::ClearType::All),
+        crossterm::cursor::MoveTo(0, 0),
+    );
 }

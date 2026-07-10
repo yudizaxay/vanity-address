@@ -104,8 +104,21 @@ jobs:
           path: dist/VanityAddress-*.*
 
   build-desktop:
-    name: Desktop (Mac Apple Silicon .dmg)
-    runs-on: macos-latest
+    name: Desktop (${{ matrix.asset_label }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            bundles: dmg
+            asset_label: Mac-AppleSilicon-Desktop
+            name: macos-arm64
+          - os: windows-latest
+            bundles: nsis
+            asset_label: Windows-Desktop
+            name: windows-x86_64
+
     steps:
       - uses: actions/checkout@v7
 
@@ -128,12 +141,14 @@ jobs:
 
       - name: Build desktop bundle
         working-directory: vanity-app
-        run: npm run tauri build -- --bundles dmg
+        run: npm run tauri build -- --bundles ${{ matrix.bundles }}
 
-      - name: Package desktop .dmg
+      - name: Package desktop (macOS .dmg)
+        if: runner.os == 'macOS'
+        shell: bash
         run: |
           VERSION="${RELEASE_VERSION#v}"
-          ASSET="VanityAddress-${VERSION}-Mac-AppleSilicon-Desktop.dmg"
+          ASSET="VanityAddress-${VERSION}-${{ matrix.asset_label }}.dmg"
           mkdir -p dist
 
           for BUNDLE_DIR in "target/release/bundle" "vanity-app/src-tauri/target/release/bundle"; do
@@ -153,10 +168,32 @@ jobs:
           find vanity-app -name "*.dmg" 2>/dev/null || true
           exit 1
 
+      - name: Package desktop (Windows NSIS .exe)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $VERSION = $env:RELEASE_VERSION.TrimStart('v')
+          $ASSET = "VanityAddress-$VERSION-${{ matrix.asset_label }}.exe"
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+
+          $setup = Get-ChildItem -Path "target","vanity-app" -Recurse -Filter "*setup.exe" -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+          if (-not $setup) {
+            Write-Error "No NSIS setup.exe found"
+            Get-ChildItem -Path "target","vanity-app" -Recurse -Filter "*.exe" -ErrorAction SilentlyContinue |
+              Select-Object -ExpandProperty FullName
+            exit 1
+          }
+
+          Write-Host "Found installer at $($setup.FullName)"
+          Copy-Item $setup.FullName "dist/$ASSET"
+          $hash = (Get-FileHash "dist/$ASSET" -Algorithm SHA256).Hash.ToLower()
+          "${hash}  ${ASSET}" | Set-Content -Path "dist/$ASSET.sha256" -NoNewline
+
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: desktop-macos-arm64
+          name: desktop-${{ matrix.name }}
           path: dist/VanityAddress-*.*
 
   release:

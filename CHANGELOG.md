@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Added
+
+- **Windows desktop installer** — `VanityAddress-*-Windows-Desktop.exe` (NSIS) in GitHub Releases
+- **CI on Windows** — CLI + desktop app jobs so Windows regressions are caught without a local Windows machine
+
+### Fixed
+
+- **Windows CLI:** typing prefix/suffix no longer doubles every character (crossterm Press+Release)
+- **Windows CLI:** Enter / `\r` handled correctly when confirming text input
+- **Windows CLI:** screen clear uses crossterm WinAPI (ANSI escapes alone can fail in older consoles)
+- **Windows CLI:** Backspace on empty input no longer underflows the buffer
+
 ## [0.3.0] - 2026-07-09
 
 ### Added
