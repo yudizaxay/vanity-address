@@ -29,6 +29,6 @@ open -a "Vanity Address"
 
 Or **right-click → Open** on the app (first launch only).
 
-Full step-by-step guide: [README — Install](https://github.com/yudizaxay/vanity-address#-install)
+Full step-by-step guide: [docs/INSTALL.md](../docs/INSTALL.md)
 
 ---
