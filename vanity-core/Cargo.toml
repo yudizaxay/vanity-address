@@ -15,7 +15,7 @@ categories = ["cryptography"]
 rayon = "1.7"
 solana-sdk = "1.18"
 secp256k1 = { version = "0.29", features = ["rand"] }
-sha3 = "0.10"
+sha3 = "0.12"
 sha2 = "0.10"
 ripemd = "0.1"
 bech32 = "0.12"
