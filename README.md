@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.svg" alt="Vanity Address logo" width="160" />
+<img src="https://raw.githubusercontent.com/yudizaxay/vanity-address/main/assets/logo.svg" alt="Vanity Address logo" width="160" />
 
 # vanity-address
 
@@ -57,11 +57,11 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 ## 🎬 Demo
 
 <p align="center">
-  <img src="assets/demo-terminal.svg" alt="Vanity Address terminal demo — interactive menu, live grind progress, and match output" width="720" />
+  <img src="https://raw.githubusercontent.com/yudizaxay/vanity-address/main/assets/demo-terminal.svg" alt="Vanity Address terminal demo — interactive menu, live grind progress, and match output" width="720" />
 </p>
 
 <p align="center">
-  <img src="assets/demo-desktop.svg" alt="Vanity Address desktop app — wizard summary and live grind progress" width="720" />
+  <img src="https://raw.githubusercontent.com/yudizaxay/vanity-address/main/assets/demo-desktop.svg" alt="Vanity Address desktop app — wizard summary and live grind progress" width="720" />
 </p>
 
 <p align="center">
