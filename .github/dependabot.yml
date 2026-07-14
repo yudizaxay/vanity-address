@@ -7,13 +7,17 @@ updates:
       day: monday
     open-pull-requests-limit: 5
     ignore:
-      # Major bumps need manual migration (API breaks in crypto/random crates)
+      # Major (and 0.x "minor") bumps need manual migration for crypto/random crates
       - dependency-name: "rand"
         update-types: ["version-update:semver-major"]
       - dependency-name: "secp256k1"
         update-types: ["version-update:semver-major"]
       - dependency-name: "sha2"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "sha3"
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
     groups:
       rust-minor-patch:
         patterns:

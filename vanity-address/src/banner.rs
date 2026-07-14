@@ -15,7 +15,7 @@ pub fn print_compact() {
     println!(
         "  {}  {}",
         "vanity-address".cyan().bold(),
-        "v0.3.0".dimmed()
+        format!("v{}", env!("CARGO_PKG_VERSION")).dimmed()
     );
     println!(
         "  {}",
@@ -29,12 +29,11 @@ fn print_title_block() {
         "  {}",
         "╔══════════════════════════════════════════╗".cyan()
     );
-    println!(
-        "  {}",
-        "║      vanity-address  ·  v0.3.0            ║"
-            .cyan()
-            .bold()
+    let title = format!(
+        "║      vanity-address  ·  v{:<5}            ║",
+        env!("CARGO_PKG_VERSION")
     );
+    println!("  {}", title.cyan().bold());
     println!(
         "  {}",
         "║   multi-chain vanity address generator    ║".cyan()

@@ -158,7 +158,7 @@ mod tests {
         };
 
         let payload = SuccessPayload {
-            version: "0.3.0",
+            version: "0.3.2",
             chain: "sol",
             chain_name: "Solana",
             pattern: PatternPayload {
@@ -198,7 +198,7 @@ mod tests {
         };
 
         let payload = SuccessPayload {
-            version: "0.3.0",
+            version: "0.3.2",
             chain: "sol",
             chain_name: "Solana",
             pattern: PatternPayload {

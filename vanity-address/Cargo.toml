@@ -1,6 +1,6 @@
 [package]
 name = "vanity-address"
-version = "0.3.0"
+version = "0.3.2"
 edition = "2021"
 description = "Fast, local multi-chain vanity address generator"
 license = "MIT"
@@ -8,7 +8,8 @@ readme = "../README.md"
 repository = "https://github.com/yudizaxay/vanity-address"
 homepage = "https://github.com/yudizaxay/vanity-address"
 documentation = "https://github.com/yudizaxay/vanity-address#readme"
-keywords = ["vanity", "solana", "ethereum", "bitcoin", "wallet", "cli"]
+# crates.io allows at most 5 keywords
+keywords = ["vanity", "solana", "ethereum", "bitcoin", "cli"]
 categories = ["command-line-utilities", "cryptography"]
 
 [[bin]]
@@ -16,7 +17,7 @@ name = "vanity-address"
 path = "src/main.rs"
 
 [dependencies]
-vanity-core = { path = "../vanity-core", version = "0.3.0" }
+vanity-core = { path = "../vanity-core", version = "0.3.2" }
 clap = { version = "4", features = ["derive", "color"] }
 colored = "3"
 indicatif = "0.18"

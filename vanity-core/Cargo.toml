@@ -1,6 +1,6 @@
 [package]
 name = "vanity-core"
-version = "0.3.0"
+version = "0.3.2"
 edition = "2021"
 description = "Multi-chain vanity address grinding core library"
 license = "MIT"
@@ -15,7 +15,7 @@ categories = ["cryptography"]
 rayon = "1.7"
 solana-sdk = "1.18"
 secp256k1 = { version = "0.29", features = ["rand"] }
-sha3 = "0.10"
+sha3 = "0.12"
 sha2 = "0.10"
 ripemd = "0.1"
 bech32 = "0.12"

@@ -15,7 +15,7 @@
   <circle cx="42" cy="20" r="6" fill="#febc2e"/>
   <circle cx="62" cy="20" r="6" fill="#28c840"/>
   <text x="88" y="24" fill="#8b949e" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="13" font-weight="600">Vanity Address</text>
-  <text x="220" y="24" fill="#6e7681" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="11">v0.3.0 &#183; local, offline vanity keypair generator</text>
+  <text x="220" y="24" fill="#6e7681" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="11">v0.3.2 &#183; local, offline vanity keypair generator</text>
 
   <g font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">
     <text x="460" y="108" fill="#39c5cf" font-size="22" font-weight="700" text-anchor="middle">Step 3 &#183; Summary</text>

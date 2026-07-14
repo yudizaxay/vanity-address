@@ -14,6 +14,7 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 
 [![CI](https://img.shields.io/github/actions/workflow/status/yudizaxay/vanity-address/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/yudizaxay/vanity-address/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/yudizaxay/vanity-address?style=for-the-badge&logo=github&label=Release)](https://github.com/yudizaxay/vanity-address/releases)
+[![crates.io](https://img.shields.io/crates/v/vanity-address?style=for-the-badge&logo=rust&label=crates.io)](https://crates.io/crates/vanity-address)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Security Policy](https://img.shields.io/badge/Security-Policy-green?style=for-the-badge&logo=github)](SECURITY.md)
 [![Keys stay local](https://img.shields.io/badge/Keys-100%25%20local-success?style=for-the-badge)](#-security)
@@ -85,9 +86,15 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 **Quick start (Linux):**
 
 ```bash
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.0/VanityAddress-0.3.0-Linux-CLI.tar.gz
-tar xzf VanityAddress-0.3.0-Linux-CLI.tar.gz
+# Replace 0.3.2 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.2/VanityAddress-0.3.2-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.3.2-Linux-CLI.tar.gz
 ./vanity-address
+```
+
+```bash
+# Or install the CLI from crates.io (requires Rust)
+cargo install vanity-address
 ```
 
 > macOS may block unsigned apps — see [Install guide → Gatekeeper](docs/INSTALL.md#macos-gatekeeper-damaged-app).  

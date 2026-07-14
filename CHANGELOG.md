@@ -2,12 +2,13 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.3.2] - 2026-07-10
 
 ### Added
 
 - **Windows desktop installer** — `VanityAddress-*-Windows-Desktop.exe` (NSIS) in GitHub Releases
 - **CI on Windows** — CLI + desktop app jobs so Windows regressions are caught without a local Windows machine
+- **crates.io ready** — `vanity-core` + `vanity-address` at **0.3.2** (`cargo install vanity-address` after publish)
 
 ### Fixed
 
@@ -15,6 +16,13 @@ All notable changes to this project are documented here.
 - **Windows CLI:** Enter / `\r` handled correctly when confirming text input
 - **Windows CLI:** screen clear uses crossterm WinAPI (ANSI escapes alone can fail in older consoles)
 - **Windows CLI:** Backspace on empty input no longer underflows the buffer
+
+### Changed
+
+- Workspace version unified to **0.3.2**
+- README / install docs point at **v0.3.2** release assets
+- Dependencies: `sha3` 0.12, `rayon` 1.12, `rand` 0.8.7, `clap` 4.6, `serde_json` 1.0.150
+- Dependabot: ignore `sha3` major/minor bumps (manual crypto updates only)
 
 ## [0.3.0] - 2026-07-09
 
@@ -74,5 +82,6 @@ All notable changes to this project are documented here.
 - Keys are generated locally; no network calls
 - `vanity-results.txt` is gitignored — never commit private keys
 
+[0.3.2]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.2
 [0.3.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.0
 [0.2.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.2.0

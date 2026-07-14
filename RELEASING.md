@@ -18,8 +18,8 @@ Maintainers cut releases by pushing a version tag. GitHub Actions builds binarie
 6. Create and push the tag:
 
 ```bash
-git tag -a v0.3.0 -m "v0.3.0"
-git push origin v0.3.0
+git tag -a v0.3.2 -m "v0.3.2"
+git push origin v0.3.2
 ```
 
 7. Watch the [Release workflow](https://github.com/yudizaxay/vanity-address/actions/workflows/release.yml)
@@ -50,7 +50,7 @@ Each binary has a matching `.sha256` checksum file (optional).
 After tagging, update the formula tarball hash:
 
 ```bash
-curl -L "https://github.com/yudizaxay/vanity-address/archive/refs/tags/v0.3.0.tar.gz" | shasum -a 256
+curl -L "https://github.com/yudizaxay/vanity-address/archive/refs/tags/v0.3.2.tar.gz" | shasum -a 256
 ```
 
 Paste the hash into `Formula/vanity-address.rb` and commit (or include in the release commit).
@@ -63,10 +63,19 @@ brew install --build-from-source ./Formula/vanity-address.rb
 
 ## Publishing to crates.io
 
-Publish **`vanity-core` first**, then **`vanity-address`**:
+1. Create an API token at [crates.io/settings/tokens](https://crates.io/settings/tokens)
+2. Log in locally:
+
+```bash
+cargo login
+# paste the token when prompted
+```
+
+3. Commit the version bump, then publish **`vanity-core` first**, wait ~1 minute for the index, then **`vanity-address`**:
 
 ```bash
 cargo publish -p vanity-core
+# wait until https://crates.io/crates/vanity-core shows the new version
 cargo publish -p vanity-address
 ```
 
@@ -78,13 +87,13 @@ cargo install vanity-address
 
 ## Notes
 
-- Tags must match `v*` (e.g. `v0.3.0`) to trigger the workflow
+- Tags must match `v*` (e.g. `v0.3.2`) to trigger the workflow
 - **CI green ≠ Release published** — push to `main` only runs CI; Release runs on **tag push** or manual dispatch
-- **Manual release (no tag push):** Actions → **Release** → **Run workflow** → enter version `0.3.0` → Run
+- **Manual release (no tag push):** Actions → **Release** → **Run workflow** → enter version `0.3.2` → Run
 - After CI fixes, **move the tag** to the latest commit or run workflow manually from `main`:
   ```bash
-  git tag -fa v0.3.0 -m "v0.3.0"
-  git push origin v0.3.0 --force   # requires yudizaxay account
+  git tag -fa v0.3.2 -m "v0.3.2"
+  git push origin v0.3.2 --force   # requires yudizaxay account
   ```
 - Desktop `.dmg` is built on macOS arm64 runners; Windows desktop NSIS `.exe` on `windows-latest`
 - Intel macOS CLI is cross-compiled on `macos-latest` with `x86_64-apple-darwin`
