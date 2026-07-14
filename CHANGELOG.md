@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here.
 
+## [0.3.3] - 2026-07-14
+
+### Fixed
+
+- **crates.io README images** — logo/demo use absolute GitHub raw URLs (relative `assets/` paths break on crates.io)
+
+### Changed
+
+- Workspace version unified to **0.3.3**
+
 ## [0.3.2] - 2026-07-10
 
 ### Added
@@ -82,6 +92,7 @@ All notable changes to this project are documented here.
 - Keys are generated locally; no network calls
 - `vanity-results.txt` is gitignored — never commit private keys
 
+[0.3.3]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.3
 [0.3.2]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.2
 [0.3.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.0
 [0.2.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.2.0
