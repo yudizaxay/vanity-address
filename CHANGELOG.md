@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here.
 
+## [0.3.4] - 2026-07-14
+
+### Fixed
+
+- **crates.io README links** — docs/SECURITY/CONTRIBUTING/LICENSE use absolute GitHub URLs (relative links 404 from the `vanity-address/` crate path)
+
+### Changed
+
+- Workspace version unified to **0.3.4**
+
 ## [0.3.3] - 2026-07-14
 
 ### Fixed
@@ -92,6 +102,7 @@ All notable changes to this project are documented here.
 - Keys are generated locally; no network calls
 - `vanity-results.txt` is gitignored — never commit private keys
 
+[0.3.4]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.4
 [0.3.3]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.3
 [0.3.2]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.2
 [0.3.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.0
