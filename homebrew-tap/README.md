@@ -6,8 +6,11 @@ Homebrew tap for [vanity-address](https://github.com/yudizaxay/vanity-address).
 
 ```bash
 brew tap yudizaxay/tap
+brew trust yudizaxay/tap
 brew install vanity-address
 ```
+
+**Homebrew 6+:** third-party taps must be trusted once. If install fails with *untrusted tap*, run `brew trust yudizaxay/tap` (or `brew trust --formula yudizaxay/tap/vanity-address`).
 
 Builds the CLI from source (requires Rust). First compile often takes 3–8 minutes because of the Solana SDK dependency tree.
 

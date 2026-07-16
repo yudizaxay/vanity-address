@@ -66,6 +66,7 @@ Users install via tap:
 
 ```bash
 brew tap yudizaxay/tap
+brew trust yudizaxay/tap
 brew install vanity-address
 ```
 

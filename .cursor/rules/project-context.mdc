@@ -12,7 +12,7 @@ alwaysApply: true
 - Rust workspace: `vanity-core` (engine) + `vanity-address` (CLI) + `vanity-app` (Tauri desktop)
 - **v0.3.5** on crates.io; chain logic only in `vanity-core`
 - Publish order: `vanity-core` then `vanity-address` (no `#` on same shell line)
-- Homebrew: `Formula/vanity-address.rb` + scripts in `scripts/`; tap repo `yudizaxay/homebrew-tap` (create once, sync with `sync-homebrew-tap.sh`)
+- Homebrew: `Formula/vanity-address.rb` + scripts; tap `yudizaxay/tap` — users need `brew trust yudizaxay/tap` on Homebrew 6+
 - Windows CLI: `terminal.rs` Press-only keys; `menu.rs` crossterm clear
 - crates.io README needs absolute GitHub/raw URLs for images and links
 

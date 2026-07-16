@@ -2,6 +2,7 @@
 #
 # End users (after tap is published):
 #   brew tap yudizaxay/tap
+#   brew trust yudizaxay/tap
 #   brew install vanity-address
 #
 # From this repo (no tap):

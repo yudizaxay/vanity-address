@@ -44,7 +44,7 @@ vanity-address/          (workspace root)
 | vanity-address (CLI) | **0.3.5** | ✅ crates.io |
 | vanity-app (desktop) | **0.3.5** | GitHub Releases (tag-dependent) |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.3.4` — **`v0.3.5` tag not pushed yet** (crates.io 0.3.5 is live; push tag + run `./scripts/update-homebrew-formula.sh 0.3.5` for Homebrew)
+**Git tags on GitHub:** `v0.3.0` … `v0.3.5` ✅
 
 **crates.io publish order (critical):**
 
@@ -62,7 +62,7 @@ cargo publish -p vanity-address
 | ------- | ------ | ------------ |
 | **GitHub Releases** | ✅ Active | Download `.dmg`, `.exe`, CLI archives |
 | **crates.io** | ✅ v0.3.5 | `cargo install vanity-address` |
-| **Homebrew tap** | 🟡 Repo created: [yudizaxay/homebrew-tap](https://github.com/yudizaxay/homebrew-tap) — run sync script to push formula | `brew tap yudizaxay/tap && brew install vanity-address` |
+| **Homebrew tap** | ✅ [yudizaxay/homebrew-tap](https://github.com/yudizaxay/homebrew-tap) formula v0.3.5 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works now | `brew install --build-from-source ./Formula/vanity-address.rb` |
 | **npm** | ❌ Not for end users | `vanity-app/package.json` is `private` (build only) |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
@@ -186,8 +186,6 @@ make test-app    # Tauri crate tests
 
 ## Pending / optional next steps
 
-- [ ] Push formula to tap: `git clone …/homebrew-tap ../homebrew-tap && ./scripts/sync-homebrew-tap.sh --push "initial formula"`
-- [ ] Push `v0.3.5` tag to GitHub, then `./scripts/update-homebrew-formula.sh 0.3.5` and sync tap again
 - [ ] README quick-start curl examples still say `v0.3.2` — update to `latest` or current tag
 - [ ] Winget / Scoop manifests (Windows package managers)
 - [ ] npm binary wrapper for `npx vanity-address` (optional)

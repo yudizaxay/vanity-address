@@ -163,10 +163,11 @@ Get-FileHash VanityAddress-0.3.2-Windows-CLI.zip -Algorithm SHA256
 
 ```bash
 brew tap yudizaxay/tap
+brew trust yudizaxay/tap
 brew install vanity-address
 ```
 
-Builds from source (requires Rust; first compile often 3–8 min). Upgrade with `brew upgrade vanity-address`.
+Builds from source (requires Rust; first compile often 3–8 min). On Homebrew 6+, `brew trust` is required once for third-party taps. Upgrade with `brew upgrade vanity-address`.
 
 **From a git clone:**
 

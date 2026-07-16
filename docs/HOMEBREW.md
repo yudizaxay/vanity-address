@@ -4,13 +4,31 @@ Install the **CLI** on macOS and Linux via Homebrew. The desktop app (`.dmg` / `
 
 ## For users
 
-### Option A — Tap (recommended once published)
+### Option A — Tap (recommended)
 
 ```bash
 brew tap yudizaxay/tap
+brew trust yudizaxay/tap
 brew install vanity-address
 vanity-address --version
 ```
+
+On **Homebrew 6+**, third-party taps must be trusted once before install (security). Trust only this formula instead of the whole tap:
+
+```bash
+brew trust --formula yudizaxay/tap/vanity-address
+```
+
+### Untrusted tap error
+
+If you see:
+
+```text
+Error: Refusing to load formula yudizaxay/tap/vanity-address from untrusted tap yudizaxay/tap.
+Run `brew trust --formula yudizaxay/tap/vanity-address` or `brew trust yudizaxay/tap` to trust it.
+```
+
+Run one of the `brew trust` commands above, then `brew install vanity-address` again. See [Homebrew tap trust](https://docs.brew.sh/Tap-Trust).
 
 ### Option B — Build from this repo’s formula
 
@@ -32,6 +50,7 @@ brew install --HEAD --build-from-source ./Formula/vanity-address.rb
 
 | Topic | Detail |
 | ----- | ------ |
+| **Tap trust (Homebrew 6+)** | Run `brew trust yudizaxay/tap` once before first install |
 | **Compile time** | 3–8 min first install (Solana SDK); normal for this project |
 | **Rust** | Formula depends on `rust` as a build dependency |
 | **Faster install** | Use [pre-built CLI binaries](INSTALL.md#github-releases-recommended) (~30s download) |
@@ -72,6 +91,7 @@ git clone https://github.com/yudizaxay/homebrew-tap.git ../homebrew-tap
 
 ```bash
 brew tap yudizaxay/tap
+brew trust yudizaxay/tap
 brew install vanity-address
 ```
 
