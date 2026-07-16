@@ -12,6 +12,7 @@ All notable changes to this project are documented here.
 ### Changed
 
 - **`cargo install` compile time:** release profile in the published CLI crate uses `lto = false` and higher `codegen-units` (faster first-time compile; GitHub Release binaries still use workspace LTO)
+- **Docs / memory:** README + INSTALL curl examples → v0.3.5; `AGENTS.md` synced (Homebrew live, `std_cargo_args`, tap trust)
 
 ## [0.3.4] - 2026-07-14
 

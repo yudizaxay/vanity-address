@@ -42,9 +42,10 @@ vanity-address/          (workspace root)
 | ------- | ------- | --------- |
 | vanity-core | **0.3.5** | ✅ crates.io |
 | vanity-address (CLI) | **0.3.5** | ✅ crates.io |
-| vanity-app (desktop) | **0.3.5** | GitHub Releases (tag-dependent) |
+| vanity-app (desktop) | **0.3.5** | ✅ GitHub Releases |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.3.5` ✅
+**Git tags on GitHub:** `v0.3.0` … `v0.3.5` ✅  
+**GitHub Release v0.3.5:** ✅ CLI + desktop assets live
 
 **crates.io publish order (critical):**
 
@@ -60,23 +61,36 @@ cargo publish -p vanity-address
 
 | Channel | Status | User command |
 | ------- | ------ | ------------ |
-| **GitHub Releases** | ✅ Active | Download `.dmg`, `.exe`, CLI archives |
+| **GitHub Releases** | ✅ v0.3.5 | Download `.dmg`, `.exe`, CLI archives |
 | **crates.io** | ✅ v0.3.5 | `cargo install vanity-address` |
 | **Homebrew tap** | ✅ [yudizaxay/homebrew-tap](https://github.com/yudizaxay/homebrew-tap) formula v0.3.5 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
-| **Homebrew local** | ✅ Works now | `brew install --build-from-source ./Formula/vanity-address.rb` |
+| **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
 | **npm** | ❌ Not for end users | `vanity-app/package.json` is `private` (build only) |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
+
+### Homebrew user install (Homebrew 6+)
+
+```bash
+brew tap yudizaxay/tap
+brew trust yudizaxay/tap                    # required once (third-party tap)
+brew install vanity-address                 # builds from source; 3–8 min first time
+```
+
+Or trust only the formula: `brew trust --formula yudizaxay/tap/vanity-address`
 
 ### Homebrew maintainer flow
 
 ```bash
-./scripts/update-homebrew-formula.sh 0.3.5
-./scripts/sync-homebrew-tap.sh --push "vanity-address 0.3.5"
+./scripts/update-homebrew-formula.sh X.Y.Z   # tag must exist on GitHub first
+git add Formula/vanity-address.rb && git commit && git push
+./scripts/sync-homebrew-tap.sh --push "vanity-address X.Y.Z"
 ```
 
-See [docs/HOMEBREW.md](docs/HOMEBREW.md).
+Tap repo: https://github.com/yudizaxay/homebrew-tap (already created).  
+Canonical formula: `Formula/vanity-address.rb` → sync copies into tap.  
+Override tap path: `HOMEBREW_TAP_DIR=/path/to/homebrew-tap`.
 
-**One-time:** Create GitHub repo `yudizaxay/homebrew-tap`, clone to `../homebrew-tap`, run sync script.
+See [docs/HOMEBREW.md](docs/HOMEBREW.md).
 
 ---
 
@@ -91,7 +105,7 @@ See [docs/HOMEBREW.md](docs/HOMEBREW.md).
    - `vanity-app/src-tauri/tauri.conf.json`
    - `vanity-address/src/banner.rs`, `vanity-app/index.html`, demo SVGs
 3. `CHANGELOG.md` new section
-4. `./scripts/update-homebrew-formula.sh X.Y.Z`
+4. `./scripts/update-homebrew-formula.sh X.Y.Z` (after tag exists — or after tagging, in a follow-up commit)
 5. Commit + push `main`
 6. `git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z`
 7. Watch [Release workflow](.github/workflows/release.yml)
@@ -138,9 +152,16 @@ Desktop: `commands.rs`, `state.rs` — thin wrappers over `vanity-core`
 - **vanity-address crate** `[profile.release]`: `lto=false`, `codegen-units=16` — faster `cargo install`
 - Warning during workspace publish: non-root profiles ignored during verify; published crate tarball still includes install profile
 
-### cargo install slowness
+### cargo install / brew compile slowness
 
 Solana SDK compile is heavy (3–8 min first time). Documented in `docs/INSTALL.md`. Pre-built GitHub binaries are faster (~30s).
+
+### Homebrew (critical)
+
+- **Formula API:** use `std_cargo_args(path: "vanity-address")` — **not** `std_cargo_install_args` (removed; causes `NoMethodError` on modern Brew)
+- **Tap trust (Homebrew 6+):** users must `brew trust yudizaxay/tap` (or `--formula …`) before install
+- **Other untrusted taps:** if user’s Mac has untrusted taps (e.g. `mongodb/brew`), any `brew install` may fail until those taps are trusted/untapped — not a vanity-address bug. Docs: [docs/HOMEBREW.md](docs/HOMEBREW.md)
+- **Push tap via SSH** if HTTPS 403 (org/auth mismatch)
 
 ### Dependabot
 
@@ -154,6 +175,7 @@ Solana SDK compile is heavy (3–8 min first time). Documented in `docs/INSTALL.
 make check-ci    # fmt-check + test + clippy + frontend build
 make test-cli    # vanity-core + vanity-address
 make test-app    # Tauri crate tests
+make homebrew-formula VER=X.Y.Z
 ```
 
 **CI matrix:** Linux CLI, macOS desktop, Windows CLI + desktop
@@ -179,18 +201,22 @@ make test-app    # Tauri crate tests
 | crates.io publish + README link/image fixes | ✅ 0.3.2–0.3.5 |
 | Install speed docs + faster cargo install profile | ✅ 0.3.5 |
 | Uninstall docs | ✅ 0.3.5 |
-| Homebrew formula + scripts + tap docs | ✅ (tap repo push pending) |
+| Homebrew tap live (`yudizaxay/homebrew-tap`) + scripts + docs | ✅ |
+| Homebrew 6 `brew trust` docs + other-tap troubleshooting | ✅ |
+| Formula fix: `std_cargo_args` (was `std_cargo_install_args`) | ✅ |
+| GitHub Release v0.3.5 (all platform assets) | ✅ |
+| `AGENTS.md` + `.cursor/rules/project-context.mdc` | ✅ |
 | Dependabot PRs #22/#23 applied locally | ✅ |
 
 ---
 
 ## Pending / optional next steps
 
-- [ ] README quick-start curl examples still say `v0.3.2` — update to `latest` or current tag
 - [ ] Winget / Scoop manifests (Windows package managers)
 - [ ] npm binary wrapper for `npx vanity-address` (optional)
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen (unsigned warnings documented)
 - [ ] Submit to homebrew-core when notability criteria met
+- [ ] Growth: social posts / README badges polish
 
 ---
 
@@ -203,9 +229,10 @@ make test-app    # Tauri crate tests
 | `vanity-address/src/main.rs` | CLI entry + clap |
 | `vanity-address/src/terminal.rs` | Interactive input (Windows-sensitive) |
 | `vanity-app/src-tauri/src/commands.rs` | Desktop Tauri commands |
-| `Formula/vanity-address.rb` | Homebrew formula |
-| `scripts/update-homebrew-formula.sh` | Bump formula hash |
+| `Formula/vanity-address.rb` | Homebrew formula (`std_cargo_args`) |
+| `scripts/update-homebrew-formula.sh` | Bump formula url + sha256 |
 | `scripts/sync-homebrew-tap.sh` | Push formula to tap repo |
+| `docs/HOMEBREW.md` | User + maintainer Homebrew guide |
 | `.github/workflows/release.yml` | Release binaries on tag |
 | `.github/workflows/ci.yml` | CI on push/PR |
 
@@ -219,7 +246,8 @@ make test-app    # Tauri crate tests
 4. **Don't commit** unless user asks
 5. **Verify** with `make test` / `cargo package` before claiming publish-ready
 6. **Read** `RELEASING.md` before version bumps or publishes
+7. **After Homebrew formula changes** — sync tap with `./scripts/sync-homebrew-tap.sh --push`
 
 ---
 
-*Last updated: 2026-07-16 — Homebrew tap setup + project memory file added.*
+*Last updated: 2026-07-16 — memory sync after Homebrew live + std_cargo_args fix + v0.3.5 release.*
