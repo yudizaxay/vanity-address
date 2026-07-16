@@ -19,6 +19,7 @@ help:
 	@echo "  make desktop-dev  Run Tauri dev server"
 	@echo "  make desktop-build  Build native desktop bundle (.dmg / etc.)"
 	@echo "  make install      cargo install --path vanity-address"
+	@echo "  make homebrew-formula VER=0.3.5  Update Formula sha256 for a release tag"
 	@echo "  make clean        cargo clean"
 
 fmt:
@@ -61,6 +62,10 @@ desktop-build:
 
 install:
 	$(CARGO) install --path vanity-address
+
+homebrew-formula:
+	@test -n "$(VER)" || (echo "Usage: make homebrew-formula VER=0.3.5" && exit 1)
+	./scripts/update-homebrew-formula.sh $(VER)
 
 clean:
 	$(CARGO) clean

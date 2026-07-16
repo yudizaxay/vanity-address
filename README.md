@@ -93,6 +93,9 @@ tar xzf VanityAddress-0.3.2-Linux-CLI.tar.gz
 ```
 
 ```bash
+# Or install via Homebrew tap (builds from source; requires Rust)
+brew tap yudizaxay/tap && brew install vanity-address
+
 # Or install the CLI from crates.io (requires Rust; first compile often takes 3–8 min)
 cargo install vanity-address
 ```

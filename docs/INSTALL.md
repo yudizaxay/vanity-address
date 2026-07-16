@@ -159,11 +159,22 @@ Get-FileHash VanityAddress-0.3.2-Windows-CLI.zip -Algorithm SHA256
 
 ### Homebrew (macOS / Linux)
 
+**Tap (recommended):**
+
+```bash
+brew tap yudizaxay/tap
+brew install vanity-address
+```
+
+Builds from source (requires Rust; first compile often 3–8 min). Upgrade with `brew upgrade vanity-address`.
+
+**From a git clone:**
+
 ```bash
 brew install --build-from-source ./Formula/vanity-address.rb
 ```
 
-See [RELEASING.md](../RELEASING.md) for tap setup and formula hash updates.
+📖 Full Homebrew guide: [HOMEBREW.md](HOMEBREW.md) — tap setup for maintainers, `--HEAD`, verify steps.
 
 ### crates.io (`cargo install`)
 

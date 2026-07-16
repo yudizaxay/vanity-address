@@ -7,6 +7,7 @@ All notable changes to this project are documented here.
 ### Added
 
 - **Install docs:** why `cargo install` is slow, faster pre-built binary path, and how to uninstall
+- **Homebrew tap workflow:** formula v0.3.5, `scripts/update-homebrew-formula.sh`, `scripts/sync-homebrew-tap.sh`, [docs/HOMEBREW.md](docs/HOMEBREW.md), [AGENTS.md](AGENTS.md) project memory
 
 ### Changed
 

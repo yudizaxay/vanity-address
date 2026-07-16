@@ -1,0 +1,28 @@
+---
+description: vanity-address project context — read AGENTS.md for full memory
+alwaysApply: true
+---
+
+# vanity-address — session context
+
+**Read first:** [AGENTS.md](../../AGENTS.md) for full project memory, release checklist, and pending work.
+
+## Quick facts
+
+- Rust workspace: `vanity-core` (engine) + `vanity-address` (CLI) + `vanity-app` (Tauri desktop)
+- **v0.3.5** on crates.io; chain logic only in `vanity-core`
+- Publish order: `vanity-core` then `vanity-address` (no `#` on same shell line)
+- Homebrew: `Formula/vanity-address.rb` + scripts in `scripts/`; tap repo `yudizaxay/homebrew-tap` (create once, sync with `sync-homebrew-tap.sh`)
+- Windows CLI: `terminal.rs` Press-only keys; `menu.rs` crossterm clear
+- crates.io README needs absolute GitHub/raw URLs for images and links
+
+## Before releases
+
+`make check-ci` → version bump all packages → `CHANGELOG.md` → `./scripts/update-homebrew-formula.sh X.Y.Z` → tag → `cargo publish` → `./scripts/sync-homebrew-tap.sh --push`
+
+## Docs map
+
+- `docs/INSTALL.md` — install all platforms
+- `docs/USAGE.md` — CLI usage, chains, JSON
+- `docs/HOMEBREW.md` — Homebrew tap
+- `RELEASING.md` — maintainer release flow

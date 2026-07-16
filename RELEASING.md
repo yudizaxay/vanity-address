@@ -13,7 +13,7 @@ Maintainers cut releases by pushing a version tag. GitHub Actions builds binarie
    - `vanity-app/src-tauri/tauri.conf.json`
    - `vanity-address/src/banner.rs`, `vanity-app/index.html`, demo SVGs
 3. Update `CHANGELOG.md` with the new version section
-4. Update `Formula/vanity-address.rb` `url` and `sha256` (see below)
+4. Update Homebrew formula: `./scripts/update-homebrew-formula.sh X.Y.Z` (see [docs/HOMEBREW.md](docs/HOMEBREW.md))
 5. Commit, push to `main`
 6. Create and push the tag:
 
@@ -45,17 +45,31 @@ Each binary has a matching `.sha256` checksum file (optional).
 - `LICENSE`
 - `SECURITY.md`
 
-## Homebrew formula
+## Homebrew
 
-After tagging, update the formula tarball hash:
+Full guide: [docs/HOMEBREW.md](docs/HOMEBREW.md)
+
+After tagging `vX.Y.Z`:
 
 ```bash
-curl -L "https://github.com/yudizaxay/vanity-address/archive/refs/tags/v0.3.2.tar.gz" | shasum -a 256
+./scripts/update-homebrew-formula.sh X.Y.Z
+git add Formula/vanity-address.rb
 ```
 
-Paste the hash into `Formula/vanity-address.rb` and commit (or include in the release commit).
+**One-time:** create GitHub repo `yudizaxay/homebrew-tap`, clone to `../homebrew-tap`, then after each release:
 
-Install locally:
+```bash
+./scripts/sync-homebrew-tap.sh --push "vanity-address X.Y.Z"
+```
+
+Users install via tap:
+
+```bash
+brew tap yudizaxay/tap
+brew install vanity-address
+```
+
+Local test without tap:
 
 ```bash
 brew install --build-from-source ./Formula/vanity-address.rb

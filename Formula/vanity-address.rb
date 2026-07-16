@@ -1,19 +1,20 @@
 # Homebrew formula for vanity-address CLI
 #
-# Usage (after cloning this repo or adding as a tap):
+# End users (after tap is published):
+#   brew tap yudizaxay/tap
+#   brew install vanity-address
+#
+# From this repo (no tap):
 #   brew install --build-from-source ./Formula/vanity-address.rb
 #
-# Or from a tagged release tarball:
-#   brew install yudizaxay/tap/vanity-address
-#
-# Update `url` and `sha256` when cutting a new release.
+# Maintainers: ./scripts/update-homebrew-formula.sh 0.3.5   (tag must exist on GitHub first)
+# See docs/HOMEBREW.md
 
 class VanityAddress < Formula
   desc "Fast, local multi-chain vanity address generator"
   homepage "https://github.com/yudizaxay/vanity-address"
-  url "https://github.com/yudizaxay/vanity-address/archive/refs/tags/v0.3.2.tar.gz"
-  # Run: curl -L <url> | shasum -a 256
-  sha256 "REPLACE_ON_RELEASE"
+  url "https://github.com/yudizaxay/vanity-address/archive/refs/tags/v0.3.4.tar.gz"
+  sha256 "d7f97243d9ac7e3a08c3e2e58ddd675770805406de02164cd8be4d6875b04ff1"
   license "MIT"
   head "https://github.com/yudizaxay/vanity-address.git", branch: "main"
 
