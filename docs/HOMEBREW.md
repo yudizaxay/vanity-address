@@ -30,7 +30,40 @@ Run `brew trust --formula yudizaxay/tap/vanity-address` or `brew trust yudizaxay
 
 Run one of the `brew trust` commands above, then `brew install vanity-address` again. See [Homebrew tap trust](https://docs.brew.sh/Tap-Trust).
 
-### Option B — Build from this repo’s formula
+### Other untrusted taps block install (not vanity-address)
+
+Homebrew 6 may refuse **any** `brew install` if you have **other** untrusted taps with formulae already on your Mac. Example:
+
+```text
+Error: Refusing to load formula mongodb/brew/mongodb-database-tools from untrusted tap mongodb/brew.
+```
+
+`vanity-address` does **not** depend on MongoDB — this is your local Homebrew setup.
+
+**Fix A — trust the tap that Homebrew names in the error** (if you still use that software):
+
+```bash
+brew trust mongodb/brew
+brew install vanity-address
+```
+
+**Fix B — trust only that formula:**
+
+```bash
+brew trust --formula mongodb/brew/mongodb-database-tools
+brew install vanity-address
+```
+
+**Fix C — fully qualified install** (after `brew trust yudizaxay/tap`):
+
+```bash
+brew install yudizaxay/tap/vanity-address
+```
+
+If it still fails, trust or untap the other taps listed in the warning (`antoniorodr/memo`, `cloudflare/cloudflare`, `ngrok/ngrok`, etc.) — only for taps you actually use.
+
+**Fix D — skip Homebrew compile** — use a [pre-built CLI from GitHub Releases](INSTALL.md#github-releases-recommended) (~30s, no Rust/MongoDB tap issues).
+
 
 ```bash
 git clone https://github.com/yudizaxay/vanity-address.git
