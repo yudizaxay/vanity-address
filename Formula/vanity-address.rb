@@ -22,7 +22,7 @@ class VanityAddress < Formula
   depends_on "rust" => :build
 
   def install
-    system "cargo", "install", *std_cargo_install_args(path: "vanity-address")
+    system "cargo", "install", *std_cargo_args(path: "vanity-address")
   end
 
   test do
