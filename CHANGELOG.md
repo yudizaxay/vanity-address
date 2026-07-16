@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here.
 
+## [0.3.5] - 2026-07-16
+
+### Added
+
+- **Install docs:** why `cargo install` is slow, faster pre-built binary path, and how to uninstall
+
+### Changed
+
+- **`cargo install` compile time:** release profile in the published CLI crate uses `lto = false` and higher `codegen-units` (faster first-time compile; GitHub Release binaries still use workspace LTO)
+
 ## [0.3.4] - 2026-07-14
 
 ### Fixed
@@ -102,6 +112,7 @@ All notable changes to this project are documented here.
 - Keys are generated locally; no network calls
 - `vanity-results.txt` is gitignored — never commit private keys
 
+[0.3.5]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.5
 [0.3.4]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.4
 [0.3.3]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.3
 [0.3.2]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.2

@@ -165,13 +165,60 @@ brew install --build-from-source ./Formula/vanity-address.rb
 
 See [RELEASING.md](../RELEASING.md) for tap setup and formula hash updates.
 
-### crates.io
+### crates.io (`cargo install`)
 
 ```bash
 cargo install vanity-address
 ```
 
-Requires Rust 1.70+. Installs the latest published CLI from [crates.io/crates/vanity-address](https://crates.io/crates/vanity-address). Maintainers: see [RELEASING.md](../RELEASING.md#publishing-to-cratesio).
+Requires [Rust](https://rustup.rs/) 1.70+. Installs the latest published CLI from [crates.io/crates/vanity-address](https://crates.io/crates/vanity-address).
+
+**First install is slow (often 3–8 minutes)** — normal for this project. Cargo compiles from source, including the large Solana SDK dependency tree. The second install on the same machine is faster thanks to Cargo’s cache.
+
+**Faster options (no compile):**
+
+| Method | Typical time |
+| ------ | ------------ |
+| [GitHub Releases](https://github.com/yudizaxay/vanity-address/releases/latest) pre-built CLI | ~30 seconds (download + extract) |
+| `cargo install` (first time) | ~3–8 minutes |
+| `cargo install` (same machine again) | ~1–2 minutes |
+
+**Speed up `cargo install` on an already-published version** (optional env vars, no code change):
+
+```bash
+CARGO_PROFILE_RELEASE_LTO=false CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 cargo install vanity-address
+```
+
+Use all CPU cores (default on most setups):
+
+```bash
+cargo install vanity-address -j "$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
+```
+
+Maintainers: see [RELEASING.md](../RELEASING.md#publishing-to-cratesio).
+
+### Uninstall
+
+**CLI installed via `cargo install`:**
+
+```bash
+cargo uninstall vanity-address
+```
+
+Removes `~/.cargo/bin/vanity-address`. You do **not** need to uninstall `vanity-core` — it is a library dependency, not a global command.
+
+**Desktop app:**
+
+| Platform | How to remove |
+| -------- | ------------- |
+| macOS | Drag **Vanity Address** from Applications to Trash |
+| Windows | **Settings → Apps → Vanity Address → Uninstall** (or the installer’s uninstall entry) |
+
+**Optional cleanup** (saved grind results, not the app itself):
+
+```bash
+rm -f vanity-results.txt   # default save file from `--save` / interactive save
+```
 
 ### Build from source
 

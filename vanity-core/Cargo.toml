@@ -1,6 +1,6 @@
 [package]
 name = "vanity-core"
-version = "0.3.4"
+version = "0.3.5"
 edition = "2021"
 description = "Multi-chain vanity address grinding core library"
 license = "MIT"

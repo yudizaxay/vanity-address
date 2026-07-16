@@ -93,9 +93,12 @@ tar xzf VanityAddress-0.3.2-Linux-CLI.tar.gz
 ```
 
 ```bash
-# Or install the CLI from crates.io (requires Rust)
+# Or install the CLI from crates.io (requires Rust; first compile often takes 3–8 min)
 cargo install vanity-address
 ```
+
+> **Faster?** Skip compiling — download the pre-built CLI from [Releases](https://github.com/yudizaxay/vanity-address/releases/latest) (~30s).  
+> **Remove later?** `cargo uninstall vanity-address` — see [Install guide → Uninstall](https://github.com/yudizaxay/vanity-address/blob/main/docs/INSTALL.md#uninstall).
 
 > macOS may block unsigned apps — see [Install guide → Gatekeeper](https://github.com/yudizaxay/vanity-address/blob/main/docs/INSTALL.md#macos-gatekeeper-damaged-app).  
 > Windows SmartScreen may warn — **More info → Run anyway**. Desktop app needs [WebView2](https://github.com/yudizaxay/vanity-address/blob/main/docs/INSTALL.md#windows--desktop-app-installer) (usually already on Windows 11).

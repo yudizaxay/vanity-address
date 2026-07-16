@@ -1,6 +1,6 @@
 [package]
 name = "vanity-address"
-version = "0.3.4"
+version = "0.3.5"
 edition = "2021"
 description = "Fast, local multi-chain vanity address generator"
 license = "MIT"
@@ -16,8 +16,15 @@ categories = ["command-line-utilities", "cryptography"]
 name = "vanity-address"
 path = "src/main.rs"
 
+# Used by `cargo install` from crates.io (workspace [profile.release] is not in the published crate).
+# Solana SDK is heavy — these settings trade a little runtime size for much faster first-time compiles.
+[profile.release]
+lto = false
+codegen-units = 16
+strip = "symbols"
+
 [dependencies]
-vanity-core = { path = "../vanity-core", version = "0.3.4" }
+vanity-core = { path = "../vanity-core", version = "0.3.5" }
 clap = { version = "4", features = ["derive", "color"] }
 colored = "3"
 indicatif = "0.18"
