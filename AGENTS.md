@@ -40,12 +40,12 @@ vanity-address/          (workspace root)
 
 | Package | Version | Published |
 | ------- | ------- | --------- |
-| vanity-core | **0.3.5** | ✅ crates.io |
-| vanity-address (CLI) | **0.3.5** | ✅ crates.io |
-| vanity-app (desktop) | **0.3.5** | ✅ GitHub Releases |
+| vanity-core | **0.3.6** | ✅ crates.io |
+| vanity-address (CLI) | **0.3.6** | ✅ crates.io |
+| vanity-app (desktop) | **0.3.6** | ✅ GitHub Releases |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.3.5` ✅  
-**GitHub Release v0.3.5:** ✅ CLI + desktop assets live
+**Git tags on GitHub:** `v0.3.0` … `v0.3.6` ✅ 
+**GitHub Release v0.3.6:** ✅ CLI + desktop assets live
 
 **crates.io publish order (critical):**
 
@@ -61,11 +61,11 @@ cargo publish -p vanity-address
 
 | Channel | Status | User command |
 | ------- | ------ | ------------ |
-| **GitHub Releases** | ✅ v0.3.5 | Download `.dmg`, `.exe`, CLI archives |
-| **crates.io** | ✅ v0.3.5 | `cargo install vanity-address` |
-| **Homebrew tap** | ✅ [yudizaxay/homebrew-tap](https://github.com/yudizaxay/homebrew-tap) formula v0.3.5 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
+| **GitHub Releases** | ✅ v0.3.6 | Download `.dmg`, `.exe`, CLI archives |
+| **crates.io** | ✅ v0.3.6 | `cargo install vanity-address` |
+| **Homebrew tap** | ✅ [yudizaxay/homebrew-tap](https://github.com/yudizaxay/homebrew-tap) formula v0.3.6 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
-| **npm** | ✅ v0.3.6 (5 packages; README polish over 0.3.5 binaries) | `npx vanity-address` / `npm i -g vanity-address` |
+| **npm** | ✅ v0.3.6 (5 packages; ships 0.3.5 binaries — see note) | `npx vanity-address` / `npm i -g vanity-address` |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
 
 ### Homebrew user install (Homebrew 6+)
@@ -103,7 +103,7 @@ See [docs/HOMEBREW.md](docs/HOMEBREW.md).
 Layout: `npm/vanity-address` (shim) + `npm/vanity-address-{darwin-arm64,darwin-x64,linux-x64,win32-x64}`.  
 `vanity-app` stays private (desktop only). See [docs/NPM.md](docs/NPM.md).
 
-**⚠️ npm version note:** npm is at **0.3.6** (README-only bump over 0.3.5 binaries — npm can't update a README without a new version). **Next project release must be ≥ 0.3.7**, or npm publish will conflict.
+**⚠️ npm version note:** npm **0.3.6** was a README-only bump published *before* the v0.3.6 Release existed, so its binaries are 0.3.5 (`vanity-address --version` prints 0.3.5). npm versions are immutable — cannot republish 0.3.6 with new binaries. Functionally identical (0.3.6 changed no code). **Next project release must be ≥ 0.3.7**; at that point npm binaries re-sync automatically via `prepare-npm.sh`.
 
 ---
 
@@ -218,8 +218,9 @@ make homebrew-formula VER=X.Y.Z
 | Homebrew tap live (`yudizaxay/homebrew-tap`) + scripts + docs | ✅ |
 | Homebrew 6 `brew trust` docs + other-tap troubleshooting | ✅ |
 | Formula fix: `std_cargo_args` (was `std_cargo_install_args`) | ✅ |
-| GitHub Release v0.3.5 (all platform assets) | ✅ |
-| npm CLI wrapper packages + prepare/publish scripts | ✅ published 0.3.5 (2FA enabled) |
+| GitHub Release v0.3.6 (all platform assets) | ✅ |
+| npm CLI wrapper packages + prepare/publish scripts | ✅ published 0.3.6 (2FA enabled) |
+| Full 0.3.6 release: tag, crates.io, Homebrew tap synced | ✅ 2026-07-17 |
 | `AGENTS.md` + `.cursor/rules/project-context.mdc` | ✅ |
 | Dependabot PRs #22/#23 applied locally | ✅ |
 
@@ -268,4 +269,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-07-17 — npm 0.3.5 live on registry (5 packages); npm publish requires 2FA OTP.*
+*Last updated: 2026-07-17 — v0.3.6 released on all channels (GitHub, crates.io, Homebrew, npm). npm 0.3.6 ships 0.3.5 binaries (see npm version note); next release ≥ 0.3.7.*

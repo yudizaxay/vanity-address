@@ -10,7 +10,7 @@ alwaysApply: true
 ## Quick facts
 
 - Rust workspace: `vanity-core` (engine) + `vanity-address` (CLI) + `vanity-app` (Tauri desktop)
-- **v0.3.5** on crates.io; chain logic only in `vanity-core`
+- **v0.3.6** on crates.io; chain logic only in `vanity-core`
 - Publish order: `vanity-core` then `vanity-address` (no `#` on same shell line)
 - Homebrew: `Formula/vanity-address.rb` + scripts; tap `yudizaxay/tap` — users need `brew trust yudizaxay/tap` on Homebrew 6+
 - Formula must use `std_cargo_args` (not `std_cargo_install_args`)
