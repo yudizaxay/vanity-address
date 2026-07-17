@@ -65,7 +65,7 @@ cargo publish -p vanity-address
 | **crates.io** | ✅ v0.3.5 | `cargo install vanity-address` |
 | **Homebrew tap** | ✅ [yudizaxay/homebrew-tap](https://github.com/yudizaxay/homebrew-tap) formula v0.3.5 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
-| **npm** | ✅ v0.3.5 (5 packages live) | `npx vanity-address` / `npm i -g vanity-address` |
+| **npm** | ✅ v0.3.6 (5 packages; README polish over 0.3.5 binaries) | `npx vanity-address` / `npm i -g vanity-address` |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
 
 ### Homebrew user install (Homebrew 6+)
@@ -102,6 +102,8 @@ See [docs/HOMEBREW.md](docs/HOMEBREW.md).
 
 Layout: `npm/vanity-address` (shim) + `npm/vanity-address-{darwin-arm64,darwin-x64,linux-x64,win32-x64}`.  
 `vanity-app` stays private (desktop only). See [docs/NPM.md](docs/NPM.md).
+
+**⚠️ npm version note:** npm is at **0.3.6** (README-only bump over 0.3.5 binaries — npm can't update a README without a new version). **Next project release must be ≥ 0.3.7**, or npm publish will conflict.
 
 ---
 

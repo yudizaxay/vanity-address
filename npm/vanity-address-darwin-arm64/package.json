@@ -1,6 +1,6 @@
 {
   "name": "vanity-address-darwin-arm64",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "macOS Apple Silicon binary for vanity-address",
   "license": "MIT",
   "homepage": "https://github.com/yudizaxay/vanity-address",
