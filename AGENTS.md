@@ -65,7 +65,7 @@ cargo publish -p vanity-address
 | **crates.io** | ✅ v0.3.5 | `cargo install vanity-address` |
 | **Homebrew tap** | ✅ [yudizaxay/homebrew-tap](https://github.com/yudizaxay/homebrew-tap) formula v0.3.5 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
-| **npm** | 🟡 Packages ready — publish manually | `npx vanity-address` / `npm i -g vanity-address` |
+| **npm** | ✅ v0.3.5 (5 packages live) | `npx vanity-address` / `npm i -g vanity-address` |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
 
 ### Homebrew user install (Homebrew 6+)
@@ -217,7 +217,7 @@ make homebrew-formula VER=X.Y.Z
 | Homebrew 6 `brew trust` docs + other-tap troubleshooting | ✅ |
 | Formula fix: `std_cargo_args` (was `std_cargo_install_args`) | ✅ |
 | GitHub Release v0.3.5 (all platform assets) | ✅ |
-| npm CLI wrapper packages + prepare/publish scripts | ✅ (publish to registry pending) |
+| npm CLI wrapper packages + prepare/publish scripts | ✅ published 0.3.5 (2FA enabled) |
 | `AGENTS.md` + `.cursor/rules/project-context.mdc` | ✅ |
 | Dependabot PRs #22/#23 applied locally | ✅ |
 
@@ -225,7 +225,6 @@ make homebrew-formula VER=X.Y.Z
 
 ## Pending / optional next steps
 
-- [ ] `npm login` + `./scripts/prepare-npm.sh 0.3.5 && ./scripts/publish-npm.sh` (first npm publish)
 - [ ] Winget / Scoop manifests (Windows package managers)
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen (unsigned warnings documented)
 - [ ] Submit to homebrew-core when notability criteria met
@@ -267,4 +266,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-07-16 — npm CLI wrapper packages added (publish pending).*
+*Last updated: 2026-07-17 — npm 0.3.5 live on registry (5 packages); npm publish requires 2FA OTP.*

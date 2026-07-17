@@ -10,9 +10,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-DRY=()
+DRY=""
 if [[ "${1:-}" == "--dry-run" ]]; then
-  DRY=(--dry-run)
+  DRY="--dry-run"
 fi
 
 PLATFORMS=(
@@ -38,10 +38,10 @@ require_bin vanity-address-win32-x64 vanity-address.exe
 
 for dir in "${PLATFORMS[@]}"; do
   echo "==> Publishing ${dir}"
-  (cd "${ROOT}/npm/${dir}" && npm publish --access public "${DRY[@]}")
+  (cd "${ROOT}/npm/${dir}" && npm publish --access public ${DRY})
 done
 
 echo "==> Publishing vanity-address (main)"
-(cd "${ROOT}/npm/vanity-address" && npm publish --access public "${DRY[@]}")
+(cd "${ROOT}/npm/vanity-address" && npm publish --access public ${DRY})
 
 echo "Done."
