@@ -14,7 +14,7 @@ vanity-address
 
 ```
 ╔══════════════════════════════════════════╗
-║         vanity-address  v0.3.5           ║
+║         vanity-address  v0.3.6           ║
 ╚══════════════════════════════════════════╝
 
   [1]  Start a new grind

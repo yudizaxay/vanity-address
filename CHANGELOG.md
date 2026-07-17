@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here.
 
+## [0.3.6] - 2026-07-17
+
+### Added
+
+- **npm distribution live** — `npx vanity-address` / `npm install -g vanity-address` via platform packages with `optionalDependencies` (no postinstall, no Rust needed)
+- **npm README** — full explainer: what a vanity address is, examples, chains table, safety Q&A
+
+### Changed
+
+- Version unified to **0.3.6** across crates.io, GitHub Releases, Homebrew tap, and npm
+
 ## [0.3.5] - 2026-07-16
 
 ### Added

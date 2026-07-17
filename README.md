@@ -1,4 +1,4 @@
-<div align="center">
+tata<div align="center">
 
 <img src="https://raw.githubusercontent.com/yudizaxay/vanity-address/main/assets/logo.svg" alt="Vanity Address logo" width="160" />
 
@@ -86,9 +86,9 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 **Quick start (Linux):**
 
 ```bash
-# Replace 0.3.5 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.5/VanityAddress-0.3.5-Linux-CLI.tar.gz
-tar xzf VanityAddress-0.3.5-Linux-CLI.tar.gz
+# Replace 0.3.6 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.6/VanityAddress-0.3.6-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.3.6-Linux-CLI.tar.gz
 ./vanity-address
 ```
 

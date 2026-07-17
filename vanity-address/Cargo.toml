@@ -1,6 +1,6 @@
 [package]
 name = "vanity-address"
-version = "0.3.5"
+version = "0.3.6"
 edition = "2021"
 description = "Fast, local multi-chain vanity address generator"
 license = "MIT"
@@ -24,7 +24,7 @@ codegen-units = 16
 strip = "symbols"
 
 [dependencies]
-vanity-core = { path = "../vanity-core", version = "0.3.5" }
+vanity-core = { path = "../vanity-core", version = "0.3.6" }
 clap = { version = "4", features = ["derive", "color"] }
 colored = "3"
 indicatif = "0.18"
