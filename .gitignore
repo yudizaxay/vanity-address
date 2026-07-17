@@ -5,3 +5,6 @@
 plan.md
 vanity-results.txt
 *.keys.txt
+npm/vanity-address-*/bin/vanity-address
+npm/vanity-address-*/bin/vanity-address.exe
+npm/**/*.tgz

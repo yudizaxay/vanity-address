@@ -20,6 +20,8 @@ help:
 	@echo "  make desktop-build  Build native desktop bundle (.dmg / etc.)"
 	@echo "  make install      cargo install --path vanity-address"
 	@echo "  make homebrew-formula VER=0.3.5  Update Formula sha256 for a release tag"
+	@echo "  make npm-prepare VER=0.3.5       Download Release binaries into npm/*/bin"
+	@echo "  make npm-publish                Publish npm packages (platform then main)"
 	@echo "  make clean        cargo clean"
 
 fmt:
@@ -66,6 +68,13 @@ install:
 homebrew-formula:
 	@test -n "$(VER)" || (echo "Usage: make homebrew-formula VER=0.3.5" && exit 1)
 	./scripts/update-homebrew-formula.sh $(VER)
+
+npm-prepare:
+	@test -n "$(VER)" || (echo "Usage: make npm-prepare VER=0.3.5" && exit 1)
+	./scripts/prepare-npm.sh $(VER)
+
+npm-publish:
+	./scripts/publish-npm.sh
 
 clean:
 	$(CARGO) clean

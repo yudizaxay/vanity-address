@@ -177,6 +177,18 @@ brew install --build-from-source ./Formula/vanity-address.rb
 
 📖 Full Homebrew guide: [HOMEBREW.md](HOMEBREW.md) — tap setup for maintainers, `--HEAD`, verify steps.
 
+### npm (`npx` / global)
+
+```bash
+npx vanity-address
+npm install -g vanity-address
+vanity-address --version
+```
+
+Installs a **pre-built** CLI binary for your OS (Node.js 18+). No Rust compile.
+
+📖 Full npm guide: [NPM.md](NPM.md) — platform packages, maintainer publish flow.
+
 ### crates.io (`cargo install`)
 
 ```bash
@@ -192,6 +204,7 @@ Requires [Rust](https://rustup.rs/) 1.70+. Installs the latest published CLI fro
 | Method | Typical time |
 | ------ | ------------ |
 | [GitHub Releases](https://github.com/yudizaxay/vanity-address/releases/latest) pre-built CLI | ~30 seconds (download + extract) |
+| `npm install -g vanity-address` / `npx` | ~30 seconds (binary via npm) |
 | `cargo install` (first time) | ~3–8 minutes |
 | `cargo install` (same machine again) | ~1–2 minutes |
 

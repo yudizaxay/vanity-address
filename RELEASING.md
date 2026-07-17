@@ -11,6 +11,7 @@ Maintainers cut releases by pushing a version tag. GitHub Actions builds binarie
    - `vanity-app/package.json`
    - `vanity-app/src-tauri/Cargo.toml`
    - `vanity-app/src-tauri/tauri.conf.json`
+   - `npm/*/package.json` (or let `prepare-npm.sh` set versions)
    - `vanity-address/src/banner.rs`, `vanity-app/index.html`, demo SVGs
 3. Update `CHANGELOG.md` with the new version section
 4. Update Homebrew formula: `./scripts/update-homebrew-formula.sh X.Y.Z` (see [docs/HOMEBREW.md](docs/HOMEBREW.md))
@@ -24,6 +25,9 @@ git push origin v0.3.5
 
 7. Watch the [Release workflow](https://github.com/yudizaxay/vanity-address/actions/workflows/release.yml)
 8. Verify assets on the [Releases](https://github.com/yudizaxay/vanity-address/releases) page
+9. Publish crates.io (`vanity-core` then `vanity-address`)
+10. Sync Homebrew tap: `./scripts/sync-homebrew-tap.sh --push "vanity-address X.Y.Z"`
+11. Publish npm: `./scripts/prepare-npm.sh X.Y.Z` then `./scripts/publish-npm.sh` (see [docs/NPM.md](docs/NPM.md))
 
 ## Release assets
 
@@ -75,6 +79,20 @@ Local test without tap:
 ```bash
 brew install --build-from-source ./Formula/vanity-address.rb
 ```
+
+## Publishing to npm
+
+Full guide: [docs/NPM.md](docs/NPM.md)
+
+After GitHub Release CLI assets exist for `vX.Y.Z`:
+
+```bash
+./scripts/prepare-npm.sh X.Y.Z
+./scripts/publish-npm.sh --dry-run
+./scripts/publish-npm.sh
+```
+
+Requires `npm login`. Publishes four platform packages, then main `vanity-address`.
 
 ## Publishing to crates.io
 

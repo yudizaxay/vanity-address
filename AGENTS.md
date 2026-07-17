@@ -65,7 +65,7 @@ cargo publish -p vanity-address
 | **crates.io** | ✅ v0.3.5 | `cargo install vanity-address` |
 | **Homebrew tap** | ✅ [yudizaxay/homebrew-tap](https://github.com/yudizaxay/homebrew-tap) formula v0.3.5 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
-| **npm** | ❌ Not for end users | `vanity-app/package.json` is `private` (build only) |
+| **npm** | 🟡 Packages ready — publish manually | `npx vanity-address` / `npm i -g vanity-address` |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
 
 ### Homebrew user install (Homebrew 6+)
@@ -92,6 +92,17 @@ Override tap path: `HOMEBREW_TAP_DIR=/path/to/homebrew-tap`.
 
 See [docs/HOMEBREW.md](docs/HOMEBREW.md).
 
+### npm maintainer flow
+
+```bash
+./scripts/prepare-npm.sh X.Y.Z   # downloads Release CLI assets into npm/*/bin
+./scripts/publish-npm.sh --dry-run
+./scripts/publish-npm.sh         # requires npm login
+```
+
+Layout: `npm/vanity-address` (shim) + `npm/vanity-address-{darwin-arm64,darwin-x64,linux-x64,win32-x64}`.  
+`vanity-app` stays private (desktop only). See [docs/NPM.md](docs/NPM.md).
+
 ---
 
 ## Release checklist (maintainers)
@@ -111,6 +122,7 @@ See [docs/HOMEBREW.md](docs/HOMEBREW.md).
 7. Watch [Release workflow](.github/workflows/release.yml)
 8. `cargo publish -p vanity-core` then `cargo publish -p vanity-address`
 9. `./scripts/sync-homebrew-tap.sh --push "vanity-address X.Y.Z"`
+10. `./scripts/prepare-npm.sh X.Y.Z` then `./scripts/publish-npm.sh`
 
 Full detail: [RELEASING.md](RELEASING.md)
 
@@ -205,6 +217,7 @@ make homebrew-formula VER=X.Y.Z
 | Homebrew 6 `brew trust` docs + other-tap troubleshooting | ✅ |
 | Formula fix: `std_cargo_args` (was `std_cargo_install_args`) | ✅ |
 | GitHub Release v0.3.5 (all platform assets) | ✅ |
+| npm CLI wrapper packages + prepare/publish scripts | ✅ (publish to registry pending) |
 | `AGENTS.md` + `.cursor/rules/project-context.mdc` | ✅ |
 | Dependabot PRs #22/#23 applied locally | ✅ |
 
@@ -212,8 +225,8 @@ make homebrew-formula VER=X.Y.Z
 
 ## Pending / optional next steps
 
+- [ ] `npm login` + `./scripts/prepare-npm.sh 0.3.5 && ./scripts/publish-npm.sh` (first npm publish)
 - [ ] Winget / Scoop manifests (Windows package managers)
-- [ ] npm binary wrapper for `npx vanity-address` (optional)
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen (unsigned warnings documented)
 - [ ] Submit to homebrew-core when notability criteria met
 - [ ] Growth: social posts / README badges polish
@@ -232,7 +245,10 @@ make homebrew-formula VER=X.Y.Z
 | `Formula/vanity-address.rb` | Homebrew formula (`std_cargo_args`) |
 | `scripts/update-homebrew-formula.sh` | Bump formula url + sha256 |
 | `scripts/sync-homebrew-tap.sh` | Push formula to tap repo |
+| `scripts/prepare-npm.sh` | Fill npm platform bins from GitHub Release |
+| `scripts/publish-npm.sh` | Publish platform pkgs + main to npm |
 | `docs/HOMEBREW.md` | User + maintainer Homebrew guide |
+| `docs/NPM.md` | User + maintainer npm guide |
 | `.github/workflows/release.yml` | Release binaries on tag |
 | `.github/workflows/ci.yml` | CI on push/PR |
 
@@ -247,7 +263,8 @@ make homebrew-formula VER=X.Y.Z
 5. **Verify** with `make test` / `cargo package` before claiming publish-ready
 6. **Read** `RELEASING.md` before version bumps or publishes
 7. **After Homebrew formula changes** — sync tap with `./scripts/sync-homebrew-tap.sh --push`
+8. **After npm package changes** — `./scripts/prepare-npm.sh` then `./scripts/publish-npm.sh` (do not commit binaries)
 
 ---
 
-*Last updated: 2026-07-16 — memory sync after Homebrew live + std_cargo_args fix + v0.3.5 release.*
+*Last updated: 2026-07-16 — npm CLI wrapper packages added (publish pending).*

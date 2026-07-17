@@ -14,16 +14,18 @@ alwaysApply: true
 - Publish order: `vanity-core` then `vanity-address` (no `#` on same shell line)
 - Homebrew: `Formula/vanity-address.rb` + scripts; tap `yudizaxay/tap` — users need `brew trust yudizaxay/tap` on Homebrew 6+
 - Formula must use `std_cargo_args` (not `std_cargo_install_args`)
+- npm: `npm/vanity-address` + platform pkgs; `./scripts/prepare-npm.sh` then `./scripts/publish-npm.sh`
 - Windows CLI: `terminal.rs` Press-only keys; `menu.rs` crossterm clear
 - crates.io README needs absolute GitHub/raw URLs for images and links
 
 ## Before releases
 
-`make check-ci` → version bump all packages → `CHANGELOG.md` → `./scripts/update-homebrew-formula.sh X.Y.Z` → tag → `cargo publish` → `./scripts/sync-homebrew-tap.sh --push`
+`make check-ci` → version bump all packages → `CHANGELOG.md` → Homebrew formula → tag → `cargo publish` → sync Homebrew tap → `prepare-npm` + `publish-npm`
 
 ## Docs map
 
 - `docs/INSTALL.md` — install all platforms
 - `docs/USAGE.md` — CLI usage, chains, JSON
 - `docs/HOMEBREW.md` — Homebrew tap
+- `docs/NPM.md` — npm CLI wrapper
 - `RELEASING.md` — maintainer release flow
