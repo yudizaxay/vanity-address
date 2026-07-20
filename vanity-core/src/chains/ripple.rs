@@ -77,3 +77,33 @@ impl ChainGrinder for RippleGrinder {
         "Ripple base58 alphabet — addresses start with r."
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::RippleGrinder;
+    use crate::chain::ChainGrinder;
+    use crate::chains::util::RIPPLE_ALPHABET;
+
+    #[test]
+    fn ripple_alphabet_is_full_base58() {
+        assert_eq!(RIPPLE_ALPHABET.len(), 58);
+        assert_eq!(
+            RIPPLE_ALPHABET
+                .chars()
+                .collect::<std::collections::HashSet<_>>()
+                .len(),
+            58
+        );
+    }
+
+    #[test]
+    fn ripple_addresses_start_with_r_and_never_panic() {
+        let g = RippleGrinder;
+        for _ in 0..200 {
+            let (addr, attempt) = g.grind_attempt();
+            assert!(addr.starts_with('r'), "{addr}");
+            let result = g.finalize(attempt);
+            assert_eq!(result.address, addr);
+        }
+    }
+}

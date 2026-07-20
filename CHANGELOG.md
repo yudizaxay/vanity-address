@@ -2,6 +2,24 @@
 
 All notable changes to this project are documented here.
 
+## [0.3.7] - 2026-07-20
+
+### Added
+
+- **9 new chains** (22 total): Algorand (`algo`), Tezos tz1 (`xtz`), Internet Computer (`icp`), Kaspa (`kaspa`), TON Wallet V4R2 (`ton`), Filecoin f1 (`fil`), Polkadot SS58 ed25519 (`dot`), Cardano enterprise (`ada`), Hedera ed25519 pubkey (`hedera`)
+
+### Fixed
+
+- **Ripple (XRP) alphabet** — corrected corrupted base58 charset (was 57 chars with duplicates; could panic mid-grind). Now full 58-char XRPL alphabet.
+
+### Notes
+
+- **Hedera:** vanities the ed25519 public key hex — account IDs (`0.0.N`) are assigned on-chain when you create the account
+- **Polkadot:** ed25519 SS58 (prefix 0); sr25519 wallets may differ
+- **Cardano:** Shelley enterprise (payment-only) `addr1…` addresses
+- **TON:** Wallet V4R2 non-bounceable `UQ…` (Tonkeeper-style)
+- **ICP:** prefer `--prefix` for vanity; encoded principals always end with `e` (self-authenticating tag)
+
 ## [0.3.6] - 2026-07-17
 
 ### Added

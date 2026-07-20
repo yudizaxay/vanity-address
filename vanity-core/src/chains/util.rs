@@ -8,7 +8,7 @@ use solana_sdk::signature::{Keypair, SeedDerivable};
 
 pub const BASE58_ALPHABET: &str = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
-pub const RIPPLE_ALPHABET: &str = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkvCFzzQuvGM5ZX";
+pub const RIPPLE_ALPHABET: &str = "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz";
 
 /// Bech32 data charset (cosmos1… addresses).
 pub const BECH32_CHARSET: &str = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
@@ -78,7 +78,13 @@ pub fn encode_base58_with_alphabet(data: &[u8], alphabet: &str) -> String {
         }
     }
     for &digit in digits.iter().rev() {
-        encoded.push(alphabet.chars().nth(digit as usize).unwrap());
+        let ch = alphabet.chars().nth(digit as usize).unwrap_or_else(|| {
+            panic!(
+                "base58 digit {digit} out of range for alphabet len {}",
+                alphabet.len()
+            )
+        });
+        encoded.push(ch);
     }
     encoded
 }
@@ -237,6 +243,49 @@ pub fn hex_combinations(pattern: &str) -> f64 {
 
 pub fn bech32_combinations(pattern: &str) -> f64 {
     32f64.powi(pattern.len() as i32)
+}
+
+pub fn base32_combinations(pattern: &str) -> f64 {
+    32f64.powi(pattern.len() as i32)
+}
+
+pub fn base64url_combinations(pattern: &str) -> f64 {
+    64f64.powi(pattern.len() as i32)
+}
+
+/// RFC 4648 base32 alphabet (Algorand / Filecoin / ICP).
+pub const BASE32_ALPHABET: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+pub const BASE32_ALPHABET_LOWER: &str = "abcdefghijklmnopqrstuvwxyz234567";
+
+/// TON user-friendly address alphabet (base64url).
+pub const BASE64URL_ALPHABET: &str =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+pub fn blake2b_var(data: &[u8], out_len: usize) -> Vec<u8> {
+    use blake2::digest::{Update, VariableOutput};
+    use blake2::Blake2bVar;
+    let mut hasher = Blake2bVar::new(out_len).expect("valid blake2b length");
+    hasher.update(data);
+    let mut out = vec![0u8; out_len];
+    hasher
+        .finalize_variable(&mut out)
+        .expect("blake2b finalize");
+    out
+}
+
+pub fn crc16_xmodem(data: &[u8]) -> u16 {
+    let mut crc: u16 = 0;
+    for &b in data {
+        crc ^= u16::from(b) << 8;
+        for _ in 0..8 {
+            if crc & 0x8000 != 0 {
+                crc = (crc << 1) ^ 0x1021;
+            } else {
+                crc <<= 1;
+            }
+        }
+    }
+    crc
 }
 
 pub fn expected_from_pattern(pattern: &Pattern, per_char: impl Fn(&str) -> f64) -> f64 {

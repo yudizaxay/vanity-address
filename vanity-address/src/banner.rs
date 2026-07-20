@@ -59,7 +59,7 @@ fn print_trust_lines() {
     println!(
         "  {} {}",
         "·".cyan(),
-        "13 chains  ·  prefix/suffix  ·  multi-core grinding".dimmed()
+        "22 chains  ·  prefix/suffix  ·  multi-core grinding".dimmed()
     );
     let _ = io::stdout().flush();
 }

@@ -497,7 +497,8 @@ mod tests {
     fn list_chains_covers_every_menu_entry() {
         let chains = list_chains();
         assert_eq!(chains.len(), MENU_CHAINS.len());
-        assert_eq!(chains[0].id, "sol");
+        assert_eq!(chains[0].id, MENU_CHAINS[0].0);
+        assert!(chains.iter().any(|c| c.id == "sol"));
         assert!(chains.iter().any(|c| c.id == "evm"));
     }
 
