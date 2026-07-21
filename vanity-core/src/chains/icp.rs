@@ -5,8 +5,8 @@ use sha2::{Digest, Sha224};
 use solana_sdk::signature::{Keypair, Signer};
 
 use super::util::{
-    base32_combinations, build_base58_pattern, expected_from_pattern, grind_ed25519,
-    keypair_from_secret, secret_from_attempt, BASE32_ALPHABET_LOWER,
+    base32_combinations, build_base58_pattern, der_ed25519_spki, expected_from_pattern,
+    grind_ed25519, keypair_from_secret, secret_from_attempt, BASE32_ALPHABET_LOWER,
 };
 
 #[derive(Clone, Default)]
@@ -16,11 +16,7 @@ impl IcpGrinder {
     /// Self-authenticating principal from raw ed25519 public key.
     fn derive_address(keypair: &Keypair) -> String {
         let pubkey = keypair.pubkey().to_bytes();
-        // SubjectPublicKeyInfo DER for Ed25519
-        let mut der = vec![
-            0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x03, 0x21, 0x00,
-        ];
-        der.extend_from_slice(&pubkey);
+        let der = der_ed25519_spki(&pubkey);
 
         let hash = Sha224::digest(&der);
         let mut principal = Vec::with_capacity(29);

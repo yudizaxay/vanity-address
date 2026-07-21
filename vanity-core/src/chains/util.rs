@@ -261,6 +261,16 @@ pub const BASE32_ALPHABET_LOWER: &str = "abcdefghijklmnopqrstuvwxyz234567";
 pub const BASE64URL_ALPHABET: &str =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
+/// DER-encodes a raw 32-byte Ed25519 public key as a SubjectPublicKeyInfo
+/// (RFC 8410), used by both ICP principals and Hedera's public key export.
+pub fn der_ed25519_spki(pubkey: &[u8; 32]) -> Vec<u8> {
+    let mut der = vec![
+        0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x03, 0x21, 0x00,
+    ];
+    der.extend_from_slice(pubkey);
+    der
+}
+
 pub fn blake2b_var(data: &[u8], out_len: usize) -> Vec<u8> {
     use blake2::digest::{Update, VariableOutput};
     use blake2::Blake2bVar;
@@ -271,6 +281,84 @@ pub fn blake2b_var(data: &[u8], out_len: usize) -> Vec<u8> {
         .finalize_variable(&mut out)
         .expect("blake2b finalize");
     out
+}
+
+/// Kaspa's address checksum (a CashAddr-style BCH code over GF(2^5)) — NOT
+/// standard BIP-173 bech32, despite using the same 32-symbol charset. Ported
+/// from kaspa-addresses (rusty-kaspa) and verified against its own test
+/// vectors in `kaspa::tests::kaspa_matches_known_vector`.
+fn cashaddr_polymod(values: impl Iterator<Item = u8>) -> u64 {
+    let mut c: u64 = 1;
+    for d in values {
+        let c0 = c >> 35;
+        c = ((c & 0x0007_ffff_ffff) << 5) ^ (d as u64);
+        if c0 & 0x01 != 0 {
+            c ^= 0x98f2bc8e61;
+        }
+        if c0 & 0x02 != 0 {
+            c ^= 0x79b76d99e2;
+        }
+        if c0 & 0x04 != 0 {
+            c ^= 0xf33e5fb3c4;
+        }
+        if c0 & 0x08 != 0 {
+            c ^= 0xae2eabe2a8;
+        }
+        if c0 & 0x10 != 0 {
+            c ^= 0x1e4f43e470;
+        }
+    }
+    c ^ 1
+}
+
+/// Regroups 8-bit bytes into 5-bit words, right-padding the final word with
+/// zero bits (matches kaspa-addresses' `conv8to5`).
+fn conv8to5(payload: &[u8]) -> Vec<u8> {
+    let padding = usize::from(!payload.len().is_multiple_of(5));
+    let mut out = vec![0u8; payload.len() * 8 / 5 + padding];
+    let mut idx = 0;
+    let mut buf: u16 = 0;
+    let mut bits = 0u32;
+    for &byte in payload {
+        buf = (buf << 8) | u16::from(byte);
+        bits += 8;
+        while bits >= 5 {
+            bits -= 5;
+            out[idx] = (buf >> bits) as u8;
+            buf &= (1 << bits) - 1;
+            idx += 1;
+        }
+    }
+    if bits > 0 {
+        out[idx] = (buf << (5 - bits)) as u8;
+    }
+    out
+}
+
+/// Encodes a Kaspa address body (`version` byte + raw payload, e.g. a
+/// 32-byte Schnorr x-only pubkey) for the given prefix ("kaspa" / "kaspatest"),
+/// returning just the data+checksum part (caller adds `prefix:`).
+pub fn kaspa_address_data(prefix: &str, version: u8, payload: &[u8]) -> String {
+    let mut versioned = Vec::with_capacity(1 + payload.len());
+    versioned.push(version);
+    versioned.extend_from_slice(payload);
+    let fivebit_payload = conv8to5(&versioned);
+
+    let fivebit_prefix = prefix.as_bytes().iter().copied().map(|c| c & 0x1f);
+    let checksum = cashaddr_polymod(
+        fivebit_prefix
+            .chain([0u8])
+            .chain(fivebit_payload.iter().copied())
+            .chain([0u8; 8]),
+    );
+    let checksum5 = conv8to5(&checksum.to_be_bytes()[3..]);
+
+    let chars: Vec<char> = BECH32_CHARSET.chars().collect();
+    fivebit_payload
+        .iter()
+        .chain(checksum5.iter())
+        .map(|&i| chars[i as usize])
+        .collect()
 }
 
 pub fn crc16_xmodem(data: &[u8]) -> u16 {

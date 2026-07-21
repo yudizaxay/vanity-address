@@ -10,8 +10,12 @@ use super::util::{
 
 /// tz1 = ed25519 public key hash (Blake2b-160) with Tezos prefix.
 const TZ1_PREFIX: [u8; 3] = [6, 161, 159];
-/// edsk = ed25519 seed prefix.
-const EDSK_PREFIX: [u8; 4] = [43, 246, 78, 7];
+/// edsk = ed25519 32-byte seed prefix. (Not to be confused with the
+/// same-looking "edsk" prefix `[43, 246, 78, 7]` used for the 64-byte
+/// *expanded* secret key — a different, longer format. Using that prefix
+/// on a 32-byte seed produces a string wallets won't recognize as a valid
+/// key. Verified against pytezos's own test vector below.)
+const EDSK_PREFIX: [u8; 4] = [13, 15, 58, 7];
 
 #[derive(Clone, Default)]
 pub struct TezosGrinder;
@@ -106,13 +110,38 @@ impl ChainGrinder for TezosGrinder {
 
 #[cfg(test)]
 mod tests {
-    use super::TezosGrinder;
+    use super::{TezosGrinder, EDSK_PREFIX};
     use crate::chain::ChainGrinder;
+    use solana_sdk::signature::{Keypair, SeedDerivable};
 
     #[test]
     fn tezos_address_starts_with_tz1() {
         let g = TezosGrinder;
         let (addr, _) = g.grind_attempt();
         assert!(addr.starts_with("tz1"));
+    }
+
+    /// Known-answer test from pytezos: the seed encoded by
+    /// `edsk3nM41ygNfSxVU4w1uAW3G9EnTQEB5rjojeZedLTGmiGRcierVv` must derive
+    /// public key `edpku976gpuAD2bXyx1XGraeKuCo1gUZ3LAJcHM12W1ecxZwoiu22R` and
+    /// address `tz1eKkWU5hGtfLUiqNpucHrXymm83z3DG9Sq`. This also confirms
+    /// `EDSK_PREFIX` round-trips through an independent implementation.
+    #[test]
+    fn tezos_matches_pytezos_known_vector() {
+        let seed: [u8; 32] =
+            hex::decode("92542d866a5263115aa416fd3e1dce4ced35f5545417d1f73763f7093552a72b")
+                .unwrap()[..32]
+                .try_into()
+                .unwrap();
+        let keypair = Keypair::from_seed(&seed).unwrap();
+        let address = TezosGrinder::derive_address(&keypair);
+        assert_eq!(address, "tz1eKkWU5hGtfLUiqNpucHrXymm83z3DG9Sq");
+
+        let edsk = TezosGrinder::encode_edsk(seed);
+        assert_eq!(
+            edsk,
+            "edsk3nM41ygNfSxVU4w1uAW3G9EnTQEB5rjojeZedLTGmiGRcierVv"
+        );
+        assert_eq!(EDSK_PREFIX, [13, 15, 58, 7]);
     }
 }

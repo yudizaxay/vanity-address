@@ -3,8 +3,8 @@ use crate::pattern::Pattern;
 use solana_sdk::signature::{Keypair, Signer};
 
 use super::util::{
-    build_hex_pattern, expected_from_pattern, grind_ed25519, hex_combinations, keypair_from_secret,
-    matches_pattern, secret_from_attempt,
+    build_hex_pattern, der_ed25519_spki, expected_from_pattern, grind_ed25519, hex_combinations,
+    keypair_from_secret, matches_pattern, secret_from_attempt,
 };
 
 /// Hedera account IDs (`0.0.N`) are assigned on-chain. This grinder vanities the
@@ -18,11 +18,7 @@ impl HederaGrinder {
     }
 
     fn der_public_key(pubkey: &[u8; 32]) -> String {
-        let mut der = vec![
-            0x30, 0x2a, 0x30, 0x05, 0x06, 0x03, 0x2b, 0x65, 0x70, 0x03, 0x21, 0x00,
-        ];
-        der.extend_from_slice(pubkey);
-        hex::encode(der)
+        hex::encode(der_ed25519_spki(pubkey))
     }
 }
 

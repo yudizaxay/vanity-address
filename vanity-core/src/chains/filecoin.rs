@@ -13,11 +13,8 @@ pub struct FilecoinGrinder;
 
 impl FilecoinGrinder {
     /// Protocol 1 (secp256k1) address: f1 + base32(payload || checksum).
-    fn derive(secret: &SecretKey) -> String {
-        let secp = Secp256k1::new();
-        let pubkey: PublicKey = secret.public_key(&secp);
-        let uncompressed = pubkey.serialize_uncompressed();
-        let payload = blake2b_var(&uncompressed, 20);
+    fn address_from_uncompressed_pubkey(uncompressed: &[u8]) -> String {
+        let payload = blake2b_var(uncompressed, 20);
         let mut checksum_input = Vec::with_capacity(21);
         checksum_input.push(1u8); // protocol
         checksum_input.extend_from_slice(&payload);
@@ -26,6 +23,12 @@ impl FilecoinGrinder {
         encoded.extend_from_slice(&payload);
         encoded.extend_from_slice(&checksum);
         format!("f1{}", BASE32_NOPAD.encode(&encoded).to_ascii_lowercase())
+    }
+
+    fn derive(secret: &SecretKey) -> String {
+        let secp = Secp256k1::new();
+        let pubkey: PublicKey = secret.public_key(&secp);
+        Self::address_from_uncompressed_pubkey(&pubkey.serialize_uncompressed())
     }
 }
 
@@ -109,5 +112,20 @@ mod tests {
         let g = FilecoinGrinder;
         let (addr, _) = g.grind_attempt();
         assert!(addr.starts_with("f1"));
+    }
+
+    /// Known-answer test from filecoin-project/go-address's own
+    /// TestVectorSecp256k1Address: this exact uncompressed pubkey must
+    /// produce this exact mainnet f1 address.
+    #[test]
+    fn filecoin_matches_go_address_known_vector() {
+        let uncompressed: [u8; 65] = [
+            4, 148, 2, 250, 195, 126, 100, 50, 164, 22, 163, 160, 202, 84, 38, 181, 24, 90, 179,
+            178, 79, 97, 52, 239, 162, 92, 228, 135, 200, 45, 46, 78, 19, 191, 69, 37, 17, 224,
+            210, 36, 84, 33, 248, 97, 59, 193, 13, 114, 250, 33, 102, 102, 169, 108, 59, 193, 57,
+            32, 211, 255, 35, 63, 208, 188, 5,
+        ];
+        let addr = FilecoinGrinder::address_from_uncompressed_pubkey(&uncompressed);
+        assert_eq!(addr, "f15ihq5ibzwki2b4ep2f46avlkrqzhpqgtga7pdrq");
     }
 }

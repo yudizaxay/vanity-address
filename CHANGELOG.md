@@ -7,10 +7,18 @@ All notable changes to this project are documented here.
 ### Added
 
 - **9 new chains** (22 total): Algorand (`algo`), Tezos tz1 (`xtz`), Internet Computer (`icp`), Kaspa (`kaspa`), TON Wallet V4R2 (`ton`), Filecoin f1 (`fil`), Polkadot SS58 ed25519 (`dot`), Cardano enterprise (`ada`), Hedera ed25519 pubkey (`hedera`)
+- Known-vector tests vs third-party refs (rusty-kaspa, pytezos, substrate, bip_utils, go-address) for Kaspa, Tezos, Polkadot, Algorand, Filecoin (+ existing TON)
 
 ### Fixed
 
 - **Ripple (XRP) alphabet** — corrected corrupted base58 charset (was 57 chars with duplicates; could panic mid-grind). Now full 58-char XRPL alphabet.
+- **Kaspa checksum** — was BIP-173 bech32; now CashAddr-style 8-char checksum (rusty-kaspa vectors)
+- **Tezos `edsk` export** — used expanded-key prefix on a 32-byte seed; fixed to seed prefix `[13,15,58,7]` (pytezos vector)
+
+### Changed
+
+- Chain menu / docs ordered **A–Z** by display name
+- Shared `der_ed25519_spki()` helper for ICP + Hedera
 
 ### Notes
 

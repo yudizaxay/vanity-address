@@ -1,12 +1,14 @@
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
-use bech32::{encode, Bech32, Hrp};
 use secp256k1::{Keypair as SecpKeypair, Secp256k1, SecretKey};
 
 use super::util::{
     bech32_combinations, build_base58_pattern, expected_from_pattern, grind_secp256k1,
-    matches_pattern, secret_from_attempt, BECH32_CHARSET,
+    kaspa_address_data, matches_pattern, secret_from_attempt, BECH32_CHARSET,
 };
+
+/// PubKey (Schnorr, 32-byte x-only) address version, per kaspa-addresses.
+const VERSION_PUBKEY: u8 = 0;
 
 #[derive(Clone, Default)]
 pub struct KaspaGrinder;
@@ -16,13 +18,7 @@ impl KaspaGrinder {
         let secp = Secp256k1::new();
         let keypair = SecpKeypair::from_secret_key(&secp, secret);
         let (xonly, _) = keypair.x_only_public_key();
-        let mut payload = Vec::with_capacity(33);
-        payload.push(0u8); // PubKey version
-        payload.extend_from_slice(&xonly.serialize());
-        let hrp = Hrp::parse("kaspa").expect("valid hrp");
-        // Kaspa uses `kaspa:` (colon) instead of BIP-173 `kaspa1` separator.
-        let bip173 = encode::<Bech32>(hrp, &payload).expect("valid kaspa payload");
-        let data = bip173.strip_prefix("kaspa1").expect("bech32 hrp separator");
+        let data = kaspa_address_data("kaspa", VERSION_PUBKEY, &xonly.serialize());
         format!("kaspa:{data}")
     }
 }
@@ -95,13 +91,31 @@ impl ChainGrinder for KaspaGrinder {
 
 #[cfg(test)]
 mod tests {
-    use super::KaspaGrinder;
+    use super::super::util::kaspa_address_data;
+    use super::{KaspaGrinder, VERSION_PUBKEY};
     use crate::chain::ChainGrinder;
+
+    /// From kaspa-addresses' own test vectors (rusty-kaspa
+    /// crypto/addresses/src/lib.rs): an all-zero 32-byte PubKey payload on
+    /// mainnet must encode to this exact address. Confirms the checksum
+    /// algorithm (a CashAddr-style BCH code, not standard bech32) is correct.
+    #[test]
+    fn kaspa_checksum_matches_known_vector() {
+        let addr = format!(
+            "kaspa:{}",
+            kaspa_address_data("kaspa", VERSION_PUBKEY, &[0u8; 32])
+        );
+        assert_eq!(
+            addr,
+            "kaspa:qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqkx9awp4e"
+        );
+    }
 
     #[test]
     fn kaspa_address_prefix() {
         let g = KaspaGrinder;
         let (addr, _) = g.grind_attempt();
         assert!(addr.starts_with("kaspa:"));
+        assert_eq!(addr.len(), "kaspa:".len() + 61);
     }
 }

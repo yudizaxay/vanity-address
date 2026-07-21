@@ -15,11 +15,10 @@ const SS58_PREFIX: u8 = 0;
 pub struct PolkadotGrinder;
 
 impl PolkadotGrinder {
-    fn derive_address(keypair: &Keypair) -> String {
-        let pubkey = keypair.pubkey().to_bytes();
+    fn encode_ss58(prefix: u8, pubkey: &[u8; 32]) -> String {
         let mut data = Vec::with_capacity(35);
-        data.push(SS58_PREFIX);
-        data.extend_from_slice(&pubkey);
+        data.push(prefix);
+        data.extend_from_slice(pubkey);
 
         let mut hasher = Blake2b512::new();
         hasher.update(b"SS58PRE");
@@ -28,6 +27,10 @@ impl PolkadotGrinder {
         data.extend_from_slice(&hash[..2]);
 
         bs58::encode(data).into_string()
+    }
+
+    fn derive_address(keypair: &Keypair) -> String {
+        Self::encode_ss58(SS58_PREFIX, &keypair.pubkey().to_bytes())
     }
 }
 
@@ -96,5 +99,22 @@ mod tests {
         let (addr, _) = g.grind_attempt();
         assert!(addr.len() >= 46);
         assert!(bs58::decode(&addr).into_vec().is_ok());
+    }
+
+    /// Known-answer test from substrate's own ed25519 SS58 vector (generic
+    /// prefix 42): pubkey `0x1a0e2bf1e0195a1f5396c5fd209a620a48fe90f6f336d89c89405a0183a857a3`
+    /// must encode to `5CesK3uTmn4NGfD3oyGBd1jrp4EfRyYdtqL3ERe9SXv8jUHb`. This
+    /// verifies the SS58PRE/blake2b checksum against an independent
+    /// implementation; the Polkadot mainnet prefix (0) is just a parameter
+    /// on top of the same, now-verified encoder.
+    #[test]
+    fn ss58_encoding_matches_substrate_known_vector() {
+        let pubkey: [u8; 32] =
+            hex::decode("1a0e2bf1e0195a1f5396c5fd209a620a48fe90f6f336d89c89405a0183a857a3")
+                .unwrap()
+                .try_into()
+                .unwrap();
+        let addr = PolkadotGrinder::encode_ss58(42, &pubkey);
+        assert_eq!(addr, "5CesK3uTmn4NGfD3oyGBd1jrp4EfRyYdtqL3ERe9SXv8jUHb");
     }
 }

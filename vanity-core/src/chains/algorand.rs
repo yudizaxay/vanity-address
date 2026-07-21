@@ -88,6 +88,7 @@ impl ChainGrinder for AlgorandGrinder {
 mod tests {
     use super::AlgorandGrinder;
     use crate::chain::ChainGrinder;
+    use solana_sdk::signature::{Keypair, SeedDerivable};
 
     #[test]
     fn algo_address_length() {
@@ -97,5 +98,19 @@ mod tests {
         assert!(addr
             .chars()
             .all(|c| c.is_ascii_uppercase() || ('2'..='7').contains(&c)));
+    }
+
+    /// Known-answer test from bip_utils (verified against the official
+    /// Algorand wallet): the all-zero 32-byte seed must derive this exact
+    /// address.
+    #[test]
+    fn algo_matches_zero_seed_known_vector() {
+        let seed = [0u8; 32];
+        let keypair = Keypair::from_seed(&seed).unwrap();
+        let addr = AlgorandGrinder::derive_address(&keypair);
+        assert_eq!(
+            addr,
+            "HNVCPPGOW2SC2YVDVDICU3YNONSTEFLXDXREHJR2YBEKDC2Z3IUZSC6YGI"
+        );
     }
 }
