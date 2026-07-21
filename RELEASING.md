@@ -19,8 +19,8 @@ Maintainers cut releases by pushing a version tag. GitHub Actions builds binarie
 6. Create and push the tag:
 
 ```bash
-git tag -a v0.3.5 -m "v0.3.5"
-git push origin v0.3.5
+git tag -a v0.3.7 -m "v0.3.7"
+git push origin v0.3.7
 ```
 
 7. Watch the [Release workflow](https://github.com/yudizaxay/vanity-address/actions/workflows/release.yml)
@@ -120,13 +120,13 @@ cargo install vanity-address
 
 ## Notes
 
-- Tags must match `v*` (e.g. `v0.3.5`) to trigger the workflow
+- Tags must match `v*` (e.g. `v0.3.7`) to trigger the workflow
 - **CI green ≠ Release published** — push to `main` only runs CI; Release runs on **tag push** or manual dispatch
-- **Manual release (no tag push):** Actions → **Release** → **Run workflow** → enter version `0.3.5` → Run
+- **Manual release (no tag push):** Actions → **Release** → **Run workflow** → enter version `0.3.7` → Run
 - After CI fixes, **move the tag** to the latest commit or run workflow manually from `main`:
   ```bash
-  git tag -fa v0.3.5 -m "v0.3.5"
-  git push origin v0.3.5 --force   # requires yudizaxay account
+  git tag -fa v0.3.7 -m "v0.3.7"
+  git push origin v0.3.7 --force   # requires yudizaxay account
   ```
 - Desktop `.dmg` is built on macOS arm64 runners; Windows desktop NSIS `.exe` on `windows-latest`
 - Intel macOS CLI is cross-compiled on `macos-latest` with `x86_64-apple-darwin`

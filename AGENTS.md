@@ -235,6 +235,13 @@ make homebrew-formula VER=X.Y.Z
 - [ ] Submit to homebrew-core when notability criteria met
 - [ ] Growth: social posts / README badges polish
 
+### Recently completed (low-effort cleanup, 2026-07-21)
+
+- [x] Dependabot #26/#27/#28 closed (bumps in main)
+- [x] npm 0.3.7 smoke (`npx vanity-address@0.3.7 --version` + TON grind)
+- [x] Stale “Cardano, TON coming soon” removed from CLI help
+- [x] Maintainer docs examples pointed at 0.3.7
+
 ---
 
 ## Key file index

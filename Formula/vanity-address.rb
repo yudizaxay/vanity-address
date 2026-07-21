@@ -8,7 +8,7 @@
 # From this repo (no tap):
 #   brew install --build-from-source ./Formula/vanity-address.rb
 #
-# Maintainers: ./scripts/update-homebrew-formula.sh 0.3.5   (tag must exist on GitHub first)
+# Maintainers: ./scripts/update-homebrew-formula.sh 0.3.7   (tag must exist on GitHub first)
 # See docs/HOMEBREW.md
 
 class VanityAddress < Formula

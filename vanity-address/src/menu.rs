@@ -326,7 +326,6 @@ fn show_help() {
     for (id, label) in MENU_CHAINS {
         println!("  • {id} — {label}");
     }
-    println!("  • Cardano, TON — coming soon");
     println!();
     println!("  {}", "Security".bold().red());
     println!("  • 100% local · no internet");

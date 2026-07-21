@@ -82,7 +82,7 @@ npm login
 ### Local smoke test (after prepare)
 
 ```bash
-./scripts/prepare-npm.sh 0.3.5
+./scripts/prepare-npm.sh 0.3.7
 cd npm/vanity-address
 npm pack
 # On matching platform, link platform package:
@@ -106,7 +106,7 @@ After step “GitHub Release assets verified”:
 10. `./scripts/prepare-npm.sh X.Y.Z`
 11. `./scripts/publish-npm.sh`
 
-Keep npm version = CLI version (`0.3.5`).
+Keep npm version = CLI version (`0.3.7`).
 
 ---
 
