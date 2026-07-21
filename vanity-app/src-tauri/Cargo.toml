@@ -1,6 +1,6 @@
 [package]
 name = "vanity-app"
-version = "0.3.6"
+version = "0.3.7"
 description = "Desktop UI for Vanity Address"
 authors = ["yudizaxay"]
 edition = "2021"
@@ -18,7 +18,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-vanity-core = { path = "../../vanity-core", version = "0.3.6" }
+vanity-core = { path = "../../vanity-core", version = "0.3.7" }
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 tauri-plugin-dialog = "2"

@@ -10,7 +10,7 @@
 
 **vanity-address** — fast, local, multi-chain vanity cryptocurrency address generator.
 
-- **13 chains:** Solana, EVM, Bitcoin, Litecoin, Dogecoin, Tron, Cosmos, Osmosis, Ripple, Stellar, Aptos, Sui, NEAR
+- **22 chains (A–Z menu):** Algorand, Aptos, Bitcoin, Cardano, Cosmos, Dogecoin, EVM, Filecoin, Hedera, Internet Computer, Kaspa, Litecoin, NEAR, Osmosis, Polkadot, Ripple, Solana, Stellar, Sui, Tezos, TON, Tron
 - **Two frontends:** CLI (`vanity-address`) + Tauri desktop app (`vanity-app`)
 - **One engine:** `vanity-core` library (all chain logic lives here)
 - **Privacy:** 100% offline; keys never leave the device; no telemetry
@@ -40,12 +40,13 @@ vanity-address/          (workspace root)
 
 | Package | Version | Published |
 | ------- | ------- | --------- |
-| vanity-core | **0.3.6** | ✅ crates.io |
-| vanity-address (CLI) | **0.3.6** | ✅ crates.io |
-| vanity-app (desktop) | **0.3.6** | ✅ GitHub Releases |
+| vanity-core | **0.3.7** | ⏳ pending release (local) |
+| vanity-address (CLI) | **0.3.7** | ⏳ pending release (local) |
+| vanity-app (desktop) | **0.3.7** | ⏳ pending release (local) |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.3.6` ✅ 
-**GitHub Release v0.3.6:** ✅ CLI + desktop assets live
+**Git tags on GitHub:** `v0.3.0` … `v0.3.6` ✅ (v0.3.7 not tagged yet)  
+**GitHub Release v0.3.6:** ✅ CLI + desktop assets live  
+**Local main (unreleased):** **0.3.7** — +9 chains (22 total)
 
 **crates.io publish order (critical):**
 
@@ -139,7 +140,7 @@ vanity-app (Tauri)    ──┼──► vanity-core
                         │      ├── pattern.rs
                         │      ├── estimate.rs
                         │      ├── system.rs    (CPU/memory tuning)
-                        │      └── chains/      (13 chain impls)
+                        │      └── chains/      (22 chain impls)
 ```
 
 CLI modules: `main.rs`, `menu.rs`, `terminal.rs`, `banner.rs`, `json_output.rs`, `warnings.rs`  

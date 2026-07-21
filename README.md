@@ -86,9 +86,9 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 **Quick start (Linux):**
 
 ```bash
-# Replace 0.3.6 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.6/VanityAddress-0.3.6-Linux-CLI.tar.gz
-tar xzf VanityAddress-0.3.6-Linux-CLI.tar.gz
+# Replace 0.3.7 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.7/VanityAddress-0.3.7-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.3.7-Linux-CLI.tar.gz
 ./vanity-address
 ```
 
@@ -176,7 +176,7 @@ Home → Chain → Pattern → Summary → Grind → Result
 
 | Feature | Desktop |
 | ------- | ------- |
-| 13 chains, live ETA, stop mid-grind | ✅ |
+| 22 chains, live ETA, stop mid-grind | ✅ |
 | Impractical-pattern warning | ✅ |
 | Masked keys + reveal / copy / save | ✅ |
 

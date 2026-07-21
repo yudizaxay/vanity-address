@@ -60,7 +60,7 @@ let lastResult: DonePayload | null = null;
 
 async function initHelpScreen() {
   const chains = await listChains();
-  el("#help-chains").textContent = `Supported: ${chains.map((c) => c.id).join(", ")} · Cardano, TON coming soon`;
+  el("#help-chains").textContent = `Supported: ${chains.map((c) => c.id).join(", ")}`;
 }
 
 function goHome() {

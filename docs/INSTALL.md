@@ -19,7 +19,7 @@ No Rust or Node.js required for pre-built downloads — pick your file, extract,
 | **Terminal app** | Windows 10 / 11 | `VanityAddress-*-Windows-CLI.zip` |
 | **Terminal app** | Linux | `VanityAddress-*-Linux-CLI.tar.gz` |
 
-> **Tip:** `*` = version number (e.g. `0.3.6`). Prefer [latest release](https://github.com/yudizaxay/vanity-address/releases/latest) for the newest filenames.  
+> **Tip:** `*` = version number (e.g. `0.3.7`). Prefer [latest release](https://github.com/yudizaxay/vanity-address/releases/latest) for the newest filenames.  
 > **Checksum files** (`.sha256`) are optional — for security verification only; most users can skip them.
 
 ---
@@ -27,9 +27,9 @@ No Rust or Node.js required for pre-built downloads — pick your file, extract,
 ## Linux (CLI)
 
 ```bash
-# Replace 0.3.6 with the version on the Releases page if newer
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.6/VanityAddress-0.3.6-Linux-CLI.tar.gz
-tar xzf VanityAddress-0.3.6-Linux-CLI.tar.gz
+# Replace 0.3.7 with the version on the Releases page if newer
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.7/VanityAddress-0.3.7-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.3.7-Linux-CLI.tar.gz
 ./vanity-address
 ```
 
@@ -47,8 +47,8 @@ vanity-address --version
 **Apple Silicon (M1/M2/M3/M4):**
 
 ```bash
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.6/VanityAddress-0.3.6-Mac-AppleSilicon-CLI.tar.gz
-tar xzf VanityAddress-0.3.6-Mac-AppleSilicon-CLI.tar.gz
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.7/VanityAddress-0.3.7-Mac-AppleSilicon-CLI.tar.gz
+tar xzf VanityAddress-0.3.7-Mac-AppleSilicon-CLI.tar.gz
 ./vanity-address
 ```
 

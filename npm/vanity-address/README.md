@@ -108,23 +108,32 @@ Example output:
 
 ---
 
-## Supported chains (13)
+## Supported chains (22)
 
 | Chain | `--chain` | Address style | Works with |
 | ----- | --------- | ------------- | ---------- |
-| Solana | `sol` | base58 | Phantom, Solflare |
-| Ethereum + all EVM | `evm` | `0x` hex | MetaMask, Rabby |
-| Bitcoin | `btc` | base58 (P2PKH) | Electrum, Sparrow |
-| Litecoin | `ltc` | base58 | — |
-| Dogecoin | `doge` | base58 | — |
-| Tron | `trx` | base58 (`T…`) | TronLink |
-| Cosmos | `cosmos` | bech32 (`cosmos1…`) | Keplr |
-| Osmosis | `osmo` | bech32 (`osmo1…`) | Keplr |
-| Ripple | `xrp` | base58 (`r…`) | — |
-| Stellar | `xlm` | strkey (`G…`) | — |
+| Algorand | `algo` | base32 | Pera, Defly |
 | Aptos | `aptos` | `0x` hex | Petra |
-| Sui | `sui` | `0x` hex | Sui Wallet |
+| Bitcoin | `btc` | base58 (P2PKH) | Electrum, Sparrow |
+| Cardano | `ada` | `addr1…` enterprise | — |
+| Cosmos | `cosmos` | bech32 (`cosmos1…`) | Keplr |
+| Dogecoin | `doge` | base58 | — |
+| Ethereum + all EVM | `evm` | `0x` hex | MetaMask, Rabby |
+| Filecoin | `fil` | `f1…` | Lotus, Glif |
+| Hedera | `hedera` | ed25519 pubkey hex | HashPack (0.0.N on-chain) |
+| Internet Computer | `icp` | principal | dfx / NNS |
+| Kaspa | `kaspa` | `kaspa:…` | Kaspium |
+| Litecoin | `ltc` | base58 | — |
 | NEAR | `near` | hex implicit | — |
+| Osmosis | `osmo` | bech32 (`osmo1…`) | Keplr |
+| Polkadot | `dot` | SS58 ed25519 | Polkadot.js |
+| Ripple | `xrp` | base58 (`r…`) | — |
+| Solana | `sol` | base58 | Phantom, Solflare |
+| Stellar | `xlm` | strkey (`G…`) | — |
+| Sui | `sui` | `0x` hex | Sui Wallet |
+| Tezos | `xtz` | `tz1…` | Temple, Kukai |
+| TON | `ton` | `UQ…` V4R2 | Tonkeeper |
+| Tron | `trx` | base58 (`T…`) | TronLink |
 
 ---
 

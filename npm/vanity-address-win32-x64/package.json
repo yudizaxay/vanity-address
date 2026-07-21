@@ -1,6 +1,6 @@
 {
   "name": "vanity-address-win32-x64",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "Windows x64 binary for vanity-address",
   "license": "MIT",
   "homepage": "https://github.com/yudizaxay/vanity-address",
