@@ -106,10 +106,7 @@ impl ChainGrinder for TonGrinder {
         exact: bool,
     ) -> Result<Pattern, String> {
         let mut pattern = build_base58_pattern(prefix, suffix, exact, BASE64URL_ALPHABET, 48)?;
-        if pattern.has_prefix()
-            && !pattern.prefix.starts_with("UQ")
-            && !pattern.prefix.starts_with("EQ")
-        {
+        if pattern.has_prefix() && !pattern.prefix.starts_with("UQ") {
             pattern.prefix = format!("UQ{}", pattern.prefix);
             pattern.prefix_match = if pattern.ignore_case {
                 pattern.prefix.to_ascii_lowercase()
@@ -157,5 +154,16 @@ mod tests {
         let (addr, _) = g.grind_attempt();
         assert!(addr.starts_with("UQ"));
         assert_eq!(addr.len(), 48);
+    }
+
+    #[test]
+    fn build_pattern_always_forces_uq_prefix() {
+        let g = TonGrinder;
+        // Only "UQ…" addresses are ever derived (non-bounceable tag). A pattern
+        // requesting "EQ…" (bounceable) can never match, so it must be normalized
+        // to "UQ" instead of grinding forever with zero chance of success.
+        let pattern = g.build_pattern(Some("EQabc"), None, false).unwrap();
+        assert!(pattern.prefix.starts_with("UQ"));
+        assert!(pattern.prefix_match.starts_with("uq"));
     }
 }
