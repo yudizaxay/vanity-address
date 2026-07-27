@@ -108,7 +108,7 @@ Example output:
 
 ---
 
-## Supported chains (22)
+## Supported chains (25)
 
 | Chain | `--chain` | Address style | Works with |
 | ----- | --------- | ------------- | ---------- |
@@ -117,13 +117,16 @@ Example output:
 | Bitcoin | `btc` | base58 (P2PKH) | Electrum, Sparrow |
 | Cardano | `ada` | `addr1…` enterprise | — |
 | Cosmos | `cosmos` | bech32 (`cosmos1…`) | Keplr |
+| Dash | `dash` | base58 (P2PKH `X…`) | Dash Core |
 | Dogecoin | `doge` | base58 | — |
 | Ethereum + all EVM | `evm` | `0x` hex | MetaMask, Rabby |
 | Filecoin | `fil` | `f1…` | Lotus, Glif |
 | Hedera | `hedera` | ed25519 pubkey hex | HashPack (0.0.N on-chain) |
 | Internet Computer | `icp` | principal | dfx / NNS |
 | Kaspa | `kaspa` | `kaspa:…` | Kaspium |
+| Kusama | `ksm` | SS58 ed25519 | Polkadot.js |
 | Litecoin | `ltc` | base58 | — |
+| MultiversX | `erd` | bech32 (`erd1…`) | xPortal |
 | NEAR | `near` | hex implicit | — |
 | Osmosis | `osmo` | bech32 (`osmo1…`) | Keplr |
 | Polkadot | `dot` | SS58 ed25519 | Polkadot.js |

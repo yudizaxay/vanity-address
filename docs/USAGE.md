@@ -95,7 +95,7 @@ $ vanity-address --chain evm --prefix dead --suffix beef
 
 Use `--chain` with any supported ID:
 
-`ada`, `algo`, `aptos`, `btc`, `cosmos`, `doge`, `dot`, `evm`, `fil`, `hedera`, `icp`, `kaspa`, `ltc`, `near`, `osmo`, `sol`, `sui`, `ton`, `trx`, `xlm`, `xrp`, `xtz`
+`ada`, `algo`, `aptos`, `btc`, `cosmos`, `dash`, `doge`, `dot`, `erd`, `evm`, `fil`, `hedera`, `icp`, `kaspa`, `ksm`, `ltc`, `near`, `osmo`, `sol`, `sui`, `ton`, `trx`, `xlm`, `xrp`, `xtz`
 
 ---
 
@@ -153,8 +153,8 @@ Combine with `--save` / `--output` to persist keys; `saved_to` is included in th
 
 ### Pattern rules
 
-- **Base58 chains** (Solana, Bitcoin, Litecoin, Dogecoin, Tron, Ripple, Stellar, Tezos, Polkadot): no `0`, `O`, `I`, `l` (where applicable); Ripple uses its own alphabet
-- **Bech32** (Cosmos, Osmosis, Kaspa, Cardano): charset `qpzry9x8gf2tvdw0s3jn54khce6mua7l` (Kaspa uses `kaspa:` separator; Cardano `addr1…`)
+- **Base58 chains** (Solana, Bitcoin, Litecoin, Dogecoin, Dash, Tron, Ripple, Stellar, Tezos, Polkadot, Kusama): no `0`, `O`, `I`, `l` (where applicable); Ripple uses its own alphabet
+- **Bech32** (Cosmos, Osmosis, Kaspa, Cardano, MultiversX): charset `qpzry9x8gf2tvdw0s3jn54khce6mua7l` (Kaspa uses `kaspa:` separator; Cardano `addr1…`; MultiversX `erd1…`)
 - **Base32** (Algorand, Filecoin, ICP): Algorand uppercase; Filecoin `f1…`; ICP principals (dashes optional in pattern)
 - **Base64url** (TON): `UQ…` Wallet V4R2 non-bounceable
 - **Hex chains** (EVM, Aptos, Sui, NEAR, Hedera pubkey): `0-9`, `a-f`; EVM/Aptos/Sui accept optional `0x` prefix

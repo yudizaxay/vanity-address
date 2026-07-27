@@ -176,7 +176,7 @@ Home → Chain → Pattern → Summary → Grind → Result
 
 | Feature | Desktop |
 | ------- | ------- |
-| 22 chains, live ETA, stop mid-grind | ✅ |
+| 25 chains, live ETA, stop mid-grind | ✅ |
 | Impractical-pattern warning | ✅ |
 | Masked keys + reveal / copy / save | ✅ |
 

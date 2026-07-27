@@ -10,7 +10,7 @@
 
 **vanity-address** — fast, local, multi-chain vanity cryptocurrency address generator.
 
-- **22 chains (A–Z menu):** Algorand, Aptos, Bitcoin, Cardano, Cosmos, Dogecoin, EVM, Filecoin, Hedera, Internet Computer, Kaspa, Litecoin, NEAR, Osmosis, Polkadot, Ripple, Solana, Stellar, Sui, Tezos, TON, Tron
+- **25 chains (A–Z menu):** Algorand, Aptos, Bitcoin, Cardano, Cosmos, Dash, Dogecoin, EVM, Filecoin, Hedera, Internet Computer, Kaspa, Kusama, Litecoin, MultiversX, NEAR, Osmosis, Polkadot, Ripple, Solana, Stellar, Sui, Tezos, TON, Tron
 - **Two frontends:** CLI (`vanity-address`) + Tauri desktop app (`vanity-app`)
 - **One engine:** `vanity-core` library (all chain logic lives here)
 - **Privacy:** 100% offline; keys never leave the device; no telemetry
@@ -139,7 +139,7 @@ vanity-app (Tauri)    ──┼──► vanity-core
                         │      ├── pattern.rs
                         │      ├── estimate.rs
                         │      ├── system.rs    (CPU/memory tuning)
-                        │      └── chains/      (22 chain impls)
+                        │      └── chains/      (25 chain impls)
 ```
 
 CLI modules: `main.rs`, `menu.rs`, `terminal.rs`, `banner.rs`, `json_output.rs`, `warnings.rs`  
@@ -230,6 +230,7 @@ make homebrew-formula VER=X.Y.Z
 
 ## Pending / optional next steps
 
+- [ ] Release **0.3.8** — Dash (`dash`), Kusama (`ksm`), MultiversX (`erd`) → 25 chains (on `new-chain-support`)
 - [ ] Winget / Scoop manifests (Windows package managers)
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen (unsigned warnings documented)
 - [ ] Submit to homebrew-core when notability criteria met
@@ -278,4 +279,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-07-21 — v0.3.7 released on all channels (GitHub, crates.io, Homebrew, npm). 22 chains.*
+*Last updated: 2026-07-27 — v0.3.7 on all channels. Unreleased on branch: Dash, Kusama, MultiversX (25 chains).*

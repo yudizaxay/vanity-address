@@ -8,6 +8,8 @@ mod filecoin;
 mod hedera;
 mod icp;
 mod kaspa;
+mod kusama;
+mod multiversx;
 mod near;
 mod polkadot;
 mod ripple;
@@ -29,6 +31,8 @@ pub use filecoin::FilecoinGrinder;
 pub use hedera::HederaGrinder;
 pub use icp::IcpGrinder;
 pub use kaspa::KaspaGrinder;
+pub use kusama::KusamaGrinder;
+pub use multiversx::MultiversXGrinder;
 pub use near::NearGrinder;
 pub use polkadot::PolkadotGrinder;
 pub use ripple::RippleGrinder;
@@ -49,6 +53,7 @@ pub enum Chain {
     Bitcoin(BitcoinLikeGrinder),
     Litecoin(BitcoinLikeGrinder),
     Dogecoin(BitcoinLikeGrinder),
+    Dash(BitcoinLikeGrinder),
     Tron(TronGrinder),
     Cosmos(CosmosGrinder),
     Osmosis(CosmosGrinder),
@@ -61,28 +66,33 @@ pub enum Chain {
     Tezos(TezosGrinder),
     Icp(IcpGrinder),
     Kaspa(KaspaGrinder),
+    Kusama(KusamaGrinder),
     Ton(TonGrinder),
     Filecoin(FilecoinGrinder),
     Polkadot(PolkadotGrinder),
     Cardano(CardanoGrinder),
     Hedera(HederaGrinder),
+    MultiversX(MultiversXGrinder),
 }
 
 /// Menu label for interactive chain picker (index 0-based).
 /// Ordered A–Z by display name for easier selection.
-pub const MENU_CHAINS: [(&str, &str); 22] = [
+pub const MENU_CHAINS: [(&str, &str); 25] = [
     ("algo", "Algorand (base32)"),
     ("aptos", "Aptos (0x hex)"),
     ("btc", "Bitcoin (base58 · P2PKH)"),
     ("ada", "Cardano (enterprise addr1)"),
     ("cosmos", "Cosmos (bech32 · ATOM)"),
+    ("dash", "Dash (base58 · P2PKH)"),
     ("doge", "Dogecoin (base58)"),
     ("evm", "EVM (0x hex · MetaMask)"),
     ("fil", "Filecoin (f1 · secp256k1)"),
     ("hedera", "Hedera (ed25519 pubkey hex)"),
     ("icp", "Internet Computer (principal)"),
     ("kaspa", "Kaspa (bech32)"),
+    ("ksm", "Kusama (SS58 · ed25519)"),
     ("ltc", "Litecoin (base58 · P2PKH)"),
+    ("erd", "MultiversX (bech32 · erd1)"),
     ("near", "NEAR (hex implicit account)"),
     ("osmo", "Osmosis (bech32 · OSMO)"),
     ("dot", "Polkadot (SS58 · ed25519)"),
@@ -103,23 +113,26 @@ impl Chain {
             2 => Some(Chain::Bitcoin(BitcoinLikeGrinder::bitcoin())),
             3 => Some(Chain::Cardano(CardanoGrinder)),
             4 => Some(Chain::Cosmos(CosmosGrinder::cosmos())),
-            5 => Some(Chain::Dogecoin(BitcoinLikeGrinder::dogecoin())),
-            6 => Some(Chain::Evm(EvmGrinder)),
-            7 => Some(Chain::Filecoin(FilecoinGrinder)),
-            8 => Some(Chain::Hedera(HederaGrinder)),
-            9 => Some(Chain::Icp(IcpGrinder)),
-            10 => Some(Chain::Kaspa(KaspaGrinder)),
-            11 => Some(Chain::Litecoin(BitcoinLikeGrinder::litecoin())),
-            12 => Some(Chain::Near(NearGrinder)),
-            13 => Some(Chain::Osmosis(CosmosGrinder::osmosis())),
-            14 => Some(Chain::Polkadot(PolkadotGrinder)),
-            15 => Some(Chain::Ripple(RippleGrinder)),
-            16 => Some(Chain::Solana(SolanaGrinder)),
-            17 => Some(Chain::Stellar(StellarGrinder)),
-            18 => Some(Chain::Sui(SuiGrinder)),
-            19 => Some(Chain::Tezos(TezosGrinder)),
-            20 => Some(Chain::Ton(TonGrinder)),
-            21 => Some(Chain::Tron(TronGrinder)),
+            5 => Some(Chain::Dash(BitcoinLikeGrinder::dash())),
+            6 => Some(Chain::Dogecoin(BitcoinLikeGrinder::dogecoin())),
+            7 => Some(Chain::Evm(EvmGrinder)),
+            8 => Some(Chain::Filecoin(FilecoinGrinder)),
+            9 => Some(Chain::Hedera(HederaGrinder)),
+            10 => Some(Chain::Icp(IcpGrinder)),
+            11 => Some(Chain::Kaspa(KaspaGrinder)),
+            12 => Some(Chain::Kusama(KusamaGrinder)),
+            13 => Some(Chain::Litecoin(BitcoinLikeGrinder::litecoin())),
+            14 => Some(Chain::MultiversX(MultiversXGrinder)),
+            15 => Some(Chain::Near(NearGrinder)),
+            16 => Some(Chain::Osmosis(CosmosGrinder::osmosis())),
+            17 => Some(Chain::Polkadot(PolkadotGrinder)),
+            18 => Some(Chain::Ripple(RippleGrinder)),
+            19 => Some(Chain::Solana(SolanaGrinder)),
+            20 => Some(Chain::Stellar(StellarGrinder)),
+            21 => Some(Chain::Sui(SuiGrinder)),
+            22 => Some(Chain::Tezos(TezosGrinder)),
+            23 => Some(Chain::Ton(TonGrinder)),
+            24 => Some(Chain::Tron(TronGrinder)),
             _ => None,
         }
     }
@@ -132,6 +145,7 @@ impl Chain {
             "btc" | "bitcoin" => Ok(Chain::Bitcoin(BitcoinLikeGrinder::bitcoin())),
             "ltc" | "litecoin" => Ok(Chain::Litecoin(BitcoinLikeGrinder::litecoin())),
             "doge" | "dogecoin" => Ok(Chain::Dogecoin(BitcoinLikeGrinder::dogecoin())),
+            "dash" => Ok(Chain::Dash(BitcoinLikeGrinder::dash())),
             "trx" | "tron" => Ok(Chain::Tron(TronGrinder)),
             "cosmos" | "atom" => Ok(Chain::Cosmos(CosmosGrinder::cosmos())),
             "osmo" | "osmosis" => Ok(Chain::Osmosis(CosmosGrinder::osmosis())),
@@ -144,11 +158,13 @@ impl Chain {
             "xtz" | "tezos" => Ok(Chain::Tezos(TezosGrinder)),
             "icp" | "internet-computer" | "dfinity" => Ok(Chain::Icp(IcpGrinder)),
             "kaspa" | "kas" => Ok(Chain::Kaspa(KaspaGrinder)),
+            "ksm" | "kusama" => Ok(Chain::Kusama(KusamaGrinder)),
             "ton" => Ok(Chain::Ton(TonGrinder)),
             "fil" | "filecoin" => Ok(Chain::Filecoin(FilecoinGrinder)),
             "dot" | "polkadot" | "substrate" => Ok(Chain::Polkadot(PolkadotGrinder)),
             "ada" | "cardano" => Ok(Chain::Cardano(CardanoGrinder)),
             "hedera" | "hbar" => Ok(Chain::Hedera(HederaGrinder)),
+            "erd" | "mvx" | "elrond" | "multiversx" => Ok(Chain::MultiversX(MultiversXGrinder)),
             _ => Err(format!(
                 "Unknown chain '{id}'. Supported: {}",
                 Self::supported_ids_display()
@@ -159,8 +175,9 @@ impl Chain {
     /// Chain IDs in the same A–Z menu order.
     pub fn all_ids() -> &'static [&'static str] {
         &[
-            "algo", "aptos", "btc", "ada", "cosmos", "doge", "evm", "fil", "hedera", "icp",
-            "kaspa", "ltc", "near", "osmo", "dot", "xrp", "sol", "xlm", "sui", "xtz", "ton", "trx",
+            "algo", "aptos", "btc", "ada", "cosmos", "dash", "doge", "evm", "fil", "hedera", "icp",
+            "kaspa", "ksm", "ltc", "erd", "near", "osmo", "dot", "xrp", "sol", "xlm", "sui", "xtz",
+            "ton", "trx",
         ]
     }
 
@@ -176,8 +193,8 @@ mod tests {
 
     #[test]
     fn all_menu_chains_resolve_and_grind() {
-        assert_eq!(super::MENU_CHAINS.len(), 22);
-        assert_eq!(Chain::all_ids().len(), 22);
+        assert_eq!(super::MENU_CHAINS.len(), 25);
+        assert_eq!(Chain::all_ids().len(), 25);
         for (i, (id, _)) in super::MENU_CHAINS.iter().enumerate() {
             let chain = Chain::from_menu_index(i).expect("menu index");
             assert_eq!(chain.id(), *id);
@@ -211,6 +228,7 @@ macro_rules! dispatch {
             Chain::Bitcoin(g) => g.$method($($arg),*),
             Chain::Litecoin(g) => g.$method($($arg),*),
             Chain::Dogecoin(g) => g.$method($($arg),*),
+            Chain::Dash(g) => g.$method($($arg),*),
             Chain::Tron(g) => g.$method($($arg),*),
             Chain::Cosmos(g) => g.$method($($arg),*),
             Chain::Osmosis(g) => g.$method($($arg),*),
@@ -223,11 +241,13 @@ macro_rules! dispatch {
             Chain::Tezos(g) => g.$method($($arg),*),
             Chain::Icp(g) => g.$method($($arg),*),
             Chain::Kaspa(g) => g.$method($($arg),*),
+            Chain::Kusama(g) => g.$method($($arg),*),
             Chain::Ton(g) => g.$method($($arg),*),
             Chain::Filecoin(g) => g.$method($($arg),*),
             Chain::Polkadot(g) => g.$method($($arg),*),
             Chain::Cardano(g) => g.$method($($arg),*),
             Chain::Hedera(g) => g.$method($($arg),*),
+            Chain::MultiversX(g) => g.$method($($arg),*),
         }
     };
 }
