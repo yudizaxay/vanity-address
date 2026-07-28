@@ -1,4 +1,4 @@
-tata<div align="center">
+<div align="center">
 
 <img src="https://raw.githubusercontent.com/yudizaxay/vanity-address/main/assets/logo.svg" alt="Vanity Address logo" width="160" />
 
@@ -50,7 +50,7 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 | Multiple key export formats |   ✅   |    ✅    |
 | 100% offline / local        |   ✅   |    ✅    |
 
-**13+ chains** · **CLI + desktop app** · **MIT licensed** · **privacy-first** (keys never leave your machine)
+**25 chains** · **CLI + desktop app** · **MIT licensed** · **privacy-first** (keys never leave your machine)
 
 ---
 
@@ -86,9 +86,9 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 **Quick start (Linux):**
 
 ```bash
-# Replace 0.3.7 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.7/VanityAddress-0.3.7-Linux-CLI.tar.gz
-tar xzf VanityAddress-0.3.7-Linux-CLI.tar.gz
+# Replace 0.3.8 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.3.8/VanityAddress-0.3.8-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.3.8-Linux-CLI.tar.gz
 ./vanity-address
 ```
 
@@ -155,7 +155,7 @@ vanity-address --chain sol --suffix ax --json --no-benchmark --force
 ├───────────────────┴───┴───────────────────┤
 │                vanity-core lib              │
 │  ┌────────┐ ┌─────┐ ┌──────────┐ ┌───────┐ │
-│  │ Solana │ │ EVM │ │ Bitcoin… │ │  +10  │ │
+│  │ Solana │ │ EVM │ │ Bitcoin… │ │  +22  │ │
 │  │Grinder │ │Grind│ │ Grinders │ │ more  │ │
 │  └────────┘ └─────┘ └──────────┘ └───────┘ │
 │              ChainGrinder trait             │

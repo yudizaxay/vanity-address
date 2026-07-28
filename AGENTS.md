@@ -36,16 +36,17 @@ vanity-address/          (workspace root)
 
 ---
 
-## Current version state (as of 2026-07-21)
+## Current version state (as of 2026-07-28)
 
 | Package | Version | Published |
 | ------- | ------- | --------- |
-| vanity-core | **0.3.7** | ✅ crates.io |
-| vanity-address (CLI) | **0.3.7** | ✅ crates.io |
-| vanity-app (desktop) | **0.3.7** | ✅ GitHub Releases |
+| vanity-core | **0.3.8** | ⏳ pending (branch `new-chain-support`) |
+| vanity-address (CLI) | **0.3.8** | ⏳ pending |
+| vanity-app (desktop) | **0.3.8** | ⏳ pending |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.3.7` ✅  
-**GitHub Release v0.3.7:** ✅ CLI + desktop assets live (22 chains)
+**Git tags on GitHub:** `v0.3.0` … `v0.3.7` ✅ (`v0.3.8` after merge + tag)  
+**GitHub Release v0.3.7:** ✅ 22 chains  
+**This branch:** **0.3.8** — +Dash, Kusama, MultiversX (**25** chains)
 
 **crates.io publish order (critical):**
 
@@ -230,7 +231,7 @@ make homebrew-formula VER=X.Y.Z
 
 ## Pending / optional next steps
 
-- [ ] Release **0.3.8** — Dash (`dash`), Kusama (`ksm`), MultiversX (`erd`) → 25 chains (on `new-chain-support`)
+- [ ] Merge PR → tag `v0.3.8` → publish crates.io / Homebrew / npm (25 chains: Dash, Kusama, MultiversX)
 - [ ] Winget / Scoop manifests (Windows package managers)
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen (unsigned warnings documented)
 - [ ] Submit to homebrew-core when notability criteria met
@@ -279,4 +280,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-07-27 — v0.3.7 on all channels. Unreleased on branch: Dash, Kusama, MultiversX (25 chains).*
+*Last updated: 2026-07-28 — branch `new-chain-support`: v0.3.8 + Dash/Kusama/MultiversX (25 chains). Publish after merge + tag.*

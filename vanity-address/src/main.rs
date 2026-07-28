@@ -31,7 +31,7 @@ const DEFAULT_RESULTS_FILE: &str = "vanity-results.txt";
                   Run without flags for the interactive menu."
 )]
 struct Cli {
-    /// Blockchain: ada, algo, aptos, btc, cosmos, doge, dot, evm, fil, hedera, icp, kaspa, ltc, near, osmo, sol, sui, ton, trx, xlm, xrp, xtz
+    /// Blockchain: ada, algo, aptos, btc, cosmos, dash, doge, dot, erd, evm, fil, hedera, icp, kaspa, ksm, ltc, near, osmo, sol, sui, ton, trx, xlm, xrp, xtz
     #[arg(long)]
     chain: Option<String>,
 
