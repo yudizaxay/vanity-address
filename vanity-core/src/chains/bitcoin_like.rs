@@ -43,6 +43,15 @@ impl BitcoinLikeGrinder {
         }
     }
 
+    pub fn dash() -> Self {
+        Self {
+            id: "dash",
+            display_name: "Dash (P2PKH)",
+            version_byte: 0x4c,
+            wallet_hint: "Dash Core / compatible wallets",
+        }
+    }
+
     fn derive(&self, secret: &SecretKey) -> String {
         p2pkh_address(secret, self.version_byte)
     }
@@ -140,5 +149,12 @@ mod tests {
         let secret = random_secp256k1_secret();
         let addr = p2pkh_address(&secret, BitcoinLikeGrinder::dogecoin().version_byte);
         assert!(addr.starts_with('D'));
+    }
+
+    #[test]
+    fn dash_address_starts_with_x() {
+        let secret = random_secp256k1_secret();
+        let addr = p2pkh_address(&secret, BitcoinLikeGrinder::dash().version_byte);
+        assert!(addr.starts_with('X'));
     }
 }

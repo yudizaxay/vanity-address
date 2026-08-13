@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## [0.3.8] - 2026-07-28
+
+### Added
+
+- **3 new chains** (25 total): Dash P2PKH (`dash`), Kusama SS58 ed25519 (`ksm`), MultiversX `erd1` bech32 (`erd` / `mvx` / `elrond`)
+- Known-vector tests: MultiversX Alice address, Kusama SS58 prefix 2
+
 ## [0.3.7] - 2026-07-20
 
 ### Added

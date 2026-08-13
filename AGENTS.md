@@ -10,7 +10,7 @@
 
 **vanity-address** — fast, local, multi-chain vanity cryptocurrency address generator.
 
-- **22 chains (A–Z menu):** Algorand, Aptos, Bitcoin, Cardano, Cosmos, Dogecoin, EVM, Filecoin, Hedera, Internet Computer, Kaspa, Litecoin, NEAR, Osmosis, Polkadot, Ripple, Solana, Stellar, Sui, Tezos, TON, Tron
+- **25 chains (A–Z menu):** Algorand, Aptos, Bitcoin, Cardano, Cosmos, Dash, Dogecoin, EVM, Filecoin, Hedera, Internet Computer, Kaspa, Kusama, Litecoin, MultiversX, NEAR, Osmosis, Polkadot, Ripple, Solana, Stellar, Sui, Tezos, TON, Tron
 - **Two frontends:** CLI (`vanity-address`) + Tauri desktop app (`vanity-app`)
 - **One engine:** `vanity-core` library (all chain logic lives here)
 - **Privacy:** 100% offline; keys never leave the device; no telemetry
@@ -36,16 +36,17 @@ vanity-address/          (workspace root)
 
 ---
 
-## Current version state (as of 2026-07-21)
+## Current version state (as of 2026-07-28)
 
 | Package | Version | Published |
 | ------- | ------- | --------- |
-| vanity-core | **0.3.7** | ✅ crates.io |
-| vanity-address (CLI) | **0.3.7** | ✅ crates.io |
-| vanity-app (desktop) | **0.3.7** | ✅ GitHub Releases |
+| vanity-core | **0.3.8** | ⏳ pending (branch `new-chain-support`) |
+| vanity-address (CLI) | **0.3.8** | ⏳ pending |
+| vanity-app (desktop) | **0.3.8** | ⏳ pending |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.3.7` ✅  
-**GitHub Release v0.3.7:** ✅ CLI + desktop assets live (22 chains)
+**Git tags on GitHub:** `v0.3.0` … `v0.3.7` ✅ (`v0.3.8` after merge + tag)  
+**GitHub Release v0.3.7:** ✅ 22 chains  
+**This branch:** **0.3.8** — +Dash, Kusama, MultiversX (**25** chains)
 
 **crates.io publish order (critical):**
 
@@ -139,7 +140,7 @@ vanity-app (Tauri)    ──┼──► vanity-core
                         │      ├── pattern.rs
                         │      ├── estimate.rs
                         │      ├── system.rs    (CPU/memory tuning)
-                        │      └── chains/      (22 chain impls)
+                        │      └── chains/      (25 chain impls)
 ```
 
 CLI modules: `main.rs`, `menu.rs`, `terminal.rs`, `banner.rs`, `json_output.rs`, `warnings.rs`  
@@ -230,6 +231,7 @@ make homebrew-formula VER=X.Y.Z
 
 ## Pending / optional next steps
 
+- [ ] Merge PR → tag `v0.3.8` → publish crates.io / Homebrew / npm (25 chains: Dash, Kusama, MultiversX)
 - [ ] Winget / Scoop manifests (Windows package managers)
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen (unsigned warnings documented)
 - [ ] Submit to homebrew-core when notability criteria met
@@ -278,4 +280,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-07-21 — v0.3.7 released on all channels (GitHub, crates.io, Homebrew, npm). 22 chains.*
+*Last updated: 2026-07-28 — branch `new-chain-support`: v0.3.8 + Dash/Kusama/MultiversX (25 chains). Publish after merge + tag.*

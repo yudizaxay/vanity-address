@@ -5,7 +5,7 @@ Desktop UI for [vanity-address](../README.md), built with **Tauri 2** + vanilla 
 ## Flow (matches CLI)
 
 1. **Home** — Start / Help
-2. **Chain** — pick from 13 supported chains
+2. **Chain** — pick from 25 supported chains
 3. **Pattern** — suffix / prefix / both tabs, live estimate + warnings
 4. **Summary** — system profile, difficulty, confirm (double-confirm for impractical)
 5. **Grind** — 2s benchmark, live progress, stop anytime
