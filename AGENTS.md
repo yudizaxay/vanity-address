@@ -36,17 +36,16 @@ vanity-address/          (workspace root)
 
 ---
 
-## Current version state (as of 2026-07-28)
+## Current version state (as of 2026-08-13)
 
 | Package | Version | Published |
 | ------- | ------- | --------- |
-| vanity-core | **0.3.8** | ⏳ pending (branch `new-chain-support`) |
-| vanity-address (CLI) | **0.3.8** | ⏳ pending |
-| vanity-app (desktop) | **0.3.8** | ⏳ pending |
+| vanity-core | **0.3.8** | ✅ crates.io |
+| vanity-address (CLI) | **0.3.8** | ✅ crates.io |
+| vanity-app (desktop) | **0.3.8** | ✅ GitHub Releases |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.3.7` ✅ (`v0.3.8` after merge + tag)  
-**GitHub Release v0.3.7:** ✅ 22 chains  
-**This branch:** **0.3.8** — +Dash, Kusama, MultiversX (**25** chains)
+**Git tags on GitHub:** `v0.3.0` … `v0.3.8` ✅  
+**GitHub Release v0.3.8:** ✅ CLI + desktop assets live (25 chains: +Dash, Kusama, MultiversX)
 
 **crates.io publish order (critical):**
 
@@ -62,11 +61,11 @@ cargo publish -p vanity-address
 
 | Channel | Status | User command |
 | ------- | ------ | ------------ |
-| **GitHub Releases** | ✅ v0.3.7 | Download `.dmg`, `.exe`, CLI archives |
-| **crates.io** | ✅ v0.3.7 | `cargo install vanity-address` |
-| **Homebrew tap** | ✅ [yudizaxay/homebrew-tap](https://github.com/yudizaxay/homebrew-tap) formula v0.3.7 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
+| **GitHub Releases** | ✅ v0.3.8 | Download `.dmg`, `.exe`, CLI archives |
+| **crates.io** | ✅ v0.3.8 | `cargo install vanity-address` |
+| **Homebrew tap** | ✅ [yudizaxay/homebrew-tap](https://github.com/yudizaxay/homebrew-tap) formula v0.3.8 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
-| **npm** | ✅ v0.3.7 (5 packages; binaries from GitHub Release) | `npx vanity-address` / `npm i -g vanity-address` |
+| **npm** | ⏳ v0.3.8 prepare done; publish blocked on `npm login` (token 401) | `npx vanity-address` / `npm i -g vanity-address` |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
 
 ### Homebrew user install (Homebrew 6+)
@@ -231,18 +230,18 @@ make homebrew-formula VER=X.Y.Z
 
 ## Pending / optional next steps
 
-- [ ] Merge PR → tag `v0.3.8` → publish crates.io / Homebrew / npm (25 chains: Dash, Kusama, MultiversX)
+- [ ] Finish **npm 0.3.8** publish (`npm login` then `./scripts/publish-npm.sh` — bins already prepared)
 - [ ] Winget / Scoop manifests (Windows package managers)
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen (unsigned warnings documented)
 - [ ] Submit to homebrew-core when notability criteria met
 - [ ] Growth: social posts / README badges polish
 
-### Recently completed (low-effort cleanup, 2026-07-21)
+### Recently completed (2026-08-13)
 
-- [x] Dependabot #26/#27/#28 closed (bumps in main)
-- [x] npm 0.3.7 smoke (`npx vanity-address@0.3.7 --version` + TON grind)
-- [x] Stale “Cardano, TON coming soon” removed from CLI help
-- [x] Maintainer docs examples pointed at 0.3.7
+- [x] Merged #31/#32/#34/#35/#30 into `main`
+- [x] Tag `v0.3.8` + GitHub Release (12 assets, 25 chains)
+- [x] crates.io `vanity-core` + `vanity-address` 0.3.8
+- [x] Homebrew formula + tap synced to 0.3.8
 
 ---
 
@@ -280,4 +279,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-07-28 — branch `new-chain-support`: v0.3.8 + Dash/Kusama/MultiversX (25 chains). Publish after merge + tag.*
+*Last updated: 2026-08-13 — v0.3.8 on GitHub/crates.io/Homebrew (25 chains). npm publish pending `npm login`.*
