@@ -65,7 +65,7 @@ cargo publish -p vanity-address
 | **crates.io** | ✅ v0.3.8 | `cargo install vanity-address` |
 | **Homebrew tap** | ✅ [yudizaxay/homebrew-tap](https://github.com/yudizaxay/homebrew-tap) formula v0.3.8 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
-| **npm** | ⏳ v0.3.8 prepare done; publish blocked on `npm login` (token 401) | `npx vanity-address` / `npm i -g vanity-address` |
+| **npm** | ✅ v0.3.8 (5 packages; binaries from GitHub Release) | `npx vanity-address` / `npm i -g vanity-address` |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
 
 ### Homebrew user install (Homebrew 6+)
@@ -230,7 +230,6 @@ make homebrew-formula VER=X.Y.Z
 
 ## Pending / optional next steps
 
-- [ ] Finish **npm 0.3.8** publish (`npm login` then `./scripts/publish-npm.sh` — bins already prepared)
 - [ ] Winget / Scoop manifests (Windows package managers)
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen (unsigned warnings documented)
 - [ ] Submit to homebrew-core when notability criteria met
@@ -242,6 +241,7 @@ make homebrew-formula VER=X.Y.Z
 - [x] Tag `v0.3.8` + GitHub Release (12 assets, 25 chains)
 - [x] crates.io `vanity-core` + `vanity-address` 0.3.8
 - [x] Homebrew formula + tap synced to 0.3.8
+- [x] npm 0.3.8 published (platform pkgs + main)
 
 ---
 
@@ -279,4 +279,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-08-13 — v0.3.8 on GitHub/crates.io/Homebrew (25 chains). npm publish pending `npm login`.*
+*Last updated: 2026-08-13 — v0.3.8 released on all channels (GitHub, crates.io, Homebrew, npm). 25 chains.*
