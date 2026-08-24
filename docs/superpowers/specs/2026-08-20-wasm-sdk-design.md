@@ -80,14 +80,26 @@ export interface GenerateAddressOptions {
   signal?: AbortSignal;
 }
 
+export interface KeyExport {
+  label: string;     // e.g. "Private Key (hex)", "Keypair (JSON)"
+  value: string;
+  hint?: string;
+}
+
 export interface Wallet {
   address: string;
-  privateKey: string;   // chain-native format (base58 / hex / WIF, per chain)
-  publicKey?: string;
+  exports: KeyExport[];  // vanity-core's KeypairResult.exports, unchanged shape —
+                          // each chain may expose 1+ key formats (see chain.rs)
 }
 
 export function generateAddress(options: GenerateAddressOptions): Promise<Wallet>;
 ```
+
+> Correction from the initial design pass: `vanity-core::KeypairResult` returns
+> `exports: Vec<KeyExport>`, not a single `privateKey` string — some chains
+> (e.g. Solana) expose multiple key formats. The SDK passes this through
+> as-is rather than collapsing it, so it stays consistent with the CLI's
+> `--json` output (`json_output.rs`).
 
 Loop sketch:
 1. Validate `options.chain` / pattern up front (reject synchronously-fast
