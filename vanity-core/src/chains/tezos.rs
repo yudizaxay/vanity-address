@@ -1,6 +1,6 @@
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
-use solana_sdk::signature::{Keypair, Signer};
+use super::util::Keypair;
 
 use super::util::{
     base58_check_encode_raw, base58_combinations, blake2b_var, build_base58_pattern,
@@ -112,7 +112,7 @@ impl ChainGrinder for TezosGrinder {
 mod tests {
     use super::{TezosGrinder, EDSK_PREFIX};
     use crate::chain::ChainGrinder;
-    use solana_sdk::signature::{Keypair, SeedDerivable};
+    use crate::chains::util::Keypair;
 
     #[test]
     fn tezos_address_starts_with_tz1() {

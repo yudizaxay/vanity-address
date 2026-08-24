@@ -1,7 +1,7 @@
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
 use bech32::{encode, Bech32, Hrp};
-use solana_sdk::signature::{Keypair, Signer};
+use super::util::Keypair;
 
 use super::util::{
     bech32_combinations, build_base58_pattern, expected_from_pattern, grind_ed25519,

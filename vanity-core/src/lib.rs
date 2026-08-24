@@ -8,7 +8,9 @@ pub mod pattern;
 pub mod system;
 
 pub use chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
-pub use chains::{Chain, EvmGrinder, SolanaGrinder, MENU_CHAINS};
+pub use chains::{Chain, EvmGrinder, MENU_CHAINS};
+#[cfg(not(target_arch = "wasm32"))]
+pub use chains::SolanaGrinder;
 pub use estimate::{
     effective_pattern_chars, format_attempts, format_duration, grind_estimate, GrindEstimate,
     PatternRisk,

@@ -2,7 +2,7 @@ use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
 use data_encoding::BASE32_NOPAD;
 use sha2::{Digest, Sha224};
-use solana_sdk::signature::{Keypair, Signer};
+use super::util::Keypair;
 
 use super::util::{
     base32_combinations, build_base58_pattern, der_ed25519_spki, expected_from_pattern,

@@ -1,10 +1,42 @@
 use crate::chain::GrindAttempt;
 use crate::pattern::{matches_both, Pattern};
+use ed25519_dalek::{PublicKey, SecretKey as Ed25519SecretKey};
 use rand::rngs::OsRng;
+use rand::RngCore;
 use ripemd::Ripemd160;
 use secp256k1::{Secp256k1, SecretKey};
 use sha2::{Digest, Sha256};
-use solana_sdk::signature::{Keypair, SeedDerivable};
+
+/// Local ed25519 keypair wrapper — same call surface as the
+/// `solana_sdk::signature::Keypair` this replaces (`.new()`, `.from_seed()`,
+/// `.pubkey()`, `.secret()`), so the ~13 chain files that construct/read
+/// keys through it don't need to change beyond their import line.
+pub struct Keypair {
+    secret: Ed25519SecretKey,
+    public: PublicKey,
+}
+
+impl Keypair {
+    pub fn new() -> Self {
+        let mut seed = [0u8; 32];
+        OsRng.fill_bytes(&mut seed);
+        Self::from_seed(&seed).expect("random 32-byte seed is always a valid ed25519 secret key")
+    }
+
+    pub fn from_seed(seed: &[u8]) -> Result<Self, ed25519_dalek::SignatureError> {
+        let secret = Ed25519SecretKey::from_bytes(seed)?;
+        let public = PublicKey::from(&secret);
+        Ok(Self { secret, public })
+    }
+
+    pub fn pubkey(&self) -> PublicKey {
+        self.public
+    }
+
+    pub fn secret(&self) -> &Ed25519SecretKey {
+        &self.secret
+    }
+}
 
 pub const BASE58_ALPHABET: &str = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
