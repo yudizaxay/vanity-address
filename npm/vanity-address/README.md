@@ -181,6 +181,8 @@ Supports `import` (ESM) as well as `require` (CJS). Options:
 
 Runs entirely in-process via WebAssembly — no native binary, no subprocess.
 
+📖 **Full guide:** [docs/SDK.md](https://github.com/yudizaxay/vanity-address/blob/main/docs/SDK.md) — full API reference, progress/cancellation, supported chains
+
 ---
 
 ## Is it safe?

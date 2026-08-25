@@ -127,5 +127,6 @@ Keep npm version = CLI version (`0.3.8`).
 ## Related
 
 - [INSTALL.md](INSTALL.md)
+- [SDK.md](SDK.md) — programmatic API setup/usage
 - [RELEASING.md](../RELEASING.md)
 - [AGENTS.md](../AGENTS.md)
