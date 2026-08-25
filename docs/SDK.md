@@ -196,6 +196,17 @@ them the same way you'd store any wallet secret.
 
 ---
 
+## Full runnable example
+
+See [`npm/vanity-address/examples/demo.js`](../npm/vanity-address/examples/demo.js) —
+covers basic generation, progress reporting, cancellation, and error
+handling in one file. Run it with:
+
+```bash
+cd npm/vanity-address
+node examples/demo.js
+```
+
 ## Related
 
 - [docs/USAGE.md](USAGE.md) — CLI usage, all chains, JSON output
