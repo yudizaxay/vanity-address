@@ -26,8 +26,11 @@ git push origin v0.3.7
 7. Watch the [Release workflow](https://github.com/yudizaxay/vanity-address/actions/workflows/release.yml)
 8. Verify assets on the [Releases](https://github.com/yudizaxay/vanity-address/releases) page
 9. Publish crates.io (`vanity-core` then `vanity-address`)
-10. Sync Homebrew tap: `./scripts/sync-homebrew-tap.sh --push "vanity-address X.Y.Z"`
-11. Publish npm: `./scripts/prepare-npm.sh X.Y.Z` then `./scripts/publish-npm.sh` (see [docs/NPM.md](docs/NPM.md))
+10. Build the SDK's wasm artifacts: `./scripts/build-wasm.sh` (writes into
+    `npm/vanity-address/wasm/` — required before packing/publishing since
+    the SDK entry points load these at runtime).
+11. Sync Homebrew tap: `./scripts/sync-homebrew-tap.sh --push "vanity-address X.Y.Z"`
+12. Publish npm: `./scripts/prepare-npm.sh X.Y.Z` then `./scripts/publish-npm.sh` (see [docs/NPM.md](docs/NPM.md))
 
 ## Release assets
 

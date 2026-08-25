@@ -159,6 +159,30 @@ Full guide with pattern rules per chain: [docs/USAGE.md](https://github.com/yudi
 
 ---
 
+## Programmatic API
+
+```js
+const { generateAddress } = require("vanity-address");
+
+const wallet = await generateAddress({ chain: "sol", prefix: "abc" });
+console.log(wallet.address);
+console.log(wallet.exports); // [{ label, value, hint }, ...] — chain-native key formats
+```
+
+Supports `import` (ESM) as well as `require` (CJS). Options:
+
+- `chain` (required) — chain id, same as the CLI's `--chain` (`sol`, `evm`, `btc`, ...).
+- `prefix` / `suffix` — at least one required.
+- `caseSensitive` — default `false`.
+- `onProgress(attempts)` — called periodically with a running attempt count.
+- `signal` — an `AbortSignal` to cancel a long-running grind; the returned promise rejects with an `AbortError`.
+
+**Note:** All CLI chains are supported except Solana (`sol`), which requires a native binary and isn't available in the WASM-based SDK.
+
+Runs entirely in-process via WebAssembly — no native binary, no subprocess.
+
+---
+
 ## Is it safe?
 
 | Question | Answer |
