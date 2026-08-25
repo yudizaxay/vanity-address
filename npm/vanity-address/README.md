@@ -164,7 +164,7 @@ Full guide with pattern rules per chain: [docs/USAGE.md](https://github.com/yudi
 ```js
 const { generateAddress } = require("vanity-address");
 
-const wallet = await generateAddress({ chain: "sol", prefix: "abc" });
+const wallet = await generateAddress({ chain: "evm", prefix: "abc" });
 console.log(wallet.address);
 console.log(wallet.exports); // [{ label, value, hint }, ...] — chain-native key formats
 ```
