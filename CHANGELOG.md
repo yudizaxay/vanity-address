@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here.
 
+## [0.4.1] - 2026-08-25
+
+### Changed
+
+- **WASM SDK now includes Solana** — all **25 chains** work in CLI, desktop, and the npm `generateAddress()` API
+- Removed `solana-sdk` as a normal `vanity-core` dependency (dev-dep regression test kept); unified `MENU_CHAINS` for native + wasm
+
 ## [0.4.0] - 2026-08-25
 
 ### Added

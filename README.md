@@ -86,9 +86,9 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 **Quick start (Linux):**
 
 ```bash
-# Replace 0.4.0 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.4.0/VanityAddress-0.4.0-Linux-CLI.tar.gz
-tar xzf VanityAddress-0.4.0-Linux-CLI.tar.gz
+# Replace 0.4.1 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.4.1/VanityAddress-0.4.1-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.4.1-Linux-CLI.tar.gz
 ./vanity-address
 ```
 

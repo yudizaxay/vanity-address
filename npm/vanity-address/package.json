@@ -1,6 +1,6 @@
 {
   "name": "vanity-address",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Fast, local multi-chain vanity address generator (CLI)",
   "license": "MIT",
   "author": "yudizaxay",
@@ -64,10 +64,10 @@
     "node": ">=18"
   },
   "optionalDependencies": {
-    "vanity-address-darwin-arm64": "0.4.0",
-    "vanity-address-darwin-x64": "0.4.0",
-    "vanity-address-linux-x64": "0.4.0",
-    "vanity-address-win32-x64": "0.4.0"
+    "vanity-address-darwin-arm64": "0.4.1",
+    "vanity-address-darwin-x64": "0.4.1",
+    "vanity-address-linux-x64": "0.4.1",
+    "vanity-address-win32-x64": "0.4.1"
   },
   "preferGlobal": true
 }
