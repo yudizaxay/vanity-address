@@ -6,6 +6,8 @@
   "author": "yudizaxay",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
+  "type": "commonjs",
+  "sideEffects": false,
   "homepage": "https://github.com/yudizaxay/vanity-address",
   "repository": {
     "type": "git",
@@ -31,13 +33,24 @@
   },
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
       "node": {
-        "import": "./src/index.node.mjs",
-        "require": "./src/index.js"
+        "import": {
+          "types": "./src/index.d.mts",
+          "default": "./src/index.node.mjs"
+        },
+        "require": {
+          "types": "./src/index.d.ts",
+          "default": "./src/index.js"
+        }
       },
-      "import": "./src/index.mjs",
-      "require": "./src/index.js"
+      "import": {
+        "types": "./src/index.d.mts",
+        "default": "./src/index.mjs"
+      },
+      "require": {
+        "types": "./src/index.d.ts",
+        "default": "./src/index.js"
+      }
     },
     "./package.json": "./package.json"
   },

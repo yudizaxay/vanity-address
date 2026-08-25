@@ -89,3 +89,51 @@ jobs:
 
       - name: Clippy
         run: cargo clippy -p vanity-app -- -D warnings
+
+  # vanity-wasm + the npm package's programmatic SDK (generateAddress()).
+  # Linux is used because Ubuntu's clang ships the WebAssembly LLVM target by
+  # default (unlike macOS's Apple-trimmed clang), so no extra toolchain setup
+  # is normally needed for secp256k1-sys's vendored C code to target wasm32 —
+  # the guard step below self-heals if that's ever not the case.
+  wasm-sdk:
+    name: WASM SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+          targets: wasm32-unknown-unknown
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Ensure clang supports wasm32 (needed by secp256k1-sys)
+        run: |
+          if ! clang --print-targets 2>/dev/null | grep -q WebAssembly; then
+            sudo apt-get update && sudo apt-get install -y clang lld
+          fi
+          clang --print-targets | grep -q WebAssembly || { echo "clang lacks the wasm32 target"; exit 1; }
+
+      - name: Check vanity-wasm compiles for wasm32
+        run: cargo check -p vanity-wasm --target wasm32-unknown-unknown
+
+      - name: Clippy (vanity-wasm, wasm32 target)
+        run: cargo clippy -p vanity-wasm --target wasm32-unknown-unknown -- -D warnings
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@wasm-pack
+
+      - name: Build wasm SDK artifacts
+        run: ./scripts/build-wasm.sh
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+
+      - name: Run npm SDK tests
+        working-directory: npm/vanity-address
+        run: npm test
