@@ -40,13 +40,13 @@ vanity-address/          (workspace root)
 
 | Package | Version | Published |
 | ------- | ------- | --------- |
-| vanity-core | **0.4.0** | ✅ crates.io |
-| vanity-address (CLI) | **0.4.0** | ✅ crates.io |
-| vanity-app (desktop) | **0.4.0** | ✅ GitHub Releases |
-| vanity-wasm / npm SDK | **0.4.0** | ✅ npm (`vanity-address` incl. `generateAddress()` SDK) |
+| vanity-core | **0.4.1** | ✅ crates.io |
+| vanity-address (CLI) | **0.4.1** | ✅ crates.io |
+| vanity-app (desktop) | **0.4.1** | ✅ GitHub Releases |
+| vanity-wasm / npm SDK | **0.4.1** | ✅ npm (`vanity-address` — all 25 chains in SDK, verified via a real `npm install`) |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.4.0` ✅  
-**GitHub Release v0.4.0:** ✅ 12 assets (CLI + desktop)
+**Git tags on GitHub:** `v0.3.0` … `v0.4.1` ✅  
+**GitHub Release v0.4.1:** ✅ 12 assets (CLI + desktop)
 
 **crates.io publish order (critical):**
 
@@ -62,11 +62,11 @@ cargo publish -p vanity-address
 
 | Channel | Status | User command |
 | ------- | ------ | ------------ |
-| **GitHub Releases** | ✅ v0.4.0 | Download `.dmg`, `.exe`, CLI archives |
-| **crates.io** | ✅ v0.4.0 | `cargo install vanity-address` |
-| **Homebrew tap** | ✅ formula v0.4.0 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
+| **GitHub Releases** | ✅ v0.4.1 | Download `.dmg`, `.exe`, CLI archives |
+| **crates.io** | ✅ v0.4.1 | `cargo install vanity-address` |
+| **Homebrew tap** | ✅ formula v0.4.1 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
-| **npm** | ✅ v0.4.0 (CLI + WASM SDK) | `npx vanity-address` / `npm i vanity-address` |
+| **npm** | ✅ v0.4.1 (CLI + WASM SDK, all 25 chains) | `npx vanity-address` / `npm i vanity-address` |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
 
 ### Homebrew user install (Homebrew 6+)
@@ -237,11 +237,11 @@ make homebrew-formula VER=X.Y.Z
 
 ### Recently completed (2026-08-25)
 
-- [x] Merged #39 (programmatic WASM SDK, `generateAddress()`) into `main`
-- [x] Tag `v0.4.0` + GitHub Release (12 assets, 25 CLI chains / 24 SDK chains — Solana CLI-only, wasm-bindgen incompatible with `solana-sdk`)
-- [x] crates.io `vanity-core` + `vanity-address` 0.4.0
-- [x] Homebrew formula + tap synced to 0.4.0
-- [x] npm 0.4.0 published (platform pkgs + main, now including the SDK entry points)
+- [x] Tag `v0.4.1` + GitHub Release (12 assets) — Solana in WASM SDK; all 25 chains everywhere
+- [x] crates.io `vanity-core` + `vanity-address` 0.4.1
+- [x] Homebrew formula + tap synced to 0.4.1
+- [ ] npm 0.4.1 — bins + wasm ready; blocked on npm 2FA OTP
+- [x] Earlier same day: Tag `v0.4.0` (WASM SDK `generateAddress()`), crates/Homebrew/npm 0.4.0
 
 ### Recently completed (2026-08-13)
 
@@ -287,4 +287,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-08-25 — releasing v0.4.0 (WASM SDK + version bump across channels).*
+*Last updated: 2026-08-25 — releasing v0.4.1 (Solana in WASM SDK); npm publish pending OTP.*
