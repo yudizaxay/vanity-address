@@ -4,6 +4,10 @@
   "description": "Fast, local multi-chain vanity address generator (CLI)",
   "license": "MIT",
   "author": "yudizaxay",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "type": "commonjs",
+  "sideEffects": false,
   "homepage": "https://github.com/yudizaxay/vanity-address",
   "repository": {
     "type": "git",
@@ -24,8 +28,36 @@
   "bin": {
     "vanity-address": "bin/cli.js"
   },
+  "scripts": {
+    "test": "node --test"
+  },
+  "exports": {
+    ".": {
+      "node": {
+        "import": {
+          "types": "./src/index.d.mts",
+          "default": "./src/index.node.mjs"
+        },
+        "require": {
+          "types": "./src/index.d.ts",
+          "default": "./src/index.js"
+        }
+      },
+      "import": {
+        "types": "./src/index.d.mts",
+        "default": "./src/index.mjs"
+      },
+      "require": {
+        "types": "./src/index.d.ts",
+        "default": "./src/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "bin/cli.js",
+    "src",
+    "wasm",
     "README.md"
   ],
   "engines": {

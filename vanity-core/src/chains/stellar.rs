@@ -1,6 +1,6 @@
+use super::util::Keypair;
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
-use solana_sdk::signature::{Keypair, Signer};
 use stellar_strkey::ed25519::{PrivateKey, PublicKey};
 
 use super::util::{

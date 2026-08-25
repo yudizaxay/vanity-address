@@ -31,10 +31,22 @@ require_bin() {
   fi
 }
 
+require_wasm() {
+  local target="$1"
+  local path="${ROOT}/npm/vanity-address/wasm/${target}/vanity_wasm_bg.wasm"
+  if [[ ! -f "${path}" ]]; then
+    echo "Missing ${path} — run ./scripts/build-wasm.sh first" >&2
+    exit 1
+  fi
+}
+
 require_bin vanity-address-darwin-arm64 vanity-address
 require_bin vanity-address-darwin-x64 vanity-address
 require_bin vanity-address-linux-x64 vanity-address
 require_bin vanity-address-win32-x64 vanity-address.exe
+
+require_wasm nodejs
+require_wasm bundler
 
 for dir in "${PLATFORMS[@]}"; do
   echo "==> Publishing ${dir}"

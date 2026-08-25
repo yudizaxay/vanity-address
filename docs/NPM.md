@@ -33,6 +33,20 @@ Requires **Node.js 18+**. Supported platforms:
 
 ---
 
+## Programmatic API
+
+The **vanity-address** package also ships a **programmatic API** (`generateAddress()`), not just the CLI. This API runs entirely in WebAssembly — no native binary subprocess — and supports all chains except Solana. See [npm/vanity-address/README.md](../npm/vanity-address/README.md#programmatic-api) for usage examples and full options.
+
+The SDK's WebAssembly artifacts (`npm/vanity-address/wasm/`) are pre-built before publishing, not compiled on `npm install`. Build them locally with:
+
+```bash
+./scripts/build-wasm.sh
+```
+
+This is required as part of the release process (see [RELEASING.md](../RELEASING.md), step 10) before running `prepare-npm.sh`.
+
+---
+
 ## Package layout
 
 ```text
@@ -113,5 +127,6 @@ Keep npm version = CLI version (`0.3.8`).
 ## Related
 
 - [INSTALL.md](INSTALL.md)
+- [SDK.md](SDK.md) — programmatic API setup/usage
 - [RELEASING.md](../RELEASING.md)
 - [AGENTS.md](../AGENTS.md)

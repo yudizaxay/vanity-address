@@ -1,6 +1,6 @@
+use super::util::Keypair;
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
-use solana_sdk::signature::{Keypair, Signer};
 
 use super::util::{
     build_hex_pattern, expected_from_pattern, grind_ed25519, hex_combinations, keypair_from_secret,

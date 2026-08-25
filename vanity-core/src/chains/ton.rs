@@ -1,7 +1,7 @@
+use super::util::Keypair;
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
 use sha2::{Digest, Sha256};
-use solana_sdk::signature::{Keypair, Signer};
 
 use super::util::{
     base64url_combinations, build_base58_pattern, crc16_xmodem, expected_from_pattern,
@@ -138,7 +138,7 @@ impl ChainGrinder for TonGrinder {
 mod tests {
     use super::TonGrinder;
     use crate::chain::ChainGrinder;
-    use solana_sdk::signature::{Keypair, SeedDerivable};
+    use crate::chains::util::Keypair;
 
     #[test]
     fn ton_address_matches_known_vector() {

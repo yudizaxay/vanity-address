@@ -146,6 +146,22 @@ vanity-address --chain sol --suffix ax --json --no-benchmark --force
 
 ---
 
+## 📦 Use it in your own code
+
+`npm install vanity-address` also gives you a programmatic API — no
+subprocess, runs in-process via WebAssembly:
+
+```js
+const { generateAddress } = require("vanity-address");
+
+const wallet = await generateAddress({ chain: "evm", prefix: "abc" });
+console.log(wallet.address, wallet.exports);
+```
+
+📖 **Full guide:** [docs/SDK.md](https://github.com/yudizaxay/vanity-address/blob/main/docs/SDK.md) — setup, full API reference, progress/cancellation, supported chains
+
+---
+
 ## 🏗 Architecture
 
 ```text

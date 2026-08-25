@@ -1,8 +1,8 @@
+use super::util::Keypair;
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
 use data_encoding::BASE32_NOPAD;
 use sha2::{Digest, Sha512_256};
-use solana_sdk::signature::{Keypair, Signer};
 
 use super::util::{
     base32_combinations, build_base58_pattern, expected_from_pattern, grind_ed25519,
@@ -88,7 +88,7 @@ impl ChainGrinder for AlgorandGrinder {
 mod tests {
     use super::AlgorandGrinder;
     use crate::chain::ChainGrinder;
-    use solana_sdk::signature::{Keypair, SeedDerivable};
+    use crate::chains::util::Keypair;
 
     #[test]
     fn algo_address_length() {
