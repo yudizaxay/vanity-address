@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## [0.4.0] - 2026-08-25
+
+### Added
+
+- **Programmatic WASM SDK** — `generateAddress()` in the `vanity-address` npm package (Node + bundlers/browsers); see [docs/SDK.md](docs/SDK.md)
+- `vanity-wasm` crate + `./scripts/build-wasm.sh` for shipping prebuilt wasm
+- Runnable SDK demo: `npm/vanity-address/examples/demo.js`
+- CI `wasm-sdk` job (build + publint)
+
+### Changed
+
+- Native Solana grinding remains CLI/desktop-only; wasm builds exclude Solana (24 chains in browser/Node SDK)
+- npm package now exports JS/TS API entry points alongside the CLI shim
+
 ## [0.3.8] - 2026-07-28
 
 ### Added

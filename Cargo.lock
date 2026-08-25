@@ -5832,7 +5832,7 @@ dependencies = [
 
 [[package]]
 name = "vanity-address"
-version = "0.3.8"
+version = "0.4.0"
 dependencies = [
  "clap",
  "colored",
@@ -5846,7 +5846,7 @@ dependencies = [
 
 [[package]]
 name = "vanity-app"
-version = "0.3.8"
+version = "0.4.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -5859,7 +5859,7 @@ dependencies = [
 
 [[package]]
 name = "vanity-core"
-version = "0.3.8"
+version = "0.4.0"
 dependencies = [
  "base64 0.23.0",
  "bech32",
@@ -5883,7 +5883,7 @@ dependencies = [
 
 [[package]]
 name = "vanity-wasm"
-version = "0.3.8"
+version = "0.4.0"
 dependencies = [
  "js-sys",
  "serde",

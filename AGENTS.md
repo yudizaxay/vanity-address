@@ -36,16 +36,17 @@ vanity-address/          (workspace root)
 
 ---
 
-## Current version state (as of 2026-08-13)
+## Current version state (as of 2026-08-25)
 
 | Package | Version | Published |
 | ------- | ------- | --------- |
-| vanity-core | **0.3.8** | ✅ crates.io |
-| vanity-address (CLI) | **0.3.8** | ✅ crates.io |
-| vanity-app (desktop) | **0.3.8** | ✅ GitHub Releases |
+| vanity-core | **0.4.0** | ⏳ releasing |
+| vanity-address (CLI) | **0.4.0** | ⏳ releasing |
+| vanity-app (desktop) | **0.4.0** | ⏳ releasing |
+| vanity-wasm / npm SDK | **0.4.0** | ⏳ releasing |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.3.8` ✅  
-**GitHub Release v0.3.8:** ✅ CLI + desktop assets live (25 chains: +Dash, Kusama, MultiversX)
+**Git tags on GitHub:** `v0.3.0` … `v0.3.8` ✅ — `v0.4.0` retarget after version bump  
+**This release:** WASM programmatic SDK (`generateAddress`) + CLI/desktop 0.4.0
 
 **crates.io publish order (critical):**
 
@@ -61,11 +62,11 @@ cargo publish -p vanity-address
 
 | Channel | Status | User command |
 | ------- | ------ | ------------ |
-| **GitHub Releases** | ✅ v0.3.8 | Download `.dmg`, `.exe`, CLI archives |
-| **crates.io** | ✅ v0.3.8 | `cargo install vanity-address` |
-| **Homebrew tap** | ✅ [yudizaxay/homebrew-tap](https://github.com/yudizaxay/homebrew-tap) formula v0.3.8 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
+| **GitHub Releases** | ⏳ v0.4.0 | Download `.dmg`, `.exe`, CLI archives |
+| **crates.io** | ⏳ v0.4.0 | `cargo install vanity-address` |
+| **Homebrew tap** | ⏳ v0.4.0 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
-| **npm** | ✅ v0.3.8 (5 packages; binaries from GitHub Release) | `npx vanity-address` / `npm i -g vanity-address` |
+| **npm** | ⏳ v0.4.0 (CLI + WASM SDK) | `npx vanity-address` / `npm i vanity-address` |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
 
 ### Homebrew user install (Homebrew 6+)
@@ -95,15 +96,14 @@ See [docs/HOMEBREW.md](docs/HOMEBREW.md).
 ### npm maintainer flow
 
 ```bash
+./scripts/build-wasm.sh         # required for SDK wasm artifacts before npm pack
 ./scripts/prepare-npm.sh X.Y.Z   # downloads Release CLI assets into npm/*/bin
 ./scripts/publish-npm.sh --dry-run
 ./scripts/publish-npm.sh         # requires npm login
 ```
 
-Layout: `npm/vanity-address` (shim) + `npm/vanity-address-{darwin-arm64,darwin-x64,linux-x64,win32-x64}`.  
-`vanity-app` stays private (desktop only). See [docs/NPM.md](docs/NPM.md).
-
-**npm note:** v0.3.7 ships matching GitHub Release CLI binaries via `prepare-npm.sh`. (Older note: npm 0.3.6 had been a README-only bump over 0.3.5 bins — resolved by this release.)
+Layout: `npm/vanity-address` (CLI shim + WASM SDK) + `npm/vanity-address-{darwin-arm64,darwin-x64,linux-x64,win32-x64}`.  
+`vanity-app` stays private (desktop only). See [docs/NPM.md](docs/NPM.md) and [docs/SDK.md](docs/SDK.md).
 
 ---
 
@@ -279,4 +279,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-08-13 — v0.3.8 released on all channels (GitHub, crates.io, Homebrew, npm). 25 chains.*
+*Last updated: 2026-08-25 — releasing v0.4.0 (WASM SDK + version bump across channels).*

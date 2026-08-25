@@ -1,6 +1,6 @@
 [package]
 name = "vanity-wasm"
-version = "0.3.8"
+version = "0.4.0"
 edition = "2021"
 description = "WASM bindings for vanity-core, used by the vanity-address npm package's programmatic API"
 license = "MIT"
@@ -10,7 +10,7 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-vanity-core = { path = "../vanity-core", version = "0.3.8", default-features = false, features = ["wasm"] }
+vanity-core = { path = "../vanity-core", version = "0.4.0", default-features = false, features = ["wasm"] }
 wasm-bindgen = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde-wasm-bindgen = "0.6"

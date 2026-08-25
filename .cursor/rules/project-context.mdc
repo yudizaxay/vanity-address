@@ -9,12 +9,10 @@ alwaysApply: true
 
 ## Quick facts
 
-- Rust workspace: `vanity-core` (engine) + `vanity-address` (CLI) + `vanity-app` (Tauri desktop)
-- **v0.3.8** on crates.io / GitHub / Homebrew / npm; chain logic only in `vanity-core`
+- Rust workspace: `vanity-core` (engine) + `vanity-address` (CLI) + `vanity-wasm` + `vanity-app` (Tauri desktop)
+- **v0.4.0** releasing (WASM SDK + CLI); chain logic only in `vanity-core`
 - Publish order: `vanity-core` then `vanity-address` (no `#` on same shell line)
-- Homebrew: `Formula/vanity-address.rb` + scripts; tap `yudizaxay/tap` — users need `brew trust yudizaxay/tap` on Homebrew 6+
-- Formula must use `std_cargo_args` (not `std_cargo_install_args`)
-- npm: `npm/vanity-address` + platform pkgs; `./scripts/prepare-npm.sh` then `./scripts/publish-npm.sh`
+- npm: `prepare-npm.sh` + `build-wasm.sh` then `publish-npm.sh`
 - Windows CLI: `terminal.rs` Press-only keys; `menu.rs` crossterm clear
 - crates.io README needs absolute GitHub/raw URLs for images and links
 

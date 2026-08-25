@@ -34,8 +34,8 @@ The canonical formula lives in the main repo at `Formula/vanity-address.rb`. Aft
 
 ```bash
 # In vanity-address repo
-./scripts/update-homebrew-formula.sh 0.3.8
-./scripts/sync-homebrew-tap.sh --push "vanity-address 0.3.8"
+./scripts/update-homebrew-formula.sh 0.4.0
+./scripts/sync-homebrew-tap.sh --push "vanity-address 0.4.0"
 ```
 
 See [docs/HOMEBREW.md](https://github.com/yudizaxay/vanity-address/blob/main/docs/HOMEBREW.md) in the main repository.
