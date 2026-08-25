@@ -26,6 +26,9 @@
   "bin": {
     "vanity-address": "bin/cli.js"
   },
+  "scripts": {
+    "test": "node --test test/**/*.test.js"
+  },
   "exports": {
     ".": {
       "types": "./src/index.d.ts",
