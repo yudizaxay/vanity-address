@@ -27,11 +27,15 @@
     "vanity-address": "bin/cli.js"
   },
   "scripts": {
-    "test": "node --test test/**/*.test.js"
+    "test": "node --test"
   },
   "exports": {
     ".": {
       "types": "./src/index.d.ts",
+      "node": {
+        "import": "./src/index.node.mjs",
+        "require": "./src/index.js"
+      },
       "import": "./src/index.mjs",
       "require": "./src/index.js"
     },

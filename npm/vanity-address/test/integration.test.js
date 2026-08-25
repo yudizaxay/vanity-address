@@ -46,3 +46,13 @@ test("supports cancellation via AbortSignal", async () => {
   });
   await assert.rejects(promise, (err) => err.name === "AbortError");
 });
+
+test('Node ESM entry point (package exports "node" condition) works', async () => {
+  // Import the bare package specifier (self-reference), not a file path, so
+  // Node actually resolves through package.json "exports" — the same way a
+  // real consumer's `import "vanity-address"` would — exercising the "node"
+  // condition rather than bypassing it via direct filesystem resolution.
+  const mod = await import("vanity-address");
+  const wallet = await mod.generateAddress({ chain: "evm", prefix: "a" });
+  assert.match(wallet.address, /^0x[0-9a-fA-F]{40}$/);
+});

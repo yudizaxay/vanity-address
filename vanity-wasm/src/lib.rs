@@ -43,8 +43,16 @@ pub fn grind_chunk(
 ) -> Result<JsValue, JsValue> {
     let chain = Chain::from_id(chain_id).map_err(|e| js_err("INVALID_CHAIN", &e))?;
 
-    let prefix_opt = if prefix.is_empty() { None } else { Some(prefix) };
-    let suffix_opt = if suffix.is_empty() { None } else { Some(suffix) };
+    let prefix_opt = if prefix.is_empty() {
+        None
+    } else {
+        Some(prefix)
+    };
+    let suffix_opt = if suffix.is_empty() {
+        None
+    } else {
+        Some(suffix)
+    };
     let exact = !ignore_case;
     let pattern = chain
         .build_pattern(prefix_opt, suffix_opt, exact)
@@ -101,6 +109,9 @@ mod tests {
                 break;
             }
         }
-        assert!(found, "expected a match within 20k attempts for a 1-char prefix");
+        assert!(
+            found,
+            "expected a match within 20k attempts for a 1-char prefix"
+        );
     }
 }

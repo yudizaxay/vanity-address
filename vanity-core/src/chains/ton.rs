@@ -1,7 +1,7 @@
+use super::util::Keypair;
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
 use sha2::{Digest, Sha256};
-use super::util::Keypair;
 
 use super::util::{
     base64url_combinations, build_base58_pattern, crc16_xmodem, expected_from_pattern,

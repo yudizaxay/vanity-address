@@ -1,6 +1,6 @@
+use super::util::Keypair;
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
-use super::util::Keypair;
 use stellar_strkey::ed25519::{PrivateKey, PublicKey};
 
 use super::util::{

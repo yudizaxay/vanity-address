@@ -255,8 +255,8 @@ impl Chain {
     pub fn all_ids() -> &'static [&'static str] {
         &[
             "algo", "aptos", "btc", "ada", "cosmos", "dash", "doge", "evm", "fil", "hedera", "icp",
-            "kaspa", "ksm", "ltc", "erd", "near", "osmo", "dot", "xrp", "xlm", "sui", "xtz",
-            "ton", "trx",
+            "kaspa", "ksm", "ltc", "erd", "near", "osmo", "dot", "xrp", "xlm", "sui", "xtz", "ton",
+            "trx",
         ]
     }
 
@@ -299,7 +299,11 @@ mod tests {
     fn from_menu_index_matches_menu_chains_order() {
         for (i, (id, _)) in super::MENU_CHAINS.iter().enumerate() {
             let chain = Chain::from_menu_index(i).expect("menu index");
-            assert_eq!(chain.id(), *id, "from_menu_index({i}) misaligned with MENU_CHAINS");
+            assert_eq!(
+                chain.id(),
+                *id,
+                "from_menu_index({i}) misaligned with MENU_CHAINS"
+            );
         }
         assert!(Chain::from_menu_index(super::MENU_CHAINS.len()).is_none());
     }

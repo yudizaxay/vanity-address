@@ -1,7 +1,7 @@
+use super::util::Keypair;
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
 use sha3::{Digest, Sha3_256};
-use super::util::Keypair;
 
 use super::util::{
     build_hex_pattern, expected_from_pattern, grind_ed25519, hex_combinations, matches_pattern,

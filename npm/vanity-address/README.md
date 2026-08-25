@@ -171,13 +171,13 @@ console.log(wallet.exports); // [{ label, value, hint }, ...] — chain-native k
 
 Supports `import` (ESM) as well as `require` (CJS). Options:
 
-- `chain` (required) — chain id, same as the CLI's `--chain` (`sol`, `evm`, `btc`, ...).
+- `chain` (required) — chain id, same as the CLI's `--chain` (`evm`, `btc`, `sui`, ...).
 - `prefix` / `suffix` — at least one required.
 - `caseSensitive` — default `false`.
 - `onProgress(attempts)` — called periodically with a running attempt count.
 - `signal` — an `AbortSignal` to cancel a long-running grind; the returned promise rejects with an `AbortError`.
 
-**Note:** All CLI chains are supported except Solana (`sol`), which requires a native binary and isn't available in the WASM-based SDK.
+**Note:** All CLI chains are supported except Solana (`sol`), which cannot be compiled to WebAssembly (its SDK is incompatible with `wasm-bindgen`). Solana remains fully supported by the CLI.
 
 Runs entirely in-process via WebAssembly — no native binary, no subprocess.
 

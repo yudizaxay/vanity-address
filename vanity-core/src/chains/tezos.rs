@@ -1,6 +1,6 @@
+use super::util::Keypair;
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
-use super::util::Keypair;
 
 use super::util::{
     base58_check_encode_raw, base58_combinations, blake2b_var, build_base58_pattern,

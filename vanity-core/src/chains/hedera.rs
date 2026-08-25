@@ -1,6 +1,6 @@
+use super::util::Keypair;
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
-use super::util::Keypair;
 
 use super::util::{
     build_hex_pattern, der_ed25519_spki, expected_from_pattern, grind_ed25519, hex_combinations,
