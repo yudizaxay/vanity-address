@@ -154,11 +154,8 @@ try {
 
 ## Supported chains
 
-The SDK supports every CLI chain **except Solana** (`sol`) — Solana's SDK
-can't be compiled to WebAssembly (`solana-sdk` is incompatible with the
-`wasm-bindgen` toolchain this package uses), so it stays CLI-only for now.
-
-Use the same chain ids as the CLI's `--chain` flag:
+The SDK supports every chain the CLI does — all 25. Use the same chain ids
+as the CLI's `--chain` flag:
 
 | id | chain | id | chain |
 |---|---|---|---|
@@ -171,14 +168,12 @@ Use the same chain ids as the CLI's `--chain` flag:
 | `doge` | Dogecoin | `osmo` | Osmosis |
 | `evm` | EVM (Ethereum, etc.) | `dot` | Polkadot |
 | `fil` | Filecoin | `xrp` | Ripple |
-| `hedera` | Hedera | `xlm` | Stellar |
+| `hedera` | Hedera | `sol` | Solana |
+| | | `xlm` | Stellar |
 | | | `sui` | Sui |
 | | | `xtz` | Tezos |
 | | | `ton` | TON |
 | | | `trx` | Tron |
-
-Need Solana? Use the CLI (`npx vanity-address --chain sol ...`) — see
-[docs/USAGE.md](USAGE.md).
 
 ---
 

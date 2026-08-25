@@ -4,15 +4,18 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { generateAddress, VanityAddressError } = require("../src/index.js");
 
-// NOTE: Solana ("sol") is excluded from the wasm build (wasm-bindgen
-// incompatibility fixed by excluding Solana specifically while keeping the
-// other 24 chains), so this base58 case uses Bitcoin ("btc") instead of the
-// Solana example from the task brief.
 test("bitcoin: generates an address matching the prefix, with key exports", async () => {
   const wallet = await generateAddress({ chain: "btc", prefix: "1" });
   assert.match(wallet.address, /^1[1-9A-HJ-NP-Za-km-z]+$/);
   assert.ok(wallet.exports.length > 0);
   assert.ok(wallet.exports.some((e) => /hex/i.test(e.label)));
+});
+
+test("solana: generates an address matching the prefix, with key exports", async () => {
+  const wallet = await generateAddress({ chain: "sol", prefix: "1" });
+  assert.match(wallet.address, /^1[1-9A-HJ-NP-Za-km-z]+$/);
+  assert.ok(wallet.exports.length > 0);
+  assert.ok(wallet.exports.some((e) => /base58/i.test(e.label)));
 });
 
 test("evm: generates a 0x-prefixed address matching the pattern", async () => {

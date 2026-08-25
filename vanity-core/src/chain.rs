@@ -15,8 +15,6 @@ pub struct KeypairResult {
 
 /// Lightweight per-attempt state — export formats are built only on a match.
 pub enum GrindAttempt {
-    #[cfg(not(target_arch = "wasm32"))]
-    Solana(solana_sdk::signature::Keypair),
     /// secp256k1 / ed25519 secret key bytes (chain-specific finalize)
     Secret32([u8; 32]),
 }

@@ -30,7 +30,12 @@ crc32fast = "1"
 base64 = "0.23"
 getrandom = { version = "0.2", features = ["js"], optional = true }
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+[dev-dependencies]
+# Native-only regression check: proves the ed25519-dalek-backed
+# SolanaGrinder derives byte-identical addresses/keys to solana_sdk's own
+# Keypair (see chains/solana.rs's matches_solana_sdk_for_fixed_seed test).
+# Dev-dependencies never propagate to dependents or into release builds,
+# so this has no effect on the wasm build.
 solana-sdk = "1.18"
 
 [features]

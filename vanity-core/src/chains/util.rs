@@ -456,19 +456,6 @@ pub fn secret32_from_keypair(keypair: &Keypair) -> [u8; 32] {
     secret
 }
 
-// On wasm32, `GrindAttempt::Solana` is compiled out (see chain.rs), leaving
-// `Secret32` as the only variant — the `let...else` form below is refutable
-// only on native targets, so the match arms are split to avoid an
-// irrefutable-pattern clippy error on wasm32.
-#[cfg(not(target_arch = "wasm32"))]
-pub fn secret_from_attempt(attempt: GrindAttempt) -> [u8; 32] {
-    let GrindAttempt::Secret32(bytes) = attempt else {
-        panic!("expected Secret32 grind attempt");
-    };
-    bytes
-}
-
-#[cfg(target_arch = "wasm32")]
 pub fn secret_from_attempt(attempt: GrindAttempt) -> [u8; 32] {
     let GrindAttempt::Secret32(bytes) = attempt;
     bytes
