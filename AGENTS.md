@@ -234,6 +234,7 @@ make homebrew-formula VER=X.Y.Z
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen (unsigned warnings documented)
 - [ ] Submit to homebrew-core when notability criteria met
 - [ ] Growth: social posts / README badges polish
+- [ ] `npm/vanity-address/README.md` fix ("+22 more chains", was "+10") already committed to git but not yet published — live npm README is stale until the next npm version bump; bundle with next real release, not worth a standalone patch
 
 ### Recently completed (2026-08-25)
 

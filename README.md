@@ -165,15 +165,15 @@ console.log(wallet.address, wallet.exports);
 ## 🏗 Architecture
 
 ```text
-┌───────────────────┐   ┌───────────────────┐
-│  vanity-address    │   │    vanity-app      │
-│      (CLI)         │   │  (Tauri desktop UI)│
-├───────────────────┴───┴───────────────────┤
+┌───────────────────┐   ┌─────────────────────┐
+│  vanity-address   │   │    vanity-app       │
+│      (CLI)        │   │  (Tauri desktop UI) │
+├───────────────────┴───┴─────────────────────┤
 │                vanity-core lib              │
-│  ┌────────┐ ┌─────┐ ┌──────────┐ ┌───────┐ │
-│  │ Solana │ │ EVM │ │ Bitcoin… │ │  +22  │ │
-│  │Grinder │ │Grind│ │ Grinders │ │ more  │ │
-│  └────────┘ └─────┘ └──────────┘ └───────┘ │
+│  ┌────────┐ ┌─────┐ ┌──────────┐ ┌───────┐  │
+│  │ Solana │ │ EVM │ │ Bitcoin… │ │  +22  │  │
+│  │Grinder │ │Grind│ │ Grinders │ │ more  │  │
+│  └────────┘ └─────┘ └──────────┘ └───────┘  │
 │              ChainGrinder trait             │
 └─────────────────────────────────────────────┘
 ```
