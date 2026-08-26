@@ -10,7 +10,7 @@ alwaysApply: true
 ## Quick facts
 
 - Rust workspace: `vanity-core` (engine) + `vanity-address` (CLI) + `vanity-wasm` + `vanity-app` (Tauri desktop)
-- **v0.4.0** releasing (WASM SDK + CLI); chain logic only in `vanity-core`
+- **v0.4.1** live on crates.io / GitHub / Homebrew / npm; chain logic only in `vanity-core`
 - Publish order: `vanity-core` then `vanity-address` (no `#` on same shell line)
 - npm: `prepare-npm.sh` + `build-wasm.sh` then `publish-npm.sh`
 - Windows CLI: `terminal.rs` Press-only keys; `menu.rs` crossterm clear

@@ -159,21 +159,19 @@ as the CLI's `--chain` flag:
 
 | id | chain | id | chain |
 |---|---|---|---|
-| `algo` | Algorand | `icp` | Internet Computer |
-| `aptos` | Aptos | `kaspa` | Kaspa |
-| `btc` | Bitcoin | `ksm` | Kusama |
-| `ada` | Cardano | `ltc` | Litecoin |
-| `cosmos` | Cosmos | `erd` | MultiversX |
-| `dash` | Dash | `near` | NEAR |
-| `doge` | Dogecoin | `osmo` | Osmosis |
-| `evm` | EVM (Ethereum, etc.) | `dot` | Polkadot |
-| `fil` | Filecoin | `xrp` | Ripple |
-| `hedera` | Hedera | `sol` | Solana |
-| | | `xlm` | Stellar |
-| | | `sui` | Sui |
-| | | `xtz` | Tezos |
-| | | `ton` | TON |
-| | | `trx` | Tron |
+| `algo` | Algorand | `ltc` | Litecoin |
+| `aptos` | Aptos | `erd` | MultiversX |
+| `btc` | Bitcoin | `near` | NEAR |
+| `ada` | Cardano | `osmo` | Osmosis |
+| `cosmos` | Cosmos | `dot` | Polkadot |
+| `dash` | Dash | `xrp` | Ripple |
+| `doge` | Dogecoin | `sol` | Solana |
+| `evm` | EVM (Ethereum, etc.) | `xlm` | Stellar |
+| `fil` | Filecoin | `sui` | Sui |
+| `hedera` | Hedera | `xtz` | Tezos |
+| `icp` | Internet Computer | `ton` | TON |
+| `kaspa` | Kaspa | `trx` | Tron |
+| `ksm` | Kusama | | |
 
 ---
 
