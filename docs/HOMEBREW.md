@@ -62,8 +62,9 @@ brew install yudizaxay/tap/vanity-address
 
 If it still fails, trust or untap the other taps listed in the warning (`antoniorodr/memo`, `cloudflare/cloudflare`, `ngrok/ngrok`, etc.) — only for taps you actually use.
 
-**Fix D — skip Homebrew compile** — use a [pre-built CLI from GitHub Releases](INSTALL.md#github-releases-recommended) (~30s, no Rust/MongoDB tap issues).
+**Fix D — skip Homebrew compile** — use a [pre-built CLI from GitHub Releases](INSTALL.md#which-file-do-i-need) (~30s, no Rust/MongoDB tap issues).
 
+### Option B — From a git clone
 
 ```bash
 git clone https://github.com/yudizaxay/vanity-address.git
@@ -86,7 +87,7 @@ brew install --HEAD --build-from-source ./Formula/vanity-address.rb
 | **Tap trust (Homebrew 6+)** | Run `brew trust yudizaxay/tap` once before first install |
 | **Compile time** | 3–8 min first install (Solana SDK); normal for this project |
 | **Rust** | Formula depends on `rust` as a build dependency |
-| **Faster install** | Use [pre-built CLI binaries](INSTALL.md#github-releases-recommended) (~30s download) |
+| **Faster install** | Use [pre-built CLI binaries](INSTALL.md#which-file-do-i-need) (~30s download) |
 | **Uninstall** | `brew uninstall vanity-address` |
 
 ---

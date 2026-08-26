@@ -37,7 +37,7 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting — do not open publi
 
 | Type | Examples |
 |------|----------|
-| **New blockchain** | Cardano, TON, Bitcoin SegWit (`bc1…`), more Cosmos hubs |
+| **New blockchain** | Bitcoin SegWit (`bc1…`), more Cosmos hubs, Winget/Scoop-adjacent chains |
 | **Bug fixes** | Menu input, wrong address derivation, pattern matching |
 | **Features** | `--output` path, regex patterns, benchmark mode, Tauri UI |
 | **Docs** | README, chain-specific wallet import notes |

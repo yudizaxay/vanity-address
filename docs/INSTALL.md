@@ -133,12 +133,12 @@ Every archive on the Releases page ships with a `.sha256` sidecar file.
 
 ```bash
 # Linux / macOS (optional)
-shasum -a 256 -c VanityAddress-0.3.2-Linux-CLI.tar.gz.sha256
+shasum -a 256 -c VanityAddress-0.4.1-Linux-CLI.tar.gz.sha256
 ```
 
 ```powershell
 # Windows (optional) — compare hash manually
-Get-FileHash VanityAddress-0.3.2-Windows-CLI.zip -Algorithm SHA256
+Get-FileHash VanityAddress-0.4.1-Windows-CLI.zip -Algorithm SHA256
 ```
 
 ---

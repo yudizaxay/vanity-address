@@ -180,6 +180,11 @@ All notable changes to this project are documented here.
 - Keys are generated locally; no network calls
 - `vanity-results.txt` is gitignored — never commit private keys
 
+[0.4.1]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.4.1
+[0.4.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.4.0
+[0.3.8]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.8
+[0.3.7]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.7
+[0.3.6]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.6
 [0.3.5]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.5
 [0.3.4]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.4
 [0.3.3]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.3

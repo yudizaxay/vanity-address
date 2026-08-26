@@ -111,7 +111,7 @@ Example success payload:
 
 ```json
 {
-  "version": "0.3.4",
+  "version": "0.4.1",
   "chain": "sol",
   "chain_name": "Solana",
   "pattern": {

@@ -4,7 +4,7 @@
 
 # vanity-address
 
-**Generate custom crypto wallet addresses that start or end with YOUR word — Solana, Ethereum, Bitcoin + 10 more chains.**
+**Generate custom crypto wallet addresses that start or end with YOUR word — Solana, Ethereum, Bitcoin + 22 more chains.**
 
 [![npm](https://img.shields.io/npm/v/vanity-address?style=flat-square&logo=npm&color=cb3837)](https://www.npmjs.com/package/vanity-address)
 [![downloads](https://img.shields.io/npm/dm/vanity-address?style=flat-square&color=blue)](https://www.npmjs.com/package/vanity-address)

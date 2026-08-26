@@ -240,7 +240,7 @@ make homebrew-formula VER=X.Y.Z
 - [x] Tag `v0.4.1` + GitHub Release (12 assets) — Solana in WASM SDK; all 25 chains everywhere
 - [x] crates.io `vanity-core` + `vanity-address` 0.4.1
 - [x] Homebrew formula + tap synced to 0.4.1
-- [ ] npm 0.4.1 — bins + wasm ready; blocked on npm 2FA OTP
+- [x] npm 0.4.1 published (platform pkgs + main, WASM SDK)
 - [x] Earlier same day: Tag `v0.4.0` (WASM SDK `generateAddress()`), crates/Homebrew/npm 0.4.0
 
 ### Recently completed (2026-08-13)
@@ -287,4 +287,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-08-25 — releasing v0.4.1 (Solana in WASM SDK); npm publish pending OTP.*
+*Last updated: 2026-08-25 — v0.4.1 live on all channels (Solana in WASM SDK; all 25 chains everywhere).*
