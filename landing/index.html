@@ -69,8 +69,9 @@
   /* ---------- nav ---------- */
   header.nav{
     position:sticky; top:0; z-index:50;
-    backdrop-filter:blur(14px);
-    background:rgba(5,6,10,0.6);
+    -webkit-backdrop-filter:blur(20px);
+    backdrop-filter:blur(20px);
+    background:rgba(5,6,10,0.88);
     border-bottom:1px solid var(--panel-border);
   }
   .nav-inner{
@@ -82,12 +83,33 @@
   .brand span{ font-size:1.05rem; }
   .nav-links{ display:flex; align-items:center; gap:28px; font-size:0.9rem; color:var(--text-dim); }
   .nav-links a:hover{ color:#fff; }
+  .nav-right{ display:flex; align-items:center; gap:14px; }
   .nav-cta{
+    display:inline-flex; align-items:center; gap:8px;
     padding:8px 16px; border-radius:8px; font-size:0.85rem; font-weight:600;
     background:linear-gradient(135deg, var(--cyan), var(--purple));
-    color:#04050a;
+    color:#04050a; white-space:nowrap;
   }
-  @media (max-width:760px){ .nav-links{ display:none; } }
+  .nav-cta svg{ width:16px; height:16px; flex-shrink:0; }
+  .nav-toggle{
+    display:none; background:none; border:none; color:var(--text); cursor:pointer;
+    padding:4px; align-items:center; justify-content:center;
+  }
+  .nav-toggle svg{ width:24px; height:24px; }
+
+  @media (max-width:760px){
+    .nav-links{
+      display:none; position:absolute; top:100%; left:0; right:0;
+      flex-direction:column; align-items:stretch; gap:0;
+      background:rgba(5,6,10,0.98); border-bottom:1px solid var(--panel-border);
+      padding:4px 24px 12px;
+    }
+    .nav-links.mobile-open{ display:flex; }
+    .nav-links a{ padding:13px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
+    .nav-toggle{ display:flex; }
+    .nav-cta .cta-text{ display:none; }
+    .nav-cta{ padding:9px 11px; }
+  }
 
   /* ---------- hero ---------- */
   .hero{ padding:96px 0 60px; text-align:center; }
@@ -169,13 +191,14 @@
   }
   .terminal-body{
     padding:24px; font-family:var(--mono); font-size:0.92rem; min-height:220px;
+    overflow-wrap:anywhere;
   }
-  .term-line{ margin-bottom:10px; color:var(--text-dim); }
+  .term-line{ margin-bottom:10px; color:var(--text-dim); overflow-wrap:anywhere; }
   .term-line .prompt{ color:var(--cyan); }
   .term-line .cmd{ color:var(--text); }
   .grind-chars{
     display:block; font-size:1.15rem; letter-spacing:0.02em; margin:14px 0;
-    color:#ffffff;
+    color:#ffffff; word-break:break-all; overflow-wrap:anywhere;
   }
   .grind-chars .match{
     color:var(--cyan); text-shadow:0 0 14px rgba(20,202,252,0.7);
@@ -205,6 +228,54 @@
   }
   .section-title{ font-size:clamp(1.8rem, 4vw, 2.6rem); font-weight:800; letter-spacing:-0.02em; margin-bottom:14px; }
   .section-desc{ color:var(--text-dim); font-size:1.03rem; }
+
+  /* ---------- download ---------- */
+  .version-tag{
+    display:inline-block; font-family:var(--mono); font-size:0.78rem; color:var(--cyan);
+    background:rgba(20,202,252,0.08); border:1px solid rgba(20,202,252,0.3);
+    padding:4px 12px; border-radius:999px; margin-bottom:16px;
+  }
+  .platform-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-bottom:46px; }
+  @media (max-width:820px){ .platform-grid{ grid-template-columns:1fr; } }
+  .platform-card{
+    padding:32px 26px; border-radius:18px; border:1px solid var(--panel-border);
+    background:linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0));
+    text-align:center; transition:transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+  }
+  .platform-card:hover{ transform:translateY(-6px); border-color:rgba(20,202,252,0.35); box-shadow:0 20px 50px -20px rgba(20,202,252,0.35); }
+  .platform-icon{
+    width:56px; height:56px; margin:0 auto 18px; border-radius:14px;
+    display:flex; align-items:center; justify-content:center; color:var(--cyan);
+    background:linear-gradient(135deg, rgba(20,202,252,0.16), rgba(187,59,250,0.16));
+    border:1px solid rgba(255,255,255,0.08);
+  }
+  .platform-icon svg{ width:28px; height:28px; }
+  .platform-card h3{ font-size:1.1rem; margin-bottom:6px; }
+  .platform-card .psub{ color:var(--text-dim); font-size:0.85rem; margin-bottom:22px; }
+  .platform-card .btn-primary{ width:100%; justify-content:center; margin-bottom:12px; }
+  .platform-card .alt-link{
+    display:block; font-family:var(--mono); font-size:0.78rem; color:var(--text-dim);
+  }
+  .platform-card .alt-link:hover{ color:var(--cyan); }
+
+  .other-ways{ text-align:center; }
+  .other-ways-label{
+    font-family:var(--mono); font-size:0.75rem; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--text-dim); margin-bottom:20px;
+  }
+  .source-links{ display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+  .source-link{
+    display:inline-flex; align-items:center; gap:10px; padding:12px 20px; border-radius:12px;
+    border:1px solid var(--panel-border); background:rgba(255,255,255,0.02);
+    font-size:0.9rem; font-weight:600; transition:all .25s ease;
+  }
+  .source-link:hover{ border-color:rgba(187,59,250,0.4); background:rgba(187,59,250,0.06); transform:translateY(-2px); }
+  .source-link svg{ width:20px; height:20px; }
+  .source-link .npm-badge{
+    width:20px; height:20px; border-radius:4px; background:#CB3837; color:#fff;
+    font-family:var(--mono); font-size:0.55rem; font-weight:800; display:flex; align-items:center; justify-content:center;
+  }
+  .source-link .crate-icon{ color:#F74C00; }
 
   /* ---------- stats ---------- */
   .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:24px; margin-bottom:90px; }
@@ -240,8 +311,9 @@
     width:44px; height:44px; border-radius:11px; display:flex; align-items:center; justify-content:center;
     background:linear-gradient(135deg, rgba(20,202,252,0.18), rgba(187,59,250,0.18));
     border:1px solid rgba(255,255,255,0.08);
-    margin-bottom:18px; font-size:1.3rem;
+    margin-bottom:18px; color:var(--cyan);
   }
+  .feature-icon svg{ width:22px; height:22px; }
   .feature-card h3{ font-size:1.08rem; margin-bottom:8px; font-weight:700; }
   .feature-card p{ color:var(--text-dim); font-size:0.92rem; }
 
@@ -251,8 +323,8 @@
     background:var(--panel); border:1px solid var(--panel-border); border-radius:16px;
     box-shadow:0 40px 100px -40px rgba(0,0,0,0.85);
   }
-  .demo-body{ padding:30px 32px; font-family:var(--mono); font-size:0.9rem; min-height:340px; }
-  .demo-body .out-line{ margin-bottom:8px; white-space:pre-wrap; color:var(--text-dim); }
+  .demo-body{ padding:30px 32px; font-family:var(--mono); font-size:0.9rem; min-height:340px; overflow-wrap:anywhere; }
+  .demo-body .out-line{ margin-bottom:8px; white-space:pre-wrap; word-break:break-word; overflow-wrap:anywhere; color:var(--text-dim); }
   .demo-body .out-line b{ color:#fff; }
   .demo-body .accent{ color:var(--cyan); }
   .demo-body .ok{ color:#28c840; }
@@ -293,7 +365,7 @@
   }
   .code-block{
     background:var(--panel); border:1px solid var(--panel-border); border-radius:14px;
-    padding:22px 24px; font-family:var(--mono); font-size:0.9rem; position:relative;
+    padding:50px 24px 22px; font-family:var(--mono); font-size:0.9rem; position:relative;
     display:none;
   }
   .code-block.active{ display:block; animation:fadeUp .4s ease both; }
@@ -317,7 +389,13 @@
     text-align:center; padding:26px 16px; border-radius:14px; border:1px solid var(--panel-border);
     background:rgba(255,255,255,0.02);
   }
-  .sec-card .sicon{ font-size:1.8rem; margin-bottom:10px; }
+  .sec-card .sicon{
+    width:40px; height:40px; margin:0 auto 12px; border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, rgba(20,202,252,0.16), rgba(187,59,250,0.16));
+    border:1px solid rgba(255,255,255,0.08); color:var(--cyan);
+  }
+  .sec-card .sicon svg{ width:20px; height:20px; }
   .sec-card h4{ font-size:0.95rem; margin-bottom:6px; }
   .sec-card p{ color:var(--text-dim); font-size:0.82rem; }
 
@@ -336,6 +414,21 @@
   footer.site-footer .flinks a:hover{ color:#fff; }
 
   code.inline{ font-family:var(--mono); background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:5px; font-size:0.85em; }
+
+  /* ---------- small screens ---------- */
+  @media (max-width:480px){
+    section{ padding:70px 0; }
+    .hero{ padding:64px 0 40px; }
+    .nav-inner{ padding:14px 16px; }
+    .terminal-body{ padding:16px; font-size:0.8rem; }
+    .grind-chars{ font-size:0.95rem; }
+    .demo-body{ padding:18px 16px; font-size:0.78rem; }
+    .code-block{ padding:46px 16px 18px; font-size:0.8rem; }
+    .platform-card{ padding:26px 20px; }
+    .source-link{ padding:10px 14px; font-size:0.82rem; }
+    .footer-cta{ padding:70px 0 50px; }
+    footer.site-footer .flinks{ gap:14px 18px; }
+  }
 </style>
 </head>
 <body>
@@ -353,13 +446,22 @@
       <span>vanity-address</span>
     </div>
     <nav class="nav-links">
+      <a href="#download">Download</a>
       <a href="#features">Features</a>
       <a href="#demo">Demo</a>
       <a href="#chains">Chains</a>
       <a href="#install">Install</a>
       <a href="#security">Security</a>
     </nav>
-    <a class="nav-cta" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">GitHub ★</a>
+    <div class="nav-right">
+      <a class="nav-cta" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span class="cta-text">Star on GitHub</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -397,6 +499,68 @@
     </div>
   </section>
 
+  <!-- DOWNLOAD -->
+  <section id="download">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">Download</span>
+        <h2 class="section-title">Get vanity-address</h2>
+        <div><span class="version-tag" id="latestVersionTag">latest release</span></div>
+        <p class="section-desc">No Rust or Node.js required for pre-built downloads — pick your platform.</p>
+      </div>
+
+      <div class="platform-grid">
+        <div class="platform-card reveal d1">
+          <div class="platform-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10.5 4.4V11.4H3V5.5ZM11.5 4.26 21 3V11.4H11.5V4.26ZM3 12.4H10.5V19.55L3 18.46V12.4ZM11.5 12.4H21V20.9L11.5 19.65V12.4Z"/></svg>
+          </div>
+          <h3>Windows</h3>
+          <p class="psub">10 / 11 — desktop installer or CLI</p>
+          <a class="btn btn-primary" id="dlWinPrimary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">Download for Windows</a>
+          <a class="alt-link" id="dlWinSecondary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">or grab the CLI (.zip) →</a>
+        </div>
+
+        <div class="platform-card reveal d2">
+          <div class="platform-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.67.91-1.377 0-2.332-1.26-3.428-2.8-1.256-1.75-2.264-4.5-2.264-7.05 0-4.14 2.688-6.34 5.35-6.34 1.46 0 2.673.96 3.59.96.88 0 2.24-1.02 3.9-1.02.652 0 3.006.06 4.556 2.28-.118.075-2.72 1.59-2.72 4.85 0 3.9 3.42 5.28 3.264 5.26z"/></svg>
+          </div>
+          <h3>macOS</h3>
+          <p class="psub">Apple Silicon (M1–M4) — .dmg or CLI</p>
+          <a class="btn btn-primary" id="dlMacPrimary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">Download for Mac</a>
+          <a class="alt-link" id="dlMacSecondary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">Intel Mac / CLI builds →</a>
+        </div>
+
+        <div class="platform-card reveal d3">
+          <div class="platform-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><path d="m9 8 3 3-3 3"/></svg>
+          </div>
+          <h3>Linux</h3>
+          <p class="psub">x86_64 — terminal CLI</p>
+          <a class="btn btn-primary" id="dlLinuxPrimary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">Download for Linux</a>
+          <a class="alt-link" href="https://github.com/yudizaxay/vanity-address/blob/main/docs/INSTALL.md#build-from-source" target="_blank" rel="noopener">or build from source →</a>
+        </div>
+      </div>
+
+      <div class="other-ways reveal">
+        <div class="other-ways-label">Or get it from</div>
+        <div class="source-links">
+          <a class="source-link" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+            GitHub
+          </a>
+          <a class="source-link" href="https://crates.io/crates/vanity-address" target="_blank" rel="noopener">
+            <svg class="crate-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
+            crates.io
+          </a>
+          <a class="source-link" href="https://www.npmjs.com/package/vanity-address" target="_blank" rel="noopener">
+            <span class="npm-badge">npm</span>
+            vanity-address
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- FEATURES -->
   <section id="features">
     <div class="wrap">
@@ -416,32 +580,32 @@
 
       <div class="features-grid" id="featureGrid">
         <div class="feature-card reveal d1">
-          <div class="feature-icon">⚡</div>
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
           <h3>Parallel CPU grinding</h3>
           <p>Rayon-powered multi-core search finds matches in seconds to minutes — with a live keys/sec + ETA readout.</p>
         </div>
         <div class="feature-card reveal d2">
-          <div class="feature-icon">🔒</div>
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
           <h3>100% local, always</h3>
           <p>Every keypair is generated on your machine. No network calls, no telemetry, no accounts — ever.</p>
         </div>
         <div class="feature-card reveal d3">
-          <div class="feature-icon">🌐</div>
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
           <h3>25 chains, one engine</h3>
           <p>Solana, EVM, Bitcoin, Cosmos, Cardano, TON, and 19 more — same CLI, same desktop app, same trust model.</p>
         </div>
         <div class="feature-card reveal d1">
-          <div class="feature-icon">🖥️</div>
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
           <h3>CLI + Desktop app</h3>
           <p>Script it with <code class="inline">--json</code>, or use the native Tauri wizard with a live progress bar.</p>
         </div>
         <div class="feature-card reveal d2">
-          <div class="feature-icon">📦</div>
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg></div>
           <h3>Programmatic SDK</h3>
           <p><code class="inline">npm install vanity-address</code> gives you <code class="inline">generateAddress()</code> — runs in-process via WebAssembly.</p>
         </div>
         <div class="feature-card reveal d3">
-          <div class="feature-icon">🧩</div>
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div>
           <h3>Prefix, suffix, or both</h3>
           <p>Exact-case or case-insensitive matching, impractical-pattern warnings, and honest time estimates up front.</p>
         </div>
@@ -536,10 +700,10 @@
         <h2 class="section-title">Read this before generating keys</h2>
       </div>
       <div class="security-grid">
-        <div class="sec-card reveal d1"><div class="sicon">🖥️</div><h4>Local only</h4><p>Keys are generated on your machine, never sent anywhere.</p></div>
-        <div class="sec-card reveal d2"><div class="sicon">📡</div><h4>No network</h4><p>This tool never connects to the internet.</p></div>
-        <div class="sec-card reveal d3"><div class="sicon">🔍</div><h4>Open source</h4><p>Audit the Rust engine — trust, but verify.</p></div>
-        <div class="sec-card reveal d4"><div class="sicon">✅</div><h4>Verify first</h4><p>Always double-check the address before sending funds.</p></div>
+        <div class="sec-card reveal d1"><div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><h4>Local only</h4><p>Keys are generated on your machine, never sent anywhere.</p></div>
+        <div class="sec-card reveal d2"><div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg></div><h4>No network</h4><p>This tool never connects to the internet.</p></div>
+        <div class="sec-card reveal d3"><div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><h4>Open source</h4><p>Audit the Rust engine — trust, but verify.</p></div>
+        <div class="sec-card reveal d4"><div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><h4>Verify first</h4><p>Always double-check the address before sending funds.</p></div>
       </div>
     </div>
   </section>
@@ -549,7 +713,10 @@
     <div class="wrap reveal">
       <h2>Grind your first address in 30 seconds.</h2>
       <p>No accounts. No servers. Just <code class="inline">npx vanity-address</code>.</p>
-      <a class="btn btn-primary" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">★ Star on GitHub</a>
+      <a class="btn btn-primary" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        Star on GitHub
+      </a>
     </div>
   </section>
 
@@ -618,6 +785,30 @@
   }
 
   resize(); initParticles(); tick();
+
+  /* ---------------- latest release lookup ---------------- */
+  fetch('https://api.github.com/repos/yudizaxay/vanity-address/releases/latest')
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var assets = data.assets || [];
+      function find(regex){
+        var a = assets.find(function(x){ return regex.test(x.name); });
+        return a ? a.browser_download_url : null;
+      }
+      function setHref(id, url){
+        if (!url) return;
+        var el = document.getElementById(id);
+        if (el) el.href = url;
+      }
+      setHref('dlWinPrimary', find(/Windows-Desktop\.exe$/i));
+      setHref('dlWinSecondary', find(/Windows-CLI\.zip$/i));
+      setHref('dlMacPrimary', find(/Mac-AppleSilicon-Desktop\.dmg$/i));
+      setHref('dlMacSecondary', find(/Mac-AppleSilicon-CLI\.tar\.gz$/i) || find(/Mac-Intel-CLI\.tar\.gz$/i));
+      setHref('dlLinuxPrimary', find(/Linux-CLI\.tar\.gz$/i));
+      var tag = document.getElementById('latestVersionTag');
+      if (tag && data.tag_name) tag.textContent = data.tag_name;
+    })
+    .catch(function(){ /* fall back to the releases/latest links already in the HTML */ });
 
   /* ---------------- hero grind animation ---------------- */
   var CHARSET58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -765,6 +956,22 @@
     chainsGrid.appendChild(el);
   });
   chainsGrid.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  /* ---------------- mobile nav toggle ---------------- */
+  var navToggle = document.getElementById('navToggle');
+  var navLinks = document.querySelector('.nav-links');
+  if (navToggle && navLinks){
+    navToggle.addEventListener('click', function(){
+      var open = navLinks.classList.toggle('mobile-open');
+      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    navLinks.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){
+        navLinks.classList.remove('mobile-open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
 
   /* ---------------- install tabs ---------------- */
   var tabBtns = document.querySelectorAll('.tab-btn');
