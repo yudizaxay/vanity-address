@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>vanity-address — Fast, local, multi-chain vanity address generator</title>
+<meta name="description" content="Generate custom crypto wallet addresses that start or end with your word. 25 chains, 100% offline, open source." />
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+
+<style>
+  :root{
+    --cyan:#14CAFC;
+    --purple:#BB3BFA;
+    --violet:#8156F5;
+    --blue:#3E9AFA;
+    --indigo:#646DF7;
+    --magenta:#AF40F8;
+    --bg:#05060a;
+    --bg-soft:#0a0c14;
+    --panel:#0d0f1a;
+    --panel-border:rgba(255,255,255,0.08);
+    --text:#e9ecf6;
+    --text-dim:#8b91ab;
+    --mono: "SF Mono", "Fira Code", "JetBrains Mono", Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    overflow-x:hidden;
+    line-height:1.5;
+  }
+
+  ::selection{ background:var(--purple); color:#fff; }
+
+  a{ color:inherit; text-decoration:none; }
+
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 24px; }
+
+  /* ---------- background canvas ---------- */
+  #bg-canvas{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    opacity:0.55;
+  }
+
+  .grid-overlay{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size:48px 48px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 90%);
+  }
+
+  .glow-blob{
+    position:fixed; z-index:0; pointer-events:none; filter:blur(90px);
+    border-radius:50%; opacity:0.35;
+  }
+  .glow-blob.one{ width:520px; height:520px; top:-180px; left:-120px; background:var(--purple); }
+  .glow-blob.two{ width:600px; height:600px; top:120px; right:-220px; background:var(--cyan); }
+  .glow-blob.three{ width:420px; height:420px; bottom:-160px; left:35%; background:var(--indigo); opacity:0.25; }
+
+  main, header, footer{ position:relative; z-index:1; }
+
+  /* ---------- nav ---------- */
+  header.nav{
+    position:sticky; top:0; z-index:50;
+    backdrop-filter:blur(14px);
+    background:rgba(5,6,10,0.6);
+    border-bottom:1px solid var(--panel-border);
+  }
+  .nav-inner{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 24px; max-width:1180px; margin:0 auto;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-0.02em; }
+  .brand img{ width:28px; height:28px; filter:drop-shadow(0 0 10px rgba(20,202,252,0.5)); }
+  .brand span{ font-size:1.05rem; }
+  .nav-links{ display:flex; align-items:center; gap:28px; font-size:0.9rem; color:var(--text-dim); }
+  .nav-links a:hover{ color:#fff; }
+  .nav-cta{
+    padding:8px 16px; border-radius:8px; font-size:0.85rem; font-weight:600;
+    background:linear-gradient(135deg, var(--cyan), var(--purple));
+    color:#04050a;
+  }
+  @media (max-width:760px){ .nav-links{ display:none; } }
+
+  /* ---------- hero ---------- */
+  .hero{ padding:96px 0 60px; text-align:center; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--mono); font-size:0.78rem; letter-spacing:0.06em;
+    color:var(--cyan); border:1px solid rgba(20,202,252,0.3);
+    background:rgba(20,202,252,0.06);
+    padding:6px 14px; border-radius:999px; margin-bottom:28px;
+    animation: fadeUp 0.8s ease both;
+  }
+  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px var(--cyan); animation:pulse 1.6s infinite; }
+
+  .logo-hero{
+    width:110px; height:110px; margin:0 auto 32px;
+    filter:drop-shadow(0 0 40px rgba(187,59,250,0.45)) drop-shadow(0 0 70px rgba(20,202,252,0.25));
+    animation: fadeUp 0.8s ease both, floatY 6s ease-in-out infinite 0.8s;
+  }
+
+  h1.headline{
+    font-size:clamp(2.4rem, 6vw, 4.4rem);
+    font-weight:800; letter-spacing:-0.03em; line-height:1.05;
+    margin-bottom:22px;
+    animation: fadeUp 0.8s ease 0.05s both;
+  }
+  h1.headline .grad{
+    background:linear-gradient(120deg, var(--cyan), var(--violet) 45%, var(--purple));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    background-size:200% auto;
+    animation: shimmer 5s linear infinite;
+  }
+
+  .subhead{
+    max-width:640px; margin:0 auto 40px; color:var(--text-dim);
+    font-size:1.1rem; animation: fadeUp 0.8s ease 0.1s both;
+  }
+  .subhead strong{ color:var(--text); font-weight:600; }
+
+  .hero-ctas{
+    display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:56px;
+    animation: fadeUp 0.8s ease 0.15s both;
+  }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:13px 26px; border-radius:10px; font-weight:600; font-size:0.95rem;
+    border:1px solid transparent; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .btn:hover{ transform:translateY(-2px); }
+  .btn-primary{
+    background:linear-gradient(135deg, var(--cyan), var(--purple));
+    color:#04050a;
+    box-shadow:0 10px 30px -8px rgba(187,59,250,0.55);
+  }
+  .btn-primary:hover{ box-shadow:0 16px 36px -8px rgba(20,202,252,0.6); }
+  .btn-ghost{
+    background:rgba(255,255,255,0.03);
+    border-color:var(--panel-border);
+    color:var(--text);
+    font-family:var(--mono); font-size:0.88rem;
+  }
+  .btn-ghost:hover{ border-color:rgba(20,202,252,0.4); background:rgba(20,202,252,0.06); }
+  .btn-ghost svg{ width:16px; height:16px; opacity:0.8; }
+
+  /* ---------- terminal ---------- */
+  .terminal{
+    max-width:640px; margin:0 auto; text-align:left;
+    background:var(--panel); border:1px solid var(--panel-border); border-radius:14px;
+    overflow:hidden; box-shadow:0 30px 80px -30px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.02);
+    animation: fadeUp 0.9s ease 0.2s both;
+  }
+  .terminal-bar{
+    display:flex; align-items:center; gap:8px; padding:12px 16px;
+    border-bottom:1px solid var(--panel-border); background:rgba(255,255,255,0.02);
+  }
+  .terminal-bar .tdot{ width:11px; height:11px; border-radius:50%; }
+  .tdot.r{ background:#ff5f57; } .tdot.y{ background:#febc2e; } .tdot.g{ background:#28c840; }
+  .terminal-bar .tlabel{
+    margin-left:8px; font-family:var(--mono); font-size:0.75rem; color:var(--text-dim);
+  }
+  .terminal-body{
+    padding:24px; font-family:var(--mono); font-size:0.92rem; min-height:220px;
+  }
+  .term-line{ margin-bottom:10px; color:var(--text-dim); }
+  .term-line .prompt{ color:var(--cyan); }
+  .term-line .cmd{ color:var(--text); }
+  .grind-chars{
+    display:block; font-size:1.15rem; letter-spacing:0.02em; margin:14px 0;
+    color:#ffffff;
+  }
+  .grind-chars .match{
+    color:var(--cyan); text-shadow:0 0 14px rgba(20,202,252,0.7);
+    font-weight:700;
+  }
+  .grind-status{ color:var(--text-dim); font-size:0.82rem; }
+  .grind-status .found{ color:#28c840; font-weight:600; }
+  .cursor-blink{ display:inline-block; width:8px; height:1.1em; background:var(--cyan); vertical-align:text-bottom; animation:blink 1s step-end infinite; margin-left:2px; }
+
+  @keyframes blink{ 50%{ opacity:0; } }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(18px); } to{ opacity:1; transform:translateY(0); } }
+  @keyframes floatY{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-10px); } }
+  @keyframes shimmer{ to{ background-position:200% center; } }
+
+  /* ---------- reveal on scroll ---------- */
+  .reveal{ opacity:0; transform:translateY(28px); transition:opacity .7s ease, transform .7s ease; }
+  .reveal.in{ opacity:1; transform:translateY(0); }
+  .reveal.d1{ transition-delay:.08s; } .reveal.d2{ transition-delay:.16s; } .reveal.d3{ transition-delay:.24s; } .reveal.d4{ transition-delay:.32s; }
+
+  /* ---------- section shell ---------- */
+  section{ padding:110px 0; }
+  .section-head{ text-align:center; max-width:640px; margin:0 auto 56px; }
+  .kicker{
+    font-family:var(--mono); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--purple); margin-bottom:14px; display:block;
+  }
+  .section-title{ font-size:clamp(1.8rem, 4vw, 2.6rem); font-weight:800; letter-spacing:-0.02em; margin-bottom:14px; }
+  .section-desc{ color:var(--text-dim); font-size:1.03rem; }
+
+  /* ---------- stats ---------- */
+  .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:24px; margin-bottom:90px; }
+  .stat{
+    text-align:center; padding:28px 16px; border:1px solid var(--panel-border); border-radius:14px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+  }
+  .stat .num{
+    font-size:2.1rem; font-weight:800;
+    background:linear-gradient(120deg, var(--cyan), var(--purple));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .stat .label{ color:var(--text-dim); font-size:0.85rem; margin-top:6px; }
+  @media (max-width:760px){ .stats{ grid-template-columns:repeat(2,1fr); } }
+
+  /* ---------- feature cards ---------- */
+  .features-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  @media (max-width:900px){ .features-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:600px){ .features-grid{ grid-template-columns:1fr; } }
+  .feature-card{
+    padding:28px; border-radius:16px; border:1px solid var(--panel-border);
+    background:var(--panel);
+    transition:transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+    position:relative; overflow:hidden;
+  }
+  .feature-card::before{
+    content:""; position:absolute; inset:0; opacity:0; transition:opacity .3s ease;
+    background:radial-gradient(400px circle at var(--mx,50%) var(--my,0%), rgba(20,202,252,0.12), transparent 60%);
+  }
+  .feature-card:hover{ transform:translateY(-6px); border-color:rgba(187,59,250,0.35); box-shadow:0 20px 50px -20px rgba(139,86,245,0.4); }
+  .feature-card:hover::before{ opacity:1; }
+  .feature-icon{
+    width:44px; height:44px; border-radius:11px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, rgba(20,202,252,0.18), rgba(187,59,250,0.18));
+    border:1px solid rgba(255,255,255,0.08);
+    margin-bottom:18px; font-size:1.3rem;
+  }
+  .feature-card h3{ font-size:1.08rem; margin-bottom:8px; font-weight:700; }
+  .feature-card p{ color:var(--text-dim); font-size:0.92rem; }
+
+  /* ---------- live demo ---------- */
+  .demo-terminal{
+    max-width:820px; margin:0 auto;
+    background:var(--panel); border:1px solid var(--panel-border); border-radius:16px;
+    box-shadow:0 40px 100px -40px rgba(0,0,0,0.85);
+  }
+  .demo-body{ padding:30px 32px; font-family:var(--mono); font-size:0.9rem; min-height:340px; }
+  .demo-body .out-line{ margin-bottom:8px; white-space:pre-wrap; color:var(--text-dim); }
+  .demo-body .out-line b{ color:#fff; }
+  .demo-body .accent{ color:var(--cyan); }
+  .demo-body .ok{ color:#28c840; }
+
+  /* ---------- chains grid ---------- */
+  .chains-grid{
+    display:grid; grid-template-columns:repeat(5,1fr); gap:14px;
+  }
+  @media (max-width:900px){ .chains-grid{ grid-template-columns:repeat(4,1fr); } }
+  @media (max-width:640px){ .chains-grid{ grid-template-columns:repeat(3,1fr); } }
+  .chain-chip{
+    padding:16px 10px; text-align:center; border-radius:12px;
+    background:rgba(255,255,255,0.02); border:1px solid var(--panel-border);
+    transition:transform .25s ease, border-color .25s ease, background .25s ease;
+  }
+  .chain-chip:hover{
+    transform:translateY(-4px) scale(1.03);
+    border-color:rgba(20,202,252,0.4);
+    background:rgba(20,202,252,0.05);
+  }
+  .chain-chip .cid{
+    font-family:var(--mono); font-size:0.72rem; color:var(--cyan); display:block; margin-bottom:4px;
+  }
+  .chain-chip .cname{ font-size:0.82rem; color:var(--text); }
+
+  /* ---------- install tabs ---------- */
+  .install-panel{ max-width:760px; margin:0 auto; }
+  .tabs{ display:flex; gap:8px; justify-content:center; margin-bottom:20px; flex-wrap:wrap; }
+  .tab-btn{
+    padding:9px 18px; border-radius:999px; font-size:0.85rem; font-family:var(--mono);
+    border:1px solid var(--panel-border); background:rgba(255,255,255,0.02); color:var(--text-dim);
+    cursor:pointer; transition:all .2s ease;
+  }
+  .tab-btn.active{
+    color:#04050a; border-color:transparent;
+    background:linear-gradient(135deg, var(--cyan), var(--purple));
+    font-weight:600;
+  }
+  .code-block{
+    background:var(--panel); border:1px solid var(--panel-border); border-radius:14px;
+    padding:22px 24px; font-family:var(--mono); font-size:0.9rem; position:relative;
+    display:none;
+  }
+  .code-block.active{ display:block; animation:fadeUp .4s ease both; }
+  .code-block pre{ white-space:pre-wrap; word-break:break-word; color:var(--text); line-height:1.7; }
+  .code-block .cmt{ color:var(--text-dim); }
+  .code-block .g{ color:var(--cyan); }
+  .copy-btn{
+    position:absolute; top:16px; right:16px;
+    background:rgba(255,255,255,0.06); border:1px solid var(--panel-border);
+    color:var(--text-dim); font-size:0.75rem; padding:6px 12px; border-radius:8px; cursor:pointer;
+    font-family:var(--mono); transition:all .2s ease;
+  }
+  .copy-btn:hover{ color:#fff; border-color:rgba(20,202,252,0.4); }
+  .copy-btn.copied{ color:#28c840; border-color:rgba(40,200,64,0.4); }
+
+  /* ---------- security ---------- */
+  .security-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+  @media (max-width:900px){ .security-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:560px){ .security-grid{ grid-template-columns:1fr; } }
+  .sec-card{
+    text-align:center; padding:26px 16px; border-radius:14px; border:1px solid var(--panel-border);
+    background:rgba(255,255,255,0.02);
+  }
+  .sec-card .sicon{ font-size:1.8rem; margin-bottom:10px; }
+  .sec-card h4{ font-size:0.95rem; margin-bottom:6px; }
+  .sec-card p{ color:var(--text-dim); font-size:0.82rem; }
+
+  /* ---------- footer cta ---------- */
+  .footer-cta{
+    text-align:center; padding:100px 0 60px; position:relative;
+  }
+  .footer-cta h2{ font-size:clamp(1.8rem,4vw,3rem); font-weight:800; margin-bottom:18px; letter-spacing:-0.02em; }
+  .footer-cta p{ color:var(--text-dim); margin-bottom:36px; }
+
+  footer.site-footer{
+    border-top:1px solid var(--panel-border); padding:36px 0; text-align:center;
+    color:var(--text-dim); font-size:0.85rem;
+  }
+  footer.site-footer .flinks{ display:flex; gap:22px; justify-content:center; margin-bottom:16px; flex-wrap:wrap; }
+  footer.site-footer .flinks a:hover{ color:#fff; }
+
+  code.inline{ font-family:var(--mono); background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:5px; font-size:0.85em; }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="grid-overlay"></div>
+<div class="glow-blob one"></div>
+<div class="glow-blob two"></div>
+<div class="glow-blob three"></div>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <img src="assets/logo.svg" alt="vanity-address logo" />
+      <span>vanity-address</span>
+    </div>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#demo">Demo</a>
+      <a href="#chains">Chains</a>
+      <a href="#install">Install</a>
+      <a href="#security">Security</a>
+    </nav>
+    <a class="nav-cta" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">GitHub ★</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow"><span class="dot"></span> 25 chains &middot; 100% offline &middot; open source</div>
+      <img class="logo-hero" src="assets/logo.svg" alt="vanity-address logo" />
+      <h1 class="headline">Your wallet address,<br/><span class="grad">your word.</span></h1>
+      <p class="subhead">
+        Generate real, fully working crypto wallets whose address <strong>starts or ends with a word you choose</strong> —
+        entirely on your machine. No servers, no accounts, no tracking.
+      </p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#install">Get started →</a>
+        <a class="btn btn-ghost" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          npx vanity-address
+        </a>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span>
+          <span class="tlabel">~/vanity-address</span>
+        </div>
+        <div class="terminal-body">
+          <div class="term-line"><span class="prompt">$</span> <span class="cmd">vanity-address --chain sol --suffix axay</span></div>
+          <span class="grind-chars" id="grindChars">7xKpN4qwRnLB2fGhy9uMcVTAeWDs38ZjQaU</span>
+          <div class="grind-status" id="grindStatus">grinding<span class="cursor-blink"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="wrap">
+
+      <div class="stats reveal" id="statsRow">
+        <div class="stat"><div class="num" data-count="25">0</div><div class="label">Supported chains</div></div>
+        <div class="stat"><div class="num" data-count="100" data-suffix="%">0%</div><div class="label">Offline / local</div></div>
+        <div class="stat"><div class="num" data-count="0">0</div><div class="label">Network calls</div></div>
+        <div class="stat"><div class="num" data-count="2">0</div><div class="label">Frontends: CLI + Desktop</div></div>
+      </div>
+
+      <div class="section-head reveal">
+        <span class="kicker">Why vanity-address</span>
+        <h2 class="section-title">Built for speed, privacy, and every chain</h2>
+        <p class="section-desc">One Rust engine, parallel CPU grinding, and zero compromises on where your keys live.</p>
+      </div>
+
+      <div class="features-grid" id="featureGrid">
+        <div class="feature-card reveal d1">
+          <div class="feature-icon">⚡</div>
+          <h3>Parallel CPU grinding</h3>
+          <p>Rayon-powered multi-core search finds matches in seconds to minutes — with a live keys/sec + ETA readout.</p>
+        </div>
+        <div class="feature-card reveal d2">
+          <div class="feature-icon">🔒</div>
+          <h3>100% local, always</h3>
+          <p>Every keypair is generated on your machine. No network calls, no telemetry, no accounts — ever.</p>
+        </div>
+        <div class="feature-card reveal d3">
+          <div class="feature-icon">🌐</div>
+          <h3>25 chains, one engine</h3>
+          <p>Solana, EVM, Bitcoin, Cosmos, Cardano, TON, and 19 more — same CLI, same desktop app, same trust model.</p>
+        </div>
+        <div class="feature-card reveal d1">
+          <div class="feature-icon">🖥️</div>
+          <h3>CLI + Desktop app</h3>
+          <p>Script it with <code class="inline">--json</code>, or use the native Tauri wizard with a live progress bar.</p>
+        </div>
+        <div class="feature-card reveal d2">
+          <div class="feature-icon">📦</div>
+          <h3>Programmatic SDK</h3>
+          <p><code class="inline">npm install vanity-address</code> gives you <code class="inline">generateAddress()</code> — runs in-process via WebAssembly.</p>
+        </div>
+        <div class="feature-card reveal d3">
+          <div class="feature-icon">🧩</div>
+          <h3>Prefix, suffix, or both</h3>
+          <p>Exact-case or case-insensitive matching, impractical-pattern warnings, and honest time estimates up front.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIVE DEMO -->
+  <section id="demo">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">See it run</span>
+        <h2 class="section-title">Chain → pattern → grind → match</h2>
+        <p class="section-desc">The exact flow you'll see in your own terminal.</p>
+      </div>
+
+      <div class="demo-terminal reveal">
+        <div class="terminal-bar">
+          <span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span>
+          <span class="tlabel">vanity-address --chain evm --prefix dead --suffix beef</span>
+        </div>
+        <div class="demo-body" id="demoBody"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAINS -->
+  <section id="chains">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">Supported chains</span>
+        <h2 class="section-title">All 25, same trust model</h2>
+        <p class="section-desc">Use any id with <code class="inline">--chain</code> — CLI, desktop, and SDK all match.</p>
+      </div>
+      <div class="chains-grid" id="chainsGrid"></div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section id="install">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">Install</span>
+        <h2 class="section-title">Pick your poison</h2>
+        <p class="section-desc">No Rust or Node.js required for pre-built downloads.</p>
+      </div>
+
+      <div class="install-panel reveal">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="npm">npm</button>
+          <button class="tab-btn" data-tab="brew">Homebrew</button>
+          <button class="tab-btn" data-tab="cargo">Cargo</button>
+          <button class="tab-btn" data-tab="binary">Direct download</button>
+        </div>
+
+        <div class="code-block active" data-panel="npm">
+          <button class="copy-btn" data-copy="npx vanity-address">Copy</button>
+          <pre><span class="cmt"># no install needed — runs instantly</span>
+<span class="g">$</span> npx vanity-address
+
+<span class="cmt"># or install globally</span>
+<span class="g">$</span> npm install -g vanity-address</pre>
+        </div>
+
+        <div class="code-block" data-panel="brew">
+          <button class="copy-btn" data-copy="brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address">Copy</button>
+          <pre><span class="g">$</span> brew tap yudizaxay/tap
+<span class="g">$</span> brew trust yudizaxay/tap
+<span class="g">$</span> brew install vanity-address</pre>
+        </div>
+
+        <div class="code-block" data-panel="cargo">
+          <button class="copy-btn" data-copy="cargo install vanity-address">Copy</button>
+          <pre><span class="cmt"># requires Rust 1.70+, first compile ~3-8 min</span>
+<span class="g">$</span> cargo install vanity-address</pre>
+        </div>
+
+        <div class="code-block" data-panel="binary">
+          <button class="copy-btn" data-copy="https://github.com/yudizaxay/vanity-address/releases/latest">Copy link</button>
+          <pre><span class="cmt"># pre-built CLI + desktop .dmg / .exe, no compiler needed</span>
+<span class="g">→</span> github.com/yudizaxay/vanity-address/releases/latest</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECURITY -->
+  <section id="security">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="kicker">Trust, but verify</span>
+        <h2 class="section-title">Read this before generating keys</h2>
+      </div>
+      <div class="security-grid">
+        <div class="sec-card reveal d1"><div class="sicon">🖥️</div><h4>Local only</h4><p>Keys are generated on your machine, never sent anywhere.</p></div>
+        <div class="sec-card reveal d2"><div class="sicon">📡</div><h4>No network</h4><p>This tool never connects to the internet.</p></div>
+        <div class="sec-card reveal d3"><div class="sicon">🔍</div><h4>Open source</h4><p>Audit the Rust engine — trust, but verify.</p></div>
+        <div class="sec-card reveal d4"><div class="sicon">✅</div><h4>Verify first</h4><p>Always double-check the address before sending funds.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER CTA -->
+  <section class="footer-cta">
+    <div class="wrap reveal">
+      <h2>Grind your first address in 30 seconds.</h2>
+      <p>No accounts. No servers. Just <code class="inline">npx vanity-address</code>.</p>
+      <a class="btn btn-primary" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">★ Star on GitHub</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="flinks">
+      <a href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/yudizaxay/vanity-address/blob/main/docs/USAGE.md" target="_blank" rel="noopener">Usage guide</a>
+      <a href="https://github.com/yudizaxay/vanity-address/blob/main/docs/SDK.md" target="_blank" rel="noopener">SDK docs</a>
+      <a href="https://github.com/yudizaxay/vanity-address/blob/main/SECURITY.md" target="_blank" rel="noopener">Security policy</a>
+      <a href="https://www.npmjs.com/package/vanity-address" target="_blank" rel="noopener">npm</a>
+    </div>
+    <div>MIT © yudizaxay — keys stay on your machine.</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- background particle canvas ---------------- */
+  var canvas = document.getElementById('bg-canvas');
+  var ctx = canvas.getContext('2d');
+  var particles = [];
+  var W, H;
+
+  function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = Math.max(window.innerHeight, document.body.scrollHeight);
+  }
+  window.addEventListener('resize', function(){
+    resize(); initParticles();
+  });
+
+  function initParticles(){
+    var count = Math.min(70, Math.floor((W * H) / 26000));
+    particles = [];
+    for (var i = 0; i < count; i++){
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * Math.min(H, window.innerHeight * 1.6),
+        r: Math.random() * 1.6 + 0.4,
+        vx: (Math.random() - 0.5) * 0.15,
+        vy: (Math.random() - 0.5) * 0.15,
+        hue: Math.random() > 0.5 ? '20,202,252' : '187,59,250',
+        a: Math.random() * 0.5 + 0.15
+      });
+    }
+  }
+
+  function tick(){
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < particles.length; i++){
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(' + p.hue + ',' + p.a + ')';
+      ctx.fill();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  resize(); initParticles(); tick();
+
+  /* ---------------- hero grind animation ---------------- */
+  var CHARSET58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+  var SUFFIX = "axay";
+  var grindEl = document.getElementById('grindChars');
+  var statusEl = document.getElementById('grindStatus');
+
+  function randomAddr(len){
+    var s = "";
+    for (var i = 0; i < len; i++){
+      s += CHARSET58[Math.floor(Math.random() * CHARSET58.length)];
+    }
+    return s;
+  }
+
+  function runGrindCycle(){
+    var ticks = 0;
+    var maxTicks = 26 + Math.floor(Math.random() * 10);
+    statusEl.innerHTML = 'grinding<span class="cursor-blink"></span>';
+    grindEl.innerHTML = randomAddr(38);
+
+    var interval = setInterval(function(){
+      ticks++;
+      if (ticks >= maxTicks){
+        clearInterval(interval);
+        var base = randomAddr(34);
+        grindEl.innerHTML = base + '<span class="match">' + SUFFIX + '</span>';
+        statusEl.innerHTML = '<span class="found">✓ match found</span> — attempts: ' +
+          (Math.floor(Math.random() * 400 + 200)) + ',000,000';
+        setTimeout(runGrindCycle, 2400);
+      } else {
+        grindEl.textContent = randomAddr(38);
+      }
+    }, 70);
+  }
+  runGrindCycle();
+
+  /* ---------------- scroll reveal ---------------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(function(el){ io.observe(el); });
+
+  /* ---------------- animated counters ---------------- */
+  function animateCount(el){
+    var target = parseInt(el.getAttribute('data-count'), 10);
+    var suffix = el.getAttribute('data-suffix') || '';
+    var startTime = null;
+    var duration = 1200;
+    function step(ts){
+      if (!startTime) startTime = ts;
+      var progress = Math.min((ts - startTime) / duration, 1);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.floor(eased * target) + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+      else el.textContent = target + suffix;
+    }
+    requestAnimationFrame(step);
+  }
+  var statsIo = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){
+        e.target.querySelectorAll('.num').forEach(animateCount);
+        statsIo.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  var statsRow = document.getElementById('statsRow');
+  if (statsRow) statsIo.observe(statsRow);
+
+  /* ---------------- feature card mouse glow ---------------- */
+  document.querySelectorAll('.feature-card').forEach(function(card){
+    card.addEventListener('mousemove', function(e){
+      var rect = card.getBoundingClientRect();
+      card.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
+      card.style.setProperty('--my', (e.clientY - rect.top) + 'px');
+    });
+  });
+
+  /* ---------------- live demo typing sequence ---------------- */
+  var demoScript = [
+    { t: 'line', text: '$ vanity-address --chain evm --prefix dead --suffix beef', cls:'' },
+    { t: 'wait', ms: 400 },
+    { t: 'line', text: '  Chain     EVM (Ethereum)', cls:'' },
+    { t: 'line', text: "  Target    starting with '0xdead' and ending with 'beef'", cls:'' },
+    { t: 'line', text: '  Expected  ~1.1T attempts (average)', cls:'accent' },
+    { t: 'wait', ms: 300 },
+    { t: 'line', text: '  System    8 logical / 8 physical · 7 workers', cls:'' },
+    { t: 'wait', ms: 300 },
+    { t: 'line', text: '  ⠋ 42.7M keys | 2,412,880 keys/s | ~7 min remaining', cls:'accent' },
+    { t: 'wait', ms: 900 },
+    { t: 'line', text: '  ✓ Match found!', cls:'ok' },
+    { t: 'line', text: '  Address   0xdead7fB92c1a4E3d9C8bA0f5D1e2c3b4a5f6beef', cls:'' },
+    { t: 'line', text: '  Time      184.02s', cls:'' },
+    { t: 'wait', ms: 600 },
+    { t: 'line', text: '  Private Keys — never share these with anyone.', cls:'accent' }
+  ];
+
+  var demoBody = document.getElementById('demoBody');
+  var demoStarted = false;
+
+  function runDemo(){
+    demoBody.innerHTML = '';
+    var i = 0;
+    function next(){
+      if (i >= demoScript.length){
+        setTimeout(runDemo, 3200);
+        return;
+      }
+      var step = demoScript[i++];
+      if (step.t === 'wait'){ setTimeout(next, step.ms); return; }
+      var div = document.createElement('div');
+      div.className = 'out-line ' + (step.cls || '');
+      div.innerHTML = step.text.replace(/'([^']+)'/g, "<b>'$1'</b>");
+      demoBody.appendChild(div);
+      setTimeout(next, 55 + Math.random() * 40);
+    }
+    next();
+  }
+
+  var demoIo = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting && !demoStarted){ demoStarted = true; runDemo(); }
+    });
+  }, { threshold: 0.3 });
+  demoIo.observe(document.getElementById('demo'));
+
+  /* ---------------- chains grid ---------------- */
+  var CHAINS = [
+    ['algo','Algorand'], ['aptos','Aptos'], ['btc','Bitcoin'], ['ada','Cardano'],
+    ['cosmos','Cosmos'], ['dash','Dash'], ['doge','Dogecoin'], ['evm','EVM'],
+    ['fil','Filecoin'], ['hedera','Hedera'], ['icp','Internet Computer'], ['kaspa','Kaspa'],
+    ['ksm','Kusama'], ['ltc','Litecoin'], ['erd','MultiversX'], ['near','NEAR'],
+    ['osmo','Osmosis'], ['dot','Polkadot'], ['xrp','Ripple'], ['sol','Solana'],
+    ['xlm','Stellar'], ['sui','Sui'], ['xtz','Tezos'], ['ton','TON'], ['trx','Tron']
+  ];
+  var chainsGrid = document.getElementById('chainsGrid');
+  CHAINS.forEach(function(c, idx){
+    var el = document.createElement('div');
+    el.className = 'chain-chip reveal d' + ((idx % 4) + 1);
+    el.innerHTML = '<span class="cid">' + c[0] + '</span><span class="cname">' + c[1] + '</span>';
+    chainsGrid.appendChild(el);
+  });
+  chainsGrid.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  /* ---------------- install tabs ---------------- */
+  var tabBtns = document.querySelectorAll('.tab-btn');
+  var panels = document.querySelectorAll('.code-block');
+  tabBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      tabBtns.forEach(function(b){ b.classList.remove('active'); });
+      panels.forEach(function(p){ p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelector('.code-block[data-panel="' + btn.getAttribute('data-tab') + '"]').classList.add('active');
+    });
+  });
+
+  /* ---------------- copy buttons ---------------- */
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var text = btn.getAttribute('data-copy');
+      navigator.clipboard.writeText(text).then(function(){
+        var original = btn.textContent;
+        btn.textContent = 'Copied ✓';
+        btn.classList.add('copied');
+        setTimeout(function(){ btn.textContent = original; btn.classList.remove('copied'); }, 1800);
+      });
+    });
+  });
+
+})();
+</script>
+</body>
+</html>
