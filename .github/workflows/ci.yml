@@ -78,7 +78,17 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: vanity-app
-        run: npm ci
+        shell: bash
+        run: |
+          for i in 1 2 3; do
+            npm ci && break
+            if [ "$i" = "3" ]; then
+              echo "npm ci failed after 3 attempts"
+              exit 1
+            fi
+            echo "npm ci failed (attempt $i/3) — retrying in 5s..."
+            sleep 5
+          done
 
       - name: Typecheck and build frontend
         working-directory: vanity-app
