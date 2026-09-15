@@ -20,6 +20,15 @@ impl PatternRisk {
             PatternRisk::None
         }
     }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            PatternRisk::None => "none",
+            PatternRisk::Caution => "caution",
+            PatternRisk::Long => "long",
+            PatternRisk::Impractical => "impractical",
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -73,6 +82,14 @@ pub fn format_duration(avg_secs: f64) -> String {
         format!("~{:.0} years", avg_secs / (86_400.0 * 365.0))
     } else {
         "centuries+ — not practical on one machine".to_string()
+    }
+}
+
+/// Single-thread heuristic throughput when no live benchmark is available (wasm / SDK).
+pub fn default_keys_per_sec(chain_id: &str) -> f64 {
+    match chain_id {
+        "evm" | "eth" | "ethereum" | "aptos" | "apt" | "sui" | "near" => 35_000.0,
+        _ => 80_000.0,
     }
 }
 

@@ -86,9 +86,9 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 **Quick start (Linux):**
 
 ```bash
-# Replace 0.4.1 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.4.1/VanityAddress-0.4.1-Linux-CLI.tar.gz
-tar xzf VanityAddress-0.4.1-Linux-CLI.tar.gz
+# Replace 0.5.0 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.5.0/VanityAddress-0.5.0-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.5.0-Linux-CLI.tar.gz
 ./vanity-address
 ```
 
@@ -149,16 +149,20 @@ vanity-address --chain sol --suffix ax --json --no-benchmark --force
 ## 📦 Use it in your own code
 
 `npm install vanity-address` also gives you a programmatic API — no
-subprocess, runs in-process via WebAssembly:
+subprocess, runs in-process via WebAssembly (Node uses multi-core workers by default):
 
 ```js
-const { generateAddress } = require("vanity-address");
+const { generateAddress, estimateDifficulty } = require("vanity-address");
 
-const wallet = await generateAddress({ chain: "evm", prefix: "abc" });
-console.log(wallet.address, wallet.exports);
+console.log(estimateDifficulty({ chain: "evm", prefix: "abc", workers: 4 }));
+
+const wallet = await generateAddress({ chain: "evm", prefix: "abc", workers: 4 });
+console.log(wallet.address, wallet.privateKey);
 ```
 
-📖 **Full guide:** [docs/SDK.md](https://github.com/yudizaxay/vanity-address/blob/main/docs/SDK.md) — setup, full API reference, progress/cancellation, supported chains
+Also: `generateAddresses`, `validatePattern`, `listChains`, `timeoutMs`, rich `onProgress`.
+
+📖 **Full guide:** [docs/SDK.md](https://github.com/yudizaxay/vanity-address/blob/main/docs/SDK.md) — full API reference, workers, progress/ETA, supported chains
 
 ---
 
