@@ -36,7 +36,7 @@ getrandom = { version = "0.2", features = ["js"], optional = true }
 # Keypair (see chains/solana.rs's matches_solana_sdk_for_fixed_seed test).
 # Dev-dependencies never propagate to dependents or into release builds,
 # so this has no effect on the wasm build.
-solana-sdk = "1.18"
+solana-sdk = "2.3"
 
 [features]
 default = ["native"]
