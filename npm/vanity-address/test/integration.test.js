@@ -50,6 +50,28 @@ test("supports cancellation via AbortSignal", async () => {
   await assert.rejects(promise, (err) => err.name === "AbortError");
 });
 
+test("estimateDifficulty / listChains / validatePattern helpers", () => {
+  const { estimateDifficulty, listChains, validatePattern, isValidChain } = require("../src/index.js");
+  assert.equal(listChains().length, 25);
+  assert.equal(isValidChain("eth"), true);
+  assert.equal(isValidChain("nope"), false);
+  const est = estimateDifficulty({ chain: "evm", prefix: "ab" });
+  assert.ok(est.attempts > 0);
+  assert.ok(est.timeLabel);
+  const bad = validatePattern({ chain: "evm", prefix: "zzzz" });
+  assert.equal(bad.ok, false);
+});
+
+test("generateAddresses returns the requested count", async () => {
+  const { generateAddresses } = require("../src/index.js");
+  const wallets = await generateAddresses({ chain: "evm", prefix: "a", count: 2, workers: 2 });
+  assert.equal(wallets.length, 2);
+  for (const w of wallets) {
+    assert.equal(w.address[2].toLowerCase(), "a");
+    assert.ok(w.privateKey);
+  }
+});
+
 test('Node ESM entry point (package exports "node" condition) works', async () => {
   // Import the bare package specifier (self-reference), not a file path, so
   // Node actually resolves through package.json "exports" — the same way a

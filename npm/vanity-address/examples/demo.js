@@ -1,47 +1,66 @@
-// Demo: vanity-address SDK usage
+// Demo: vanity-address SDK usage (v0.5+)
 //
 // Run from this directory:  node examples/demo.js
-// (or after `npm install vanity-address` in your own project, swap the
-//  require() path below for `require("vanity-address")`)
+// (or after `npm install vanity-address`, use `require("vanity-address")`)
 
-const { generateAddress, VanityAddressError } = require("../src/index.js");
+const {
+  generateAddress,
+  generateAddresses,
+  estimateDifficulty,
+  validatePattern,
+  listChains,
+  isValidChain,
+  VanityAddressError,
+} = require("../src/index.js");
 
 async function main() {
-  console.log("1) Basic usage — EVM address starting with 'a'");
-  const wallet1 = await generateAddress({ chain: "evm", prefix: "a" });
+  console.log("0) Chains:", listChains().length, "| eth alias?", isValidChain("eth"));
+
+  console.log("\n1) Estimate before grinding");
+  const est = estimateDifficulty({ chain: "evm", prefix: "ab", workers: 4 });
+  console.log("  ", est.attemptsLabel, "attempts ·", est.timeLabel, "·", est.difficulty, est.risk);
+
+  console.log("\n2) Validate a bad pattern");
+  console.log("  ", validatePattern({ chain: "evm", prefix: "zzzz" }));
+
+  console.log("\n3) Basic usage — EVM prefix 'a' (multi-worker)");
+  const wallet1 = await generateAddress({ chain: "evm", prefix: "a", workers: 2 });
   console.log("   address:", wallet1.address);
-  console.log("   private key:", wallet1.exports[0].value);
-  console.log();
+  console.log("   privateKey:", wallet1.privateKey);
 
-  console.log("2) Bitcoin address starting with '1'");
-  const wallet2 = await generateAddress({ chain: "btc", prefix: "1" });
-  console.log("   address:", wallet2.address);
-  console.log("   exports:", wallet2.exports.map((e) => e.label));
-  console.log();
+  console.log("\n4) Batch — two Bitcoin addresses starting with '1'");
+  const batch = await generateAddresses({ chain: "btc", prefix: "1", count: 2, workers: 2 });
+  console.log(
+    "  ",
+    batch.map((w) => w.address),
+  );
 
-  console.log("3) With progress reporting (longer pattern, 4 hex chars)");
+  console.log("\n5) Progress + ETA");
   await generateAddress({
     chain: "evm",
-    prefix: "cafe",
-    onProgress: (attempts) => process.stdout.write(`\r   tried ${attempts} so far...`),
+    prefix: "aa",
+    workers: 2,
+    onProgress: (attempts, info) => {
+      process.stdout.write(
+        `\r   ${attempts} @ ${Math.round(info.keysPerSec)} keys/s` +
+          (info.etaSeconds != null ? ` · eta ~${info.etaSeconds.toFixed(1)}s` : ""),
+      );
+    },
   }).then((w) => console.log(`\n   found: ${w.address}`));
-  console.log();
 
-  console.log("4) Cancellation via AbortSignal (aborts after first progress tick)");
-  const controller = new AbortController();
+  console.log("\n6) timeoutMs");
   try {
     await generateAddress({
       chain: "evm",
-      prefix: "aaaaaaaa", // deliberately long/slow so we can cancel it
-      signal: controller.signal,
-      onProgress: () => controller.abort(),
+      prefix: "abcdef12",
+      timeoutMs: 50,
+      workers: 1,
     });
   } catch (err) {
-    console.log("   cancelled as expected:", err.name);
+    console.log("   timed out as expected:", err.name);
   }
-  console.log();
 
-  console.log("5) Error handling — invalid chain");
+  console.log("\n7) Error handling — invalid chain");
   try {
     await generateAddress({ chain: "not-a-real-chain", prefix: "a" });
   } catch (err) {

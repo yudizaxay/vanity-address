@@ -1,13 +1,12 @@
 # Programmatic SDK — setup & usage
 
 `vanity-address` ships two things in one npm package: the CLI (`npx vanity-address`)
-and a programmatic API you can call from your own Node.js code — `generateAddress()`.
-It runs entirely in-process via WebAssembly: no subprocess, no native binary, works
-the same on macOS/Linux/Windows and in bundlers/browsers.
+and a programmatic API you can call from your own Node.js code. It runs entirely
+in-process via WebAssembly: no subprocess, no native compiler for *your* app,
+works the same on macOS/Linux/Windows and in bundlers/browsers.
 
-Use this when your own app (a wallet generator, an onboarding flow, a backend
-service) needs to grind a vanity address and get the private key back as data,
-instead of shelling out to the CLI and parsing its output.
+Use this when your own app needs to grind a vanity address and get the private
+key back as data, instead of shelling out to the CLI.
 
 ---
 
@@ -17,12 +16,8 @@ instead of shelling out to the CLI and parsing its output.
 npm install vanity-address
 ```
 
-That's it — no separate build step, no native compiler needed by *your*
-project. The WASM binary ships pre-built inside the package.
-
-**Requirements:** Node.js ≥ 18. Works with CommonJS (`require`) and ES modules
-(`import`) out of the box, and with bundlers (Vite, webpack, esbuild) for
-browser use.
+**Requirements:** Node.js ≥ 18. CommonJS + ESM. Browser/bundler builds use a
+single-thread grind; **Node uses a multi-core `worker_threads` pool by default**.
 
 ---
 
@@ -33,22 +28,19 @@ const { generateAddress } = require("vanity-address");
 
 const wallet = await generateAddress({ chain: "evm", prefix: "abc" });
 
-console.log(wallet.address);
-// 0xabc1234...
-
-console.log(wallet.exports);
-// [{ label: "Private Key (hex)", value: "0x...", hint: null }]
+console.log(wallet.address);     // 0xabc...
+console.log(wallet.privateKey);  // first export value (convenience)
+console.log(wallet.exports);     // full list of key formats
 ```
-
-ES modules work the same way:
 
 ```js
 import { generateAddress } from "vanity-address";
 
-const wallet = await generateAddress({ chain: "sui", prefix: "0xcafe" });
+const wallet = await generateAddress({ chain: "sui", prefix: "0xcafe", workers: 4 });
 ```
 
-TypeScript picks up types automatically — no `@types` package needed.
+TypeScript types ship in the package — no `@types` needed. Prefer `ChainId` for
+autocomplete (`"sol" | "evm" | …`).
 
 ---
 
@@ -56,38 +48,64 @@ TypeScript picks up types automatically — no `@types` package needed.
 
 ### `generateAddress(options)`
 
-Returns a `Promise<Wallet>` that resolves once a matching address is found.
-
 ```ts
 interface GenerateAddressOptions {
-  chain: string;                         // required — see "Supported chains" below
-  prefix?: string;                       // at least one of prefix/suffix required
+  chain: string;              // required — see Supported chains
+  prefix?: string;            // at least one of prefix/suffix required
   suffix?: string;
-  caseSensitive?: boolean;                // default: false
-  onProgress?: (attempts: number) => void;
+  caseSensitive?: boolean;    // default: false
+  onProgress?: (attempts: number, info: ProgressInfo) => void;
   signal?: AbortSignal;
+  timeoutMs?: number;         // rejects with TimeoutError
+  workers?: number;           // Node: default = CPU count; set 1 to disable pool
+  keysPerSec?: number;        // override ETA heuristic
 }
 
-interface KeyExport {
-  label: string;    // e.g. "Private Key (hex)", "Keypair (JSON)"
-  value: string;
-  hint?: string;
+interface ProgressInfo {
+  attempts: number;
+  keysPerSec: number;
+  etaSeconds?: number;
 }
 
 interface Wallet {
   address: string;
-  exports: KeyExport[];   // one or more key formats — chain-dependent
+  exports: KeyExport[];
+  privateKey?: string;        // === exports[0].value when present
 }
 ```
 
-Note there is no single `privateKey` field — some chains expose more than one
-usable key format (e.g. Solana-family chains give both hex and base58), so
-`exports` is always an array. Check `label` to find the format you need.
+### `generateAddresses(options)`
+
+Same as `generateAddress`, plus required `count: number`. Returns `Promise<Wallet[]>`.
+Wallets are generated **sequentially** (safe for key handling).
+
+### `estimateDifficulty(options)`
+
+Returns expected attempts, human labels, risk (`none` | `caution` | `long` | `impractical`),
+and ETA. Pass `workers` to scale the single-thread heuristic.
+
+```js
+const est = estimateDifficulty({ chain: "sol", suffix: "moon", workers: 8 });
+console.log(est.attemptsLabel, est.timeLabel, est.risk);
+```
+
+### `validatePattern(options)`
+
+Cheap check before grinding — charset / empty pattern / unknown chain:
+
+```js
+const v = validatePattern({ chain: "evm", prefix: "zzzz" });
+// { ok: false, error: "'prefix' contains 'z' — must be hex ..." }
+```
+
+### `listChains()` / `isValidChain(id)`
+
+```js
+listChains();          // [{ id: "algo", name: "Algorand (base32)" }, ...]
+isValidChain("eth");   // true (alias → EVM)
+```
 
 ### Errors
-
-Every failure — bad input or an internal grind failure — rejects with a
-`VanityAddressError`:
 
 ```ts
 class VanityAddressError extends Error {
@@ -95,67 +113,43 @@ class VanityAddressError extends Error {
 }
 ```
 
-```js
-const { generateAddress, VanityAddressError } = require("vanity-address");
-
-try {
-  await generateAddress({ chain: "not-a-chain", prefix: "a" });
-} catch (err) {
-  if (err instanceof VanityAddressError) {
-    console.error(err.code, err.message);
-  }
-}
-```
+Cancellation uses a standard `AbortError`. `timeoutMs` rejects with `TimeoutError`.
 
 ---
 
 ## Progress reporting
 
-Grinding a longer pattern can take a while. Pass `onProgress` to get a
-running attempt count as the search continues:
-
 ```js
-const wallet = await generateAddress({
+await generateAddress({
   chain: "evm",
   prefix: "dead",
-  onProgress: (attempts) => {
-    console.log(`tried ${attempts} addresses so far...`);
+  onProgress: (attempts, { keysPerSec, etaSeconds }) => {
+    console.log(attempts, Math.round(keysPerSec), "keys/s", etaSeconds);
   },
 });
 ```
 
-## Cancellation
+The first argument remains a **number** so older `(attempts) => …` callbacks keep working.
 
-Pass an `AbortSignal` to stop a grind in progress — the promise rejects with
-a standard `AbortError` (same shape as `fetch`'s cancellation):
+## Cancellation & timeout
 
 ```js
 const controller = new AbortController();
+setTimeout(() => controller.abort(), 10_000);
 
-const promise = generateAddress({
+await generateAddress({
   chain: "btc",
   prefix: "1love",
   signal: controller.signal,
+  timeoutMs: 60_000, // optional belt-and-suspenders
 });
-
-// e.g. stop after 10 seconds
-setTimeout(() => controller.abort(), 10_000);
-
-try {
-  const wallet = await promise;
-} catch (err) {
-  if (err.name === "AbortError") {
-    console.log("cancelled");
-  }
-}
 ```
 
 ---
 
 ## Supported chains
 
-The SDK supports every chain the CLI does — all 25. Use the same chain ids
-as the CLI's `--chain` flag:
+All **25** chains — same ids as the CLI `--chain` flag:
 
 | id | chain | id | chain |
 |---|---|---|---|
@@ -175,25 +169,20 @@ as the CLI's `--chain` flag:
 
 ---
 
-## How it works / is it safe?
+## How it works / safety
 
-Address generation happens **entirely inside your own process**, via a
-WebAssembly build of the same Rust engine the CLI uses — nothing is sent
-over the network, and the private key never leaves memory you control. The
-grind runs in small chunks so your event loop stays responsive; `onProgress`
-and `signal` are what let you observe and stop a long-running search.
+Generation runs **inside your process** via a WebAssembly build of the same Rust
+engine as the CLI. Nothing is sent over the network.
 
-Treat the returned `exports` values exactly like you would any other private
-key: don't log them, don't send them anywhere you don't control, and store
-them the same way you'd store any wallet secret.
+On Node, multiple `worker_threads` each load WASM and grind in parallel; the first
+match wins and other workers are stopped. Browsers stay single-threaded (use
+`workers: 1` anywhere to force that).
+
+Treat `privateKey` / `exports` like any wallet secret: never log or ship them.
 
 ---
 
 ## Full runnable example
-
-See [`npm/vanity-address/examples/demo.js`](../npm/vanity-address/examples/demo.js) —
-covers basic generation, progress reporting, cancellation, and error
-handling in one file. Run it with:
 
 ```bash
 cd npm/vanity-address
@@ -202,6 +191,6 @@ node examples/demo.js
 
 ## Related
 
-- [docs/USAGE.md](USAGE.md) — CLI usage, all chains, JSON output
-- [docs/NPM.md](NPM.md) — npm package internals, release process
-- [npm/vanity-address/README.md](../npm/vanity-address/README.md) — package README shown on npmjs.com
+- [docs/USAGE.md](USAGE.md) — CLI usage
+- [docs/NPM.md](NPM.md) — package internals / release
+- [npm/vanity-address/README.md](../npm/vanity-address/README.md) — npmjs.com README

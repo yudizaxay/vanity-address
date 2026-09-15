@@ -36,16 +36,16 @@ vanity-address/          (workspace root)
 
 ---
 
-## Current version state (as of 2026-08-25)
+## Current version state (as of 2026-09-15)
 
 | Package | Version | Published |
 | ------- | ------- | --------- |
-| vanity-core | **0.4.1** | ✅ crates.io |
-| vanity-address (CLI) | **0.4.1** | ✅ crates.io |
-| vanity-app (desktop) | **0.4.1** | ✅ GitHub Releases |
-| vanity-wasm / npm SDK | **0.4.1** | ✅ npm (`vanity-address` — all 25 chains in SDK, verified via a real `npm install`) |
+| vanity-core | **0.5.0** | ⏳ local — publish after tag |
+| vanity-address (CLI) | **0.5.0** | ⏳ local — publish after tag |
+| vanity-app (desktop) | **0.5.0** | ⏳ local — GitHub Release after tag |
+| vanity-wasm / npm SDK | **0.5.0** | ⏳ local — multi-worker + power API |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.4.1` ✅  
+**Git tags on GitHub:** `v0.3.0` … `v0.4.1` ✅ (v0.5.0 pending)  
 **GitHub Release v0.4.1:** ✅ 12 assets (CLI + desktop)
 
 **crates.io publish order (critical):**
@@ -62,11 +62,11 @@ cargo publish -p vanity-address
 
 | Channel | Status | User command |
 | ------- | ------ | ------------ |
-| **GitHub Releases** | ✅ v0.4.1 | Download `.dmg`, `.exe`, CLI archives |
-| **crates.io** | ✅ v0.4.1 | `cargo install vanity-address` |
-| **Homebrew tap** | ✅ formula v0.4.1 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
+| **GitHub Releases** | ✅ v0.4.1 (v0.5.0 pending) | Download `.dmg`, `.exe`, CLI archives |
+| **crates.io** | ✅ v0.4.1 (v0.5.0 pending) | `cargo install vanity-address` |
+| **Homebrew tap** | ✅ formula v0.4.1 (v0.5.0 pending) | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
-| **npm** | ✅ v0.4.1 (CLI + WASM SDK, all 25 chains) | `npx vanity-address` / `npm i vanity-address` |
+| **npm** | ✅ v0.4.1 (v0.5.0 pending — power SDK) | `npx vanity-address` / `npm i vanity-address` |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
 
 ### Homebrew user install (Homebrew 6+)
@@ -236,6 +236,12 @@ make homebrew-formula VER=X.Y.Z
 - [ ] Growth: social posts / README badges polish
 - [ ] `npm/vanity-address/README.md` fix ("+22 more chains", was "+10") already committed to git but not yet published — live npm README is stale until the next npm version bump; bundle with next real release, not worth a standalone patch
 
+### Recently completed (2026-09-15)
+
+- [x] npm SDK 0.5.0 power API: estimate / validate / listChains / batch / timeout / privateKey
+- [x] Node multi-core `worker_threads` grind pool
+- [ ] Tag `v0.5.0` + publish crates / GitHub Release / Homebrew / npm
+
 ### Recently completed (2026-08-25)
 
 - [x] Tag `v0.4.1` + GitHub Release (12 assets) — Solana in WASM SDK; all 25 chains everywhere
@@ -268,6 +274,9 @@ make homebrew-formula VER=X.Y.Z
 | `scripts/sync-homebrew-tap.sh` | Push formula to tap repo |
 | `scripts/prepare-npm.sh` | Fill npm platform bins from GitHub Release |
 | `scripts/publish-npm.sh` | Publish platform pkgs + main to npm |
+| `npm/vanity-address/src/driver.js` | SDK core: generateAddress/es, estimate, validate, listChains |
+| `npm/vanity-address/src/pool.js` | Node `worker_threads` pool (multi-core grind) |
+| `npm/vanity-address/src/grind-worker.js` | Per-worker WASM grind loop |
 | `docs/HOMEBREW.md` | User + maintainer Homebrew guide |
 | `docs/NPM.md` | User + maintainer npm guide |
 | `.github/workflows/release.yml` | Release binaries on tag |
@@ -288,4 +297,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-08-25 — v0.4.1 live on all channels (Solana in WASM SDK; all 25 chains everywhere).*
+*Last updated: 2026-09-15 — v0.5.0 in tree (power npm SDK + worker pool); publish pending.*

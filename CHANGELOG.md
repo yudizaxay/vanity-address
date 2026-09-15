@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented here.
 
+## [0.5.0] - 2026-09-15
+
+### Added
+
+- **Powerful npm SDK** — `estimateDifficulty()`, `validatePattern()`, `listChains()`, `isValidChain()`, `generateAddresses({ count })`
+- **Multi-core Node grind** via `worker_threads` (default = CPU count; `workers: 1` to disable)
+- Richer progress: `onProgress(attempts, { keysPerSec, etaSeconds })` (first arg still a number)
+- `wallet.privateKey` convenience field + `timeoutMs` option
+- Typed `ChainId` union in TypeScript definitions
+- WASM exports: `estimate_difficulty`, `validate_pattern`, `list_chains`, `is_valid_chain`
+
+### Changed
+
+- Package / crates descriptions emphasize offline + no telemetry
+- SDK docs and npm README updated for the 0.5 API
+
 ## [0.4.1] - 2026-08-25
 
 ### Changed
@@ -180,6 +196,7 @@ All notable changes to this project are documented here.
 - Keys are generated locally; no network calls
 - `vanity-results.txt` is gitignored — never commit private keys
 
+[0.5.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.5.0
 [0.4.1]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.4.1
 [0.4.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.4.0
 [0.3.8]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.3.8

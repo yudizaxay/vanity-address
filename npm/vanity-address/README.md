@@ -162,24 +162,31 @@ Full guide with pattern rules per chain: [docs/USAGE.md](https://github.com/yudi
 ## Programmatic API
 
 ```js
-const { generateAddress } = require("vanity-address");
+const {
+  generateAddress,
+  estimateDifficulty,
+  listChains,
+} = require("vanity-address");
 
-const wallet = await generateAddress({ chain: "evm", prefix: "abc" });
-console.log(wallet.address);
-console.log(wallet.exports); // [{ label, value, hint }, ...] — chain-native key formats
+// Optional: check difficulty first
+console.log(estimateDifficulty({ chain: "evm", prefix: "abc", workers: 4 }));
+
+const wallet = await generateAddress({
+  chain: "evm",
+  prefix: "abc",
+  workers: 4, // Node: multi-core by default
+  onProgress: (attempts, { keysPerSec, etaSeconds }) => {
+    /* ... */
+  },
+});
+console.log(wallet.address, wallet.privateKey);
 ```
 
-Supports `import` (ESM) as well as `require` (CJS). Options:
+Also: `generateAddresses({ count })`, `validatePattern()`, `listChains()`, `isValidChain()`, `timeoutMs`, AbortSignal.
 
-- `chain` (required) — chain id, same as the CLI's `--chain` (`sol`, `evm`, `btc`, ...) — all 25 chains supported.
-- `prefix` / `suffix` — at least one required.
-- `caseSensitive` — default `false`.
-- `onProgress(attempts)` — called periodically with a running attempt count.
-- `signal` — an `AbortSignal` to cancel a long-running grind; the returned promise rejects with an `AbortError`.
+Supports `import` (ESM) and `require` (CJS). Node uses a **worker_threads** pool by default; browsers stay single-threaded.
 
-Runs entirely in-process via WebAssembly — no native binary, no subprocess.
-
-📖 **Full guide:** [docs/SDK.md](https://github.com/yudizaxay/vanity-address/blob/main/docs/SDK.md) — full API reference, progress/cancellation, supported chains
+📖 **Full guide:** [docs/SDK.md](https://github.com/yudizaxay/vanity-address/blob/main/docs/SDK.md)
 
 ---
 

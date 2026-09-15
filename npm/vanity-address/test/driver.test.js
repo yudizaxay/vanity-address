@@ -89,3 +89,24 @@ test("wraps a thrown wasm error into VanityAddressError", async () => {
     (err) => err instanceof VanityAddressError && err.code === "INVALID_CHAIN",
   );
 });
+
+test("sets privateKey from the first export", async () => {
+  const generateAddress = createGenerateAddress(() => ({
+    found: true,
+    attempts: 1,
+    result: {
+      address: "addr",
+      exports: [{ label: "Private Key (hex)", value: "deadbeef", hint: null }],
+    },
+  }));
+  const wallet = await generateAddress({ chain: "sol", prefix: "a" });
+  assert.equal(wallet.privateKey, "deadbeef");
+});
+
+test("rejects with TimeoutError when timeoutMs elapses", async () => {
+  const generateAddress = createGenerateAddress(() => ({ found: false, attempts: 100 }));
+  await assert.rejects(
+    generateAddress({ chain: "sol", prefix: "a", timeoutMs: 30 }),
+    (err) => err.name === "TimeoutError",
+  );
+});

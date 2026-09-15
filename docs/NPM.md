@@ -35,7 +35,19 @@ Requires **Node.js 18+**. Supported platforms:
 
 ## Programmatic API
 
-The **vanity-address** package also ships a **programmatic API** (`generateAddress()`), not just the CLI. This API runs entirely in WebAssembly — no native binary subprocess — and supports all 25 chains, same as the CLI. See [npm/vanity-address/README.md](../npm/vanity-address/README.md#programmatic-api) for usage examples and full options.
+The **vanity-address** package ships a **WASM SDK** alongside the CLI — all 25
+chains, in-process (no subprocess). On Node it uses a **multi-core
+`worker_threads` pool** by default.
+
+Highlights (v0.5+):
+
+- `generateAddress()` / `generateAddresses({ count })`
+- `estimateDifficulty()`, `validatePattern()`, `listChains()`, `isValidChain()`
+- `wallet.privateKey`, rich `onProgress`, `timeoutMs`, `workers`
+
+See [docs/SDK.md](SDK.md) for the full API and
+[npm/vanity-address/README.md](../npm/vanity-address/README.md#programmatic-api)
+for a short npm-oriented summary.
 
 The SDK's WebAssembly artifacts (`npm/vanity-address/wasm/`) are pre-built before publishing, not compiled on `npm install`. Build them locally with:
 

@@ -1,7 +1,26 @@
 import { createRequire } from "node:module";
-import { createGenerateAddress, VanityAddressError } from "./driver.js";
+import { createSdk, VanityAddressError } from "./driver.js";
 
-const wasm = createRequire(import.meta.url)("../wasm/nodejs/vanity_wasm.js");
+const require = createRequire(import.meta.url);
+const wasm = require("../wasm/nodejs/vanity_wasm.js");
 
-export const generateAddress = createGenerateAddress(wasm.grind_chunk);
+let grindWithWorkers;
+let createWorkerPool;
+try {
+  const pool = require("./pool.js");
+  grindWithWorkers = pool.grindWithWorkers;
+  createWorkerPool = pool.createWorkerPool;
+} catch {
+  grindWithWorkers = undefined;
+  createWorkerPool = undefined;
+}
+
+const sdk = createSdk(wasm, { grindWithWorkers, createWorkerPool });
+
+export const generateAddress = sdk.generateAddress;
+export const generateAddresses = sdk.generateAddresses;
+export const estimateDifficulty = sdk.estimateDifficulty;
+export const validatePattern = sdk.validatePattern;
+export const listChains = sdk.listChains;
+export const isValidChain = sdk.isValidChain;
 export { VanityAddressError };
