@@ -44,13 +44,15 @@ parentPort.on("message", (msg) => {
         chunkSize,
       );
 
+      // Report attempts for every chunk, including the winning one, so
+      // onProgress fires even when a short pattern matches immediately.
+      parentPort.postMessage({ type: "progress", attempts: chunk.attempts });
+
       if (chunk.found) {
         running = false;
         parentPort.postMessage({ type: "found", result: chunk.result });
         return;
       }
-
-      parentPort.postMessage({ type: "progress", attempts: chunk.attempts });
     }
   } catch (e) {
     running = false;
