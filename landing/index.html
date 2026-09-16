@@ -44,7 +44,6 @@
   /* ---------- background canvas ---------- */
   #bg-canvas{
     position:fixed; inset:0; z-index:0; pointer-events:none;
-    opacity:0.55;
   }
 
   .grid-overlay{
@@ -87,9 +86,12 @@
   .nav-cta{
     display:inline-flex; align-items:center; gap:8px;
     padding:8px 16px; border-radius:8px; font-size:0.85rem; font-weight:600;
-    background:linear-gradient(135deg, var(--cyan), var(--purple));
+    background:var(--cyan);
     color:#04050a; white-space:nowrap;
+    box-shadow:0 6px 20px -6px rgba(187,59,250,0.55);
+    transition:box-shadow .2s ease, background .2s ease;
   }
+  .nav-cta:hover{ background:#4dd8ff; box-shadow:0 8px 24px -6px rgba(187,59,250,0.75); }
   .nav-cta svg{ width:16px; height:16px; flex-shrink:0; }
   .nav-toggle{
     display:none; background:none; border:none; color:var(--text); cursor:pointer;
@@ -112,45 +114,28 @@
   }
 
   /* ---------- hero ---------- */
-  .hero{ padding:96px 0 60px; text-align:center; }
-  .eyebrow{
-    display:inline-flex; align-items:center; gap:8px;
-    font-family:var(--mono); font-size:0.78rem; letter-spacing:0.06em;
-    color:var(--cyan); border:1px solid rgba(20,202,252,0.3);
-    background:rgba(20,202,252,0.06);
-    padding:6px 14px; border-radius:999px; margin-bottom:28px;
-    animation: fadeUp 0.8s ease both;
+  .hero{ padding:150px 0 110px; }
+  .hero-grid{
+    display:grid; grid-template-columns:1.05fr 1fr; gap:56px; align-items:center;
   }
-  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px var(--cyan); animation:pulse 1.6s infinite; }
-
-  .logo-hero{
-    width:110px; height:110px; margin:0 auto 32px;
-    filter:drop-shadow(0 0 40px rgba(187,59,250,0.45)) drop-shadow(0 0 70px rgba(20,202,252,0.25));
-    animation: fadeUp 0.8s ease both, floatY 6s ease-in-out infinite 0.8s;
-  }
+  .hero-copy{ max-width:540px; }
 
   h1.headline{
-    font-size:clamp(2.4rem, 6vw, 4.4rem);
-    font-weight:800; letter-spacing:-0.03em; line-height:1.05;
-    margin-bottom:22px;
-    animation: fadeUp 0.8s ease 0.05s both;
-  }
-  h1.headline .grad{
-    background:linear-gradient(120deg, var(--cyan), var(--violet) 45%, var(--purple));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    background-size:200% auto;
-    animation: shimmer 5s linear infinite;
+    font-size:clamp(2.6rem, 5vw, 4.1rem);
+    font-weight:800; letter-spacing:-0.03em; line-height:1.06;
+    margin-bottom:26px;
+    animation: fadeUp 0.8s ease both;
   }
 
   .subhead{
-    max-width:640px; margin:0 auto 40px; color:var(--text-dim);
-    font-size:1.1rem; animation: fadeUp 0.8s ease 0.1s both;
+    max-width:480px; margin:0 0 36px; color:var(--text-dim);
+    font-size:1.08rem; animation: fadeUp 0.8s ease 0.08s both;
   }
   .subhead strong{ color:var(--text); font-weight:600; }
 
   .hero-ctas{
-    display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:56px;
-    animation: fadeUp 0.8s ease 0.15s both;
+    display:flex; gap:16px; flex-wrap:wrap; margin-bottom:30px;
+    animation: fadeUp 0.8s ease 0.16s both;
   }
   .btn{
     display:inline-flex; align-items:center; gap:8px;
@@ -159,11 +144,14 @@
   }
   .btn:hover{ transform:translateY(-2px); }
   .btn-primary{
-    background:linear-gradient(135deg, var(--cyan), var(--purple));
+    background:var(--cyan);
     color:#04050a;
-    box-shadow:0 10px 30px -8px rgba(187,59,250,0.55);
+    box-shadow:0 14px 40px -10px rgba(187,59,250,0.65), 0 4px 18px -6px rgba(20,202,252,0.4);
   }
-  .btn-primary:hover{ box-shadow:0 16px 36px -8px rgba(20,202,252,0.6); }
+  .btn-primary:hover{
+    background:#4dd8ff;
+    box-shadow:0 18px 50px -10px rgba(187,59,250,0.85), 0 6px 22px -6px rgba(20,202,252,0.55);
+  }
   .btn-ghost{
     background:rgba(255,255,255,0.03);
     border-color:var(--panel-border);
@@ -173,13 +161,35 @@
   .btn-ghost:hover{ border-color:rgba(20,202,252,0.4); background:rgba(20,202,252,0.06); }
   .btn-ghost svg{ width:16px; height:16px; opacity:0.8; }
 
-  /* ---------- terminal ---------- */
-  .terminal{
-    max-width:640px; margin:0 auto; text-align:left;
-    background:var(--panel); border:1px solid var(--panel-border); border-radius:14px;
-    overflow:hidden; box-shadow:0 30px 80px -30px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.02);
-    animation: fadeUp 0.9s ease 0.2s both;
+  .hero-caption{
+    font-size:0.9rem; color:var(--text-dim); line-height:1.7;
+    animation: fadeUp 0.8s ease 0.22s both;
   }
+
+  /* ---------- kinetic address visual ---------- */
+  .hero-visual{ animation: fadeUp 0.9s ease 0.12s both; }
+  .term-line{ margin-bottom:18px; color:var(--text-dim); overflow-wrap:anywhere; font-family:var(--mono); font-size:0.88rem; }
+  .term-line .prompt{ color:var(--cyan); }
+  .term-line .cmd{ color:var(--text); }
+  .grind-chars{
+    display:block; font-family:var(--mono); font-weight:600;
+    font-size:clamp(1.5rem, 2.5vw, 2.15rem); line-height:1.4; letter-spacing:-0.01em;
+    color:#fff; word-break:break-all; overflow-wrap:anywhere;
+    padding-left:20px; border-left:2px solid rgba(20,202,252,0.35);
+  }
+  .grind-chars .match{
+    background:linear-gradient(120deg, var(--cyan), var(--purple));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    font-weight:800;
+  }
+  .grind-status{
+    color:var(--text-dim); font-size:0.85rem; font-family:var(--mono);
+    margin-top:18px; padding-left:22px;
+  }
+  .grind-status .found{ color:#28c840; font-weight:600; }
+  .cursor-blink{ display:inline-block; width:8px; height:1.1em; background:var(--cyan); vertical-align:text-bottom; animation:blink 1s step-end infinite; margin-left:2px; }
+
+  /* ---------- terminal chrome (shared with live-demo section) ---------- */
   .terminal-bar{
     display:flex; align-items:center; gap:8px; padding:12px 16px;
     border-bottom:1px solid var(--panel-border); background:rgba(255,255,255,0.02);
@@ -189,30 +199,15 @@
   .terminal-bar .tlabel{
     margin-left:8px; font-family:var(--mono); font-size:0.75rem; color:var(--text-dim);
   }
-  .terminal-body{
-    padding:24px; font-family:var(--mono); font-size:0.92rem; min-height:220px;
-    overflow-wrap:anywhere;
+
+  @media (max-width:900px){
+    .hero-grid{ grid-template-columns:1fr; gap:48px; text-align:left; }
+    .hero-visual{ order:-1; }
+    .hero-copy{ max-width:none; }
   }
-  .term-line{ margin-bottom:10px; color:var(--text-dim); overflow-wrap:anywhere; }
-  .term-line .prompt{ color:var(--cyan); }
-  .term-line .cmd{ color:var(--text); }
-  .grind-chars{
-    display:block; font-size:1.15rem; letter-spacing:0.02em; margin:14px 0;
-    color:#ffffff; word-break:break-all; overflow-wrap:anywhere;
-  }
-  .grind-chars .match{
-    color:var(--cyan); text-shadow:0 0 14px rgba(20,202,252,0.7);
-    font-weight:700;
-  }
-  .grind-status{ color:var(--text-dim); font-size:0.82rem; }
-  .grind-status .found{ color:#28c840; font-weight:600; }
-  .cursor-blink{ display:inline-block; width:8px; height:1.1em; background:var(--cyan); vertical-align:text-bottom; animation:blink 1s step-end infinite; margin-left:2px; }
 
   @keyframes blink{ 50%{ opacity:0; } }
-  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.3; } }
   @keyframes fadeUp{ from{ opacity:0; transform:translateY(18px); } to{ opacity:1; transform:translateY(0); } }
-  @keyframes floatY{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-10px); } }
-  @keyframes shimmer{ to{ background-position:200% center; } }
 
   /* ---------- reveal on scroll ---------- */
   .reveal{ opacity:0; transform:translateY(28px); transition:opacity .7s ease, transform .7s ease; }
@@ -222,10 +217,6 @@
   /* ---------- section shell ---------- */
   section{ padding:110px 0; }
   .section-head{ text-align:center; max-width:640px; margin:0 auto 56px; }
-  .kicker{
-    font-family:var(--mono); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase;
-    color:var(--purple); margin-bottom:14px; display:block;
-  }
   .section-title{ font-size:clamp(1.8rem, 4vw, 2.6rem); font-weight:800; letter-spacing:-0.02em; margin-bottom:14px; }
   .section-desc{ color:var(--text-dim); font-size:1.03rem; }
 
@@ -360,7 +351,8 @@
   }
   .tab-btn.active{
     color:#04050a; border-color:transparent;
-    background:linear-gradient(135deg, var(--cyan), var(--purple));
+    background:var(--cyan);
+    box-shadow:0 6px 18px -6px rgba(187,59,250,0.6);
     font-weight:600;
   }
   .code-block{
@@ -418,10 +410,10 @@
   /* ---------- small screens ---------- */
   @media (max-width:480px){
     section{ padding:70px 0; }
-    .hero{ padding:64px 0 40px; }
+    .hero{ padding:120px 0 50px; }
     .nav-inner{ padding:14px 16px; }
-    .terminal-body{ padding:16px; font-size:0.8rem; }
-    .grind-chars{ font-size:0.95rem; }
+    .grind-chars{ font-size:1.15rem; padding-left:14px; }
+    .grind-status{ padding-left:16px; }
     .demo-body{ padding:18px 16px; font-size:0.78rem; }
     .code-block{ padding:46px 16px 18px; font-size:0.8rem; }
     .platform-card{ padding:26px 20px; }
@@ -469,32 +461,27 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="wrap">
-      <div class="eyebrow"><span class="dot"></span> 25 chains &middot; 100% offline &middot; open source</div>
-      <img class="logo-hero" src="assets/logo.svg" alt="vanity-address logo" />
-      <h1 class="headline">Your wallet address,<br/><span class="grad">your word.</span></h1>
-      <p class="subhead">
-        Generate real, fully working crypto wallets whose address <strong>starts or ends with a word you choose</strong> —
-        entirely on your machine. No servers, no accounts, no tracking.
-      </p>
-      <div class="hero-ctas">
-        <a class="btn btn-primary" href="#install">Get started →</a>
-        <a class="btn btn-ghost" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
-          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-          npx vanity-address
-        </a>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <h1 class="headline">Type a word.<br/>Get a wallet<br/>that starts with it.</h1>
+        <p class="subhead">
+          Generate a real, fully working crypto wallet whose address matches what you type
+          — entirely on your machine. No servers, no accounts, no tracking.
+        </p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#install">Get started →</a>
+          <a class="btn btn-ghost" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+            npx vanity-address
+          </a>
+        </div>
+        <p class="hero-caption">Works with 25 chains. 100% offline. MIT licensed.</p>
       </div>
 
-      <div class="terminal">
-        <div class="terminal-bar">
-          <span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span>
-          <span class="tlabel">~/vanity-address</span>
-        </div>
-        <div class="terminal-body">
-          <div class="term-line"><span class="prompt">$</span> <span class="cmd">vanity-address --chain sol --suffix axay</span></div>
-          <span class="grind-chars" id="grindChars">7xKpN4qwRnLB2fGhy9uMcVTAeWDs38ZjQaU</span>
-          <div class="grind-status" id="grindStatus">grinding<span class="cursor-blink"></span></div>
-        </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="term-line"><span class="prompt">$</span> <span class="cmd">vanity-address --chain sol --suffix axay</span></div>
+        <span class="grind-chars" id="grindChars">7xKpN4qwRnLB2fGhy9uMcVTAeWDs38ZjQaU</span>
+        <div class="grind-status" id="grindStatus">grinding<span class="cursor-blink"></span></div>
       </div>
     </div>
   </section>
@@ -503,7 +490,6 @@
   <section id="download">
     <div class="wrap">
       <div class="section-head reveal">
-        <span class="kicker">Download</span>
         <h2 class="section-title">Get vanity-address</h2>
         <div><span class="version-tag" id="latestVersionTag">latest release</span></div>
         <p class="section-desc">No Rust or Node.js required for pre-built downloads — pick your platform.</p>
@@ -573,7 +559,6 @@
       </div>
 
       <div class="section-head reveal">
-        <span class="kicker">Why vanity-address</span>
         <h2 class="section-title">Built for speed, privacy, and every chain</h2>
         <p class="section-desc">One Rust engine, parallel CPU grinding, and zero compromises on where your keys live.</p>
       </div>
@@ -602,7 +587,7 @@
         <div class="feature-card reveal d2">
           <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg></div>
           <h3>Programmatic SDK</h3>
-          <p><code class="inline">npm install vanity-address</code> gives you <code class="inline">generateAddress()</code> — runs in-process via WebAssembly.</p>
+          <p><code class="inline">npm install vanity-address</code> gives you <code class="inline">generateAddress()</code>, batch generation, and <code class="inline">estimateDifficulty()</code> — with a multi-core worker pool on Node.</p>
         </div>
         <div class="feature-card reveal d3">
           <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div>
@@ -617,7 +602,6 @@
   <section id="demo">
     <div class="wrap">
       <div class="section-head reveal">
-        <span class="kicker">See it run</span>
         <h2 class="section-title">Chain → pattern → grind → match</h2>
         <p class="section-desc">The exact flow you'll see in your own terminal.</p>
       </div>
@@ -636,7 +620,6 @@
   <section id="chains">
     <div class="wrap">
       <div class="section-head reveal">
-        <span class="kicker">Supported chains</span>
         <h2 class="section-title">All 25, same trust model</h2>
         <p class="section-desc">Use any id with <code class="inline">--chain</code> — CLI, desktop, and SDK all match.</p>
       </div>
@@ -648,7 +631,6 @@
   <section id="install">
     <div class="wrap">
       <div class="section-head reveal">
-        <span class="kicker">Install</span>
         <h2 class="section-title">Pick your poison</h2>
         <p class="section-desc">No Rust or Node.js required for pre-built downloads.</p>
       </div>
@@ -696,7 +678,6 @@
   <section id="security">
     <div class="wrap">
       <div class="section-head reveal">
-        <span class="kicker">Trust, but verify</span>
         <h2 class="section-title">Read this before generating keys</h2>
       </div>
       <div class="security-grid">
@@ -739,52 +720,75 @@
 (function(){
   "use strict";
 
-  /* ---------------- background particle canvas ---------------- */
+  /* ---------------- background: falling address-character rain ---------------- */
   var canvas = document.getElementById('bg-canvas');
   var ctx = canvas.getContext('2d');
-  var particles = [];
   var W, H;
+  var RAIN_CHARS = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+  var COL_WIDTH = 26;
+  var ROW_HEIGHT = 18;
+  var drops = [];
 
   function resize(){
     W = canvas.width = window.innerWidth;
     H = canvas.height = Math.max(window.innerHeight, document.body.scrollHeight);
   }
   window.addEventListener('resize', function(){
-    resize(); initParticles();
+    resize(); initDrops();
   });
 
-  function initParticles(){
-    var count = Math.min(70, Math.floor((W * H) / 26000));
-    particles = [];
-    for (var i = 0; i < count; i++){
-      particles.push({
-        x: Math.random() * W,
-        y: Math.random() * Math.min(H, window.innerHeight * 1.6),
-        r: Math.random() * 1.6 + 0.4,
-        vx: (Math.random() - 0.5) * 0.15,
-        vy: (Math.random() - 0.5) * 0.15,
+  function randChar(){
+    return RAIN_CHARS[Math.floor(Math.random() * RAIN_CHARS.length)];
+  }
+
+  function initDrops(){
+    var cols = Math.max(1, Math.floor(W / COL_WIDTH));
+    drops = [];
+    for (var i = 0; i < cols; i++){
+      // Skip some columns so the effect stays airy, not a dense matrix wall.
+      if (Math.random() > 0.72) continue;
+      drops.push({
+        x: i * COL_WIDTH + COL_WIDTH / 2,
+        y: Math.random() * H,
+        speed: 0.3 + Math.random() * 0.5,
         hue: Math.random() > 0.5 ? '20,202,252' : '187,59,250',
-        a: Math.random() * 0.5 + 0.15
+        tail: 5 + Math.floor(Math.random() * 4),
+        chars: [],
+        changeEvery: 10 + Math.floor(Math.random() * 12),
+        tick: Math.floor(Math.random() * 20)
       });
     }
   }
 
   function tick(){
     ctx.clearRect(0, 0, W, H);
-    for (var i = 0; i < particles.length; i++){
-      var p = particles[i];
-      p.x += p.vx; p.y += p.vy;
-      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
-      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(' + p.hue + ',' + p.a + ')';
-      ctx.fill();
+    ctx.font = '13px "SF Mono", "Fira Code", Consolas, monospace';
+    ctx.textAlign = 'center';
+
+    for (var i = 0; i < drops.length; i++){
+      var d = drops[i];
+      d.y += d.speed;
+      if (d.y - d.tail * ROW_HEIGHT > H) d.y = -Math.random() * 300;
+
+      d.tick++;
+      if (d.tick % d.changeEvery === 0 || d.chars.length < d.tail){
+        d.chars.unshift(randChar());
+        if (d.chars.length > d.tail) d.chars.pop();
+      }
+
+      for (var j = 0; j < d.chars.length; j++){
+        var charY = d.y - j * ROW_HEIGHT;
+        if (charY < -ROW_HEIGHT || charY > H + ROW_HEIGHT) continue;
+        var alpha = j === 0 ? 0.48 : (1 - j / d.tail) * 0.3;
+        ctx.fillStyle = 'rgba(' + d.hue + ',' + alpha.toFixed(3) + ')';
+        ctx.fillText(d.chars[j], d.x, charY);
+      }
     }
+
     requestAnimationFrame(tick);
   }
 
-  resize(); initParticles(); tick();
+  resize(); initDrops(); tick();
 
   /* ---------------- latest release lookup ---------------- */
   fetch('https://api.github.com/repos/yudizaxay/vanity-address/releases/latest')
