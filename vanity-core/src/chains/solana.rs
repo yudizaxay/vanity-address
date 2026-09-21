@@ -1,6 +1,6 @@
 use super::util::{grind_ed25519, keypair_from_secret, secret_from_attempt, Keypair};
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
-use crate::pattern::{matches_both, Pattern};
+use crate::pattern::{matches_full, Pattern};
 
 const BASE58_INVALID: &str = "0OIl";
 
@@ -21,9 +21,23 @@ impl SolanaGrinder {
         bytes
     }
 
+    fn format_json_byte_array(bytes: &[u8; 64]) -> String {
+        let mut s = String::with_capacity(64 * 4 + 2);
+        s.push('[');
+        for (i, b) in bytes.iter().enumerate() {
+            if i > 0 {
+                s.push(',');
+            }
+            s.push_str(&b.to_string());
+        }
+        s.push(']');
+        s
+    }
+
     fn char_combinations(pattern: &str, ignore_case: bool) -> f64 {
         pattern
             .chars()
+            .filter(|c| *c != '*')
             .map(|c| {
                 if ignore_case && c.is_ascii_alphabetic() {
                     29.0
@@ -36,6 +50,9 @@ impl SolanaGrinder {
 
     fn validate_part(label: &str, pattern: &str) -> Result<(), String> {
         for c in pattern.chars() {
+            if c == '*' {
+                continue;
+            }
             if BASE58_INVALID.contains(c) || !c.is_ascii_alphanumeric() {
                 return Err(format!(
                     "'{label}' contains '{c}', which never appears in a Solana base58 address"
@@ -80,8 +97,8 @@ impl ChainGrinder for SolanaGrinder {
                 },
                 KeyExport {
                     label: "Keypair (JSON)".into(),
-                    value: format!("{:?}", keypair_bytes.to_vec()),
-                    hint: Some("solana-cli format".into()),
+                    value: Self::format_json_byte_array(&keypair_bytes),
+                    hint: Some("Phantom / Solflare / solana-keygen (byte array JSON)".into()),
                 },
             ],
         }
@@ -91,13 +108,15 @@ impl ChainGrinder for SolanaGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
         let prefix = prefix.unwrap_or("").to_string();
         let suffix = suffix.unwrap_or("").to_string();
+        let contains = contains.unwrap_or("").to_string();
 
-        if prefix.is_empty() && suffix.is_empty() {
-            return Err("Provide at least one of --prefix or --suffix".into());
+        if prefix.is_empty() && suffix.is_empty() && contains.is_empty() {
+            return Err("Provide at least one of --prefix, --suffix, or --contains".into());
         }
 
         if !prefix.is_empty() {
@@ -105,6 +124,9 @@ impl ChainGrinder for SolanaGrinder {
         }
         if !suffix.is_empty() {
             Self::validate_part("suffix", &suffix)?;
+        }
+        if !contains.is_empty() {
+            Self::validate_part("contains", &contains)?;
         }
 
         let ignore_case = !exact;
@@ -118,12 +140,19 @@ impl ChainGrinder for SolanaGrinder {
         } else {
             suffix.clone()
         };
+        let contains_match = if ignore_case {
+            contains.to_ascii_lowercase()
+        } else {
+            contains.clone()
+        };
 
         Ok(Pattern {
             prefix,
             suffix,
+            contains,
             prefix_match,
             suffix_match,
+            contains_match,
             ignore_case,
         })
     }
@@ -136,14 +165,18 @@ impl ChainGrinder for SolanaGrinder {
         if pattern.has_suffix() {
             combos *= Self::char_combinations(&pattern.suffix, pattern.ignore_case);
         }
+        if pattern.has_contains() {
+            combos *= Self::char_combinations(&pattern.contains, pattern.ignore_case);
+        }
         combos
     }
 
     fn matches(&self, address: &str, pattern: &Pattern) -> bool {
-        matches_both(
+        matches_full(
             address,
             &pattern.prefix_match,
             &pattern.suffix_match,
+            &pattern.contains_match,
             pattern.ignore_case,
         )
     }

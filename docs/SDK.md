@@ -51,14 +51,16 @@ autocomplete (`"sol" | "evm" | …`).
 ```ts
 interface GenerateAddressOptions {
   chain: string;              // required — see Supported chains
-  prefix?: string;            // at least one of prefix/suffix required
+  prefix?: string;            // at least one of prefix/suffix/contains required
   suffix?: string;
+  contains?: string;          // substring anywhere; `*` wildcards OK
   caseSensitive?: boolean;    // default: false
   onProgress?: (attempts: number, info: ProgressInfo) => void;
   signal?: AbortSignal;
   timeoutMs?: number;         // rejects with TimeoutError
   workers?: number;           // Node: default = CPU count; set 1 to disable pool
   keysPerSec?: number;        // override ETA heuristic
+  count?: number;             // generateAddresses batch size
 }
 
 interface ProgressInfo {

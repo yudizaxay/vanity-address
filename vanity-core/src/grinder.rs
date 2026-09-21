@@ -78,15 +78,32 @@ pub fn grind<G: ChainGrinder>(
     cancel: &CancelToken,
     on_progress: impl Fn(u64, f64, f64) + Sync,
 ) -> Result<GrindResult, String> {
-    let expected = grinder.expected_attempts(&pattern);
+    grind_patterns(grinder, &[pattern], profile, cancel, on_progress)
+}
+
+/// Grind until any pattern in `patterns` matches (OR semantics).
+pub fn grind_patterns<G: ChainGrinder>(
+    grinder: G,
+    patterns: &[Pattern],
+    profile: &SystemProfile,
+    cancel: &CancelToken,
+    on_progress: impl Fn(u64, f64, f64) + Sync,
+) -> Result<GrindResult, String> {
+    if patterns.is_empty() {
+        return Err("at least one pattern is required".into());
+    }
+    let expected = crate::pattern::expected_attempts_any(
+        &patterns
+            .iter()
+            .map(|p| grinder.expected_attempts(p))
+            .collect::<Vec<_>>(),
+    );
     let counter = AtomicU64::new(0);
     let start = Instant::now();
     let progress_every = profile.progress_interval;
 
     let pool = build_thread_pool(profile)?;
 
-    // Some(None) => cancelled, short-circuit with no match.
-    // Some(Some(kp)) => match found, short-circuit with a result.
     let outcome = pool.install(|| {
         rayon::iter::repeat(()).find_map_any(|_| {
             if cancel.is_cancelled() {
@@ -102,7 +119,7 @@ pub fn grind<G: ChainGrinder>(
             }
 
             let (address, attempt) = grinder.grind_attempt();
-            if grinder.matches(&address, &pattern) {
+            if patterns.iter().any(|p| grinder.matches(&address, p)) {
                 Some(Some(grinder.finalize(attempt)))
             } else {
                 None
@@ -122,4 +139,39 @@ pub fn grind<G: ChainGrinder>(
         attempts: counter.load(Ordering::Relaxed),
         elapsed_secs: elapsed.as_secs_f64(),
     })
+}
+
+/// Find up to `count` matching keypairs (restarts grind after each hit).
+pub fn grind_n<G: ChainGrinder + Clone>(
+    grinder: G,
+    patterns: &[Pattern],
+    count: usize,
+    profile: &SystemProfile,
+    cancel: &CancelToken,
+    on_progress: impl Fn(u64, f64, f64, usize) + Sync,
+) -> Result<Vec<GrindResult>, String> {
+    if count == 0 {
+        return Err("--count must be at least 1".into());
+    }
+    let mut results = Vec::with_capacity(count);
+    let mut total_attempts = 0u64;
+    let wall_start = Instant::now();
+    for i in 0..count {
+        if cancel.is_cancelled() {
+            break;
+        }
+        let found = grind_patterns(grinder.clone(), patterns, profile, cancel, |a, r, e| {
+            on_progress(total_attempts + a, r, e, i + 1);
+        })?;
+        total_attempts += found.attempts;
+        results.push(GrindResult {
+            keypair: found.keypair,
+            attempts: total_attempts,
+            elapsed_secs: wall_start.elapsed().as_secs_f64(),
+        });
+    }
+    if results.is_empty() {
+        return Err("cancelled".into());
+    }
+    Ok(results)
 }

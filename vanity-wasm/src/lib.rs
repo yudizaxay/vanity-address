@@ -1,6 +1,7 @@
 use serde::Serialize;
 use vanity_core::{
-    default_keys_per_sec, grind_estimate, Chain, ChainGrinder, PatternRisk, MENU_CHAINS,
+    build_pattern_list, default_keys_per_sec, expected_attempts_any, grind_estimate, Chain,
+    ChainGrinder, PatternRisk, MENU_CHAINS,
 };
 use wasm_bindgen::prelude::*;
 
@@ -60,12 +61,13 @@ fn js_err(code: &str, message: &str) -> JsValue {
     obj.into()
 }
 
-fn build_pattern(
+fn build_patterns(
     chain: &Chain,
     prefix: &str,
     suffix: &str,
+    contains: &str,
     ignore_case: bool,
-) -> Result<vanity_core::Pattern, JsValue> {
+) -> Result<Vec<vanity_core::Pattern>, JsValue> {
     let prefix_opt = if prefix.is_empty() {
         None
     } else {
@@ -76,19 +78,32 @@ fn build_pattern(
     } else {
         Some(suffix)
     };
-    if prefix_opt.is_none() && suffix_opt.is_none() {
-        return Err(js_err("INVALID_PATTERN", "prefix or suffix is required"));
+    let contains_opt = if contains.is_empty() {
+        None
+    } else {
+        Some(contains)
+    };
+    if prefix_opt.is_none() && suffix_opt.is_none() && contains_opt.is_none() {
+        return Err(js_err(
+            "INVALID_PATTERN",
+            "prefix, suffix, or contains is required",
+        ));
     }
     let exact = !ignore_case;
-    chain
-        .build_pattern(prefix_opt, suffix_opt, exact)
+    build_pattern_list(chain, prefix_opt, suffix_opt, contains_opt, exact)
         .map_err(|e| js_err("INVALID_PATTERN", &e))
 }
 
-/// Runs up to `attempts` grind tries for `chain_id` against the given
-/// prefix/suffix pattern, returning as soon as a match is found or the
-/// attempt budget is exhausted. Called repeatedly from JS so control
-/// returns between chunks (progress reporting, cancellation).
+fn expected_any(chain: &Chain, patterns: &[vanity_core::Pattern]) -> f64 {
+    expected_attempts_any(
+        &patterns
+            .iter()
+            .map(|p| chain.expected_attempts(p))
+            .collect::<Vec<_>>(),
+    )
+}
+
+/// Runs up to `attempts` grind tries. Supports contains + comma OR patterns.
 #[wasm_bindgen]
 pub fn grind_chunk(
     chain_id: &str,
@@ -96,13 +111,15 @@ pub fn grind_chunk(
     suffix: &str,
     ignore_case: bool,
     attempts: u32,
+    contains: Option<String>,
 ) -> Result<JsValue, JsValue> {
     let chain = Chain::from_id(chain_id).map_err(|e| js_err("INVALID_CHAIN", &e))?;
-    let pattern = build_pattern(&chain, prefix, suffix, ignore_case)?;
+    let contains = contains.unwrap_or_default();
+    let patterns = build_patterns(&chain, prefix, suffix, &contains, ignore_case)?;
 
     for i in 0..attempts {
         let (address, attempt) = chain.grind_attempt();
-        if chain.matches(&address, &pattern) {
+        if patterns.iter().any(|p| chain.matches(&address, p)) {
             let kp = chain.finalize(attempt);
             let out = ChunkOut {
                 found: true,
@@ -133,13 +150,11 @@ pub fn grind_chunk(
     serde_wasm_bindgen::to_value(&out).map_err(|e| js_err("INTERNAL", &e.to_string()))
 }
 
-/// True if `chain_id` (or a known alias like `eth` → EVM) is supported.
 #[wasm_bindgen]
 pub fn is_valid_chain(chain_id: &str) -> bool {
     Chain::from_id(chain_id).is_ok()
 }
 
-/// All supported chain ids + display names (A–Z menu order).
 #[wasm_bindgen]
 pub fn list_chains() -> Result<JsValue, JsValue> {
     let list: Vec<ChainInfoOut> = MENU_CHAINS
@@ -152,8 +167,6 @@ pub fn list_chains() -> Result<JsValue, JsValue> {
     serde_wasm_bindgen::to_value(&list).map_err(|e| js_err("INTERNAL", &e.to_string()))
 }
 
-/// Estimate expected attempts / ETA for a pattern.
-/// Pass `keys_per_sec <= 0` to use the single-thread heuristic for that chain.
 #[wasm_bindgen]
 pub fn estimate_difficulty(
     chain_id: &str,
@@ -161,16 +174,18 @@ pub fn estimate_difficulty(
     suffix: &str,
     ignore_case: bool,
     keys_per_sec: f64,
+    contains: Option<String>,
 ) -> Result<JsValue, JsValue> {
     let chain = Chain::from_id(chain_id).map_err(|e| js_err("INVALID_CHAIN", &e))?;
-    let pattern = build_pattern(&chain, prefix, suffix, ignore_case)?;
-    let attempts = chain.expected_attempts(&pattern);
+    let contains = contains.unwrap_or_default();
+    let patterns = build_patterns(&chain, prefix, suffix, &contains, ignore_case)?;
+    let attempts = expected_any(&chain, &patterns);
     let kps = if keys_per_sec > 0.0 {
         keys_per_sec
     } else {
         default_keys_per_sec(chain.id())
     };
-    let est = grind_estimate(attempts, kps, &pattern);
+    let est = grind_estimate(attempts, kps, &patterns[0]);
     let out = EstimateOut {
         attempts: est.attempts,
         attempts_label: est.attempts_label,
@@ -185,13 +200,13 @@ pub fn estimate_difficulty(
     serde_wasm_bindgen::to_value(&out).map_err(|e| js_err("INTERNAL", &e.to_string()))
 }
 
-/// Validate chain + pattern; on success also returns a quick risk hint.
 #[wasm_bindgen]
 pub fn validate_pattern(
     chain_id: &str,
     prefix: &str,
     suffix: &str,
     ignore_case: bool,
+    contains: Option<String>,
 ) -> Result<JsValue, JsValue> {
     let chain = match Chain::from_id(chain_id) {
         Ok(c) => c,
@@ -209,7 +224,8 @@ pub fn validate_pattern(
         }
     };
 
-    let pattern = match build_pattern(&chain, prefix, suffix, ignore_case) {
+    let contains = contains.unwrap_or_default();
+    let patterns = match build_patterns(&chain, prefix, suffix, &contains, ignore_case) {
         Ok(p) => p,
         Err(js) => {
             let message = js_sys::Reflect::get(&js, &"message".into())
@@ -229,9 +245,9 @@ pub fn validate_pattern(
         }
     };
 
-    let attempts = chain.expected_attempts(&pattern);
+    let attempts = expected_any(&chain, &patterns);
     let kps = default_keys_per_sec(chain.id());
-    let est = grind_estimate(attempts, kps, &pattern);
+    let est = grind_estimate(attempts, kps, &patterns[0]);
     let risk = if est.risk == PatternRisk::None {
         None
     } else {
@@ -256,7 +272,7 @@ mod tests {
     fn evm_grind_attempt_matches_own_pattern() {
         let chain = Chain::from_id("evm").expect("evm chain");
         let pattern = chain
-            .build_pattern(Some("a"), None, false)
+            .build_pattern(Some("a"), None, None, false)
             .expect("build pattern");
         let mut found = false;
         for _ in 0..20_000 {

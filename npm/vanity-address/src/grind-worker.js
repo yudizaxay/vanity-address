@@ -42,6 +42,7 @@ parentPort.on("message", (msg) => {
         job.suffix,
         job.ignoreCase,
         chunkSize,
+        job.contains || undefined,
       );
 
       // Report attempts for every chunk, including the winning one, so

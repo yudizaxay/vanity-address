@@ -2,6 +2,26 @@
 
 All notable changes to this project are documented here.
 
+## [0.6.0] - 2026-09-21
+
+### Added
+
+- **Contains + wildcards** — `--contains cafe`, `Cool*xyz` in prefix/suffix/contains
+- **Multi-pattern OR** — `--suffix moon,pump,dao` (comma alternatives)
+- **Find N** — `--count 5`
+- **Verify** — `vanity-address verify --chain sol --address … --key …`
+- **Bitcoin SegWit + Taproot** — `btc-segwit` (`bc1q…`), `btc-taproot` (`bc1p…`)
+- **Trending Cosmos HRPs** — Sei, Injective, Celestia, dYdX
+- **EVM aliases** — `robinhood`, `base`, `arb`, `optimism`, `polygon`, `avax`, `bnb`, `monad`, …
+- **CREATE2 lite** — `--create2 --deployer … --init-code-hash …` salt grind for contract vanity
+- Wallet export polish — Solana Phantom JSON byte array; clearer MetaMask/ethers hints
+- npm SDK `contains` option (wasm + worker pool)
+
+### Changed
+
+- **31 chains** in the interactive menu (was 25)
+- Pattern engine shared across all grinders
+
 ## [0.5.0] - 2026-09-15
 
 ### Added
@@ -196,6 +216,7 @@ All notable changes to this project are documented here.
 - Keys are generated locally; no network calls
 - `vanity-results.txt` is gitignored — never commit private keys
 
+[0.6.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.6.0
 [0.5.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.5.0
 [0.4.1]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.4.1
 [0.4.0]: https://github.com/yudizaxay/vanity-address/releases/tag/v0.4.0

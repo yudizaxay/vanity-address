@@ -10,9 +10,10 @@
 
 **vanity-address** — fast, local, multi-chain vanity cryptocurrency address generator.
 
-- **25 chains (A–Z menu):** Algorand, Aptos, Bitcoin, Cardano, Cosmos, Dash, Dogecoin, EVM, Filecoin, Hedera, Internet Computer, Kaspa, Kusama, Litecoin, MultiversX, NEAR, Osmosis, Polkadot, Ripple, Solana, Stellar, Sui, Tezos, TON, Tron
+- **31 chains (A–Z menu):** Algorand, Aptos, Bitcoin (P2PKH / SegWit / Taproot), Cardano, Celestia, Cosmos, Dash, Dogecoin, dYdX, EVM (+ aliases: Robinhood, Base, Arb, …), Filecoin, Hedera, Injective, Internet Computer, Kaspa, Kusama, Litecoin, MultiversX, NEAR, Osmosis, Polkadot, Ripple, Sei, Solana, Stellar, Sui, Tezos, TON, Tron
 - **Two frontends:** CLI (`vanity-address`) + Tauri desktop app (`vanity-app`)
 - **One engine:** `vanity-core` library (all chain logic lives here)
+- **Patterns:** prefix / suffix / contains + `*` wildcards + comma OR + `--count` + `verify` + CREATE2 lite
 - **Privacy:** 100% offline; keys never leave the device; no telemetry
 
 ---
@@ -36,17 +37,17 @@ vanity-address/          (workspace root)
 
 ---
 
-## Current version state (as of 2026-09-15)
+## Current version state (as of 2026-09-21)
 
 | Package | Version | Published |
 | ------- | ------- | --------- |
-| vanity-core | **0.5.0** | ⏳ local — publish after tag |
-| vanity-address (CLI) | **0.5.0** | ⏳ local — publish after tag |
-| vanity-app (desktop) | **0.5.0** | ⏳ local — GitHub Release after tag |
-| vanity-wasm / npm SDK | **0.5.0** | ⏳ local — multi-worker + power API |
+| vanity-core | **0.6.0** | ⏳ local — publish after tag |
+| vanity-address (CLI) | **0.6.0** | ⏳ local — publish after tag |
+| vanity-app (desktop) | **0.6.0** | ⏳ local — GitHub Release after tag |
+| vanity-wasm / npm SDK | **0.6.0** | ⏳ local — contains + 31 chains |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.4.1` ✅ (v0.5.0 pending)  
-**GitHub Release v0.4.1:** ✅ 12 assets (CLI + desktop)
+**Git tags on GitHub:** `v0.3.0` … `v0.5.0` (check latest) · **v0.6.0 pending**  
+**GitHub Release:** tag + assets after cut
 
 **crates.io publish order (critical):**
 
@@ -62,11 +63,11 @@ cargo publish -p vanity-address
 
 | Channel | Status | User command |
 | ------- | ------ | ------------ |
-| **GitHub Releases** | ✅ v0.4.1 (v0.5.0 pending) | Download `.dmg`, `.exe`, CLI archives |
-| **crates.io** | ✅ v0.4.1 (v0.5.0 pending) | `cargo install vanity-address` |
-| **Homebrew tap** | ✅ formula v0.4.1 (v0.5.0 pending) | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
+| **GitHub Releases** | ⏳ v0.6.0 pending | Download `.dmg`, `.exe`, CLI archives |
+| **crates.io** | ⏳ v0.6.0 pending | `cargo install vanity-address` |
+| **Homebrew tap** | ⏳ formula bump after tag | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
-| **npm** | ✅ v0.4.1 (v0.5.0 pending — power SDK) | `npx vanity-address` / `npm i vanity-address` |
+| **npm** | ⏳ v0.6.0 pending | `npx vanity-address` / `npm i vanity-address` |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
 
 ### Homebrew user install (Homebrew 6+)
@@ -230,17 +231,26 @@ make homebrew-formula VER=X.Y.Z
 
 ## Pending / optional next steps
 
+- [ ] Tag `v0.6.0` + publish crates / GitHub Release / Homebrew / npm
 - [ ] Winget / Scoop manifests (Windows package managers)
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen (unsigned warnings documented)
 - [ ] Submit to homebrew-core when notability criteria met
 - [ ] Growth: social posts / README badges polish
-- [ ] `npm/vanity-address/README.md` fix ("+22 more chains", was "+10") already committed to git but not yet published — live npm README is stale until the next npm version bump; bundle with next real release, not worth a standalone patch
+- [ ] Phase 2 (0.7): full CREATE2/CREATE contract vanity + Solana mint vanity
+- [ ] Phase 3 (0.8): OpenCL GPU grind (Solana + EVM first)
+
+### Recently completed (2026-09-21)
+
+- [x] Pattern power: contains, `*` wildcards, multi-pattern OR, `--count`, `verify`
+- [x] BTC SegWit (`bc1q`) + Taproot (`bc1p`)
+- [x] Trending: Sei, Injective, Celestia, dYdX + EVM aliases (Robinhood, Base, …)
+- [x] CREATE2 lite (salt grind) + wallet export polish
+- [x] Version bump **0.6.0** in tree; npm SDK `contains` wired
 
 ### Recently completed (2026-09-15)
 
 - [x] npm SDK 0.5.0 power API: estimate / validate / listChains / batch / timeout / privateKey
 - [x] Node multi-core `worker_threads` grind pool
-- [ ] Tag `v0.5.0` + publish crates / GitHub Release / Homebrew / npm
 
 ### Recently completed (2026-08-25)
 
@@ -265,7 +275,11 @@ make homebrew-formula VER=X.Y.Z
 | File | Role |
 | ---- | ---- |
 | `vanity-core/src/chains/mod.rs` | Chain enum + menu IDs |
-| `vanity-core/src/grinder.rs` | Parallel grind + benchmark |
+| `vanity-core/src/chains/bitcoin_segwit.rs` | BTC SegWit + Taproot |
+| `vanity-core/src/chains/create2.rs` | EVM CREATE2 salt grinder |
+| `vanity-core/src/pattern.rs` | Prefix/suffix/contains + wildcards + OR expand |
+| `vanity-core/src/verify.rs` | Key → address verify |
+| `vanity-core/src/grinder.rs` | Parallel grind + benchmark + grind_n |
 | `vanity-address/src/main.rs` | CLI entry + clap |
 | `vanity-address/src/terminal.rs` | Interactive input (Windows-sensitive) |
 | `vanity-app/src-tauri/src/commands.rs` | Desktop Tauri commands |
@@ -297,4 +311,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-09-15 — v0.5.0 in tree (power npm SDK + worker pool); publish pending.*
+*Last updated: 2026-09-21 — v0.6.0 in tree (pattern power, BTC SegWit/Taproot, trending chains, CREATE2 lite); publish pending.*

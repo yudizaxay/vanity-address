@@ -65,9 +65,10 @@ impl ChainGrinder for HederaGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         _exact: bool,
     ) -> Result<Pattern, String> {
-        build_hex_pattern(prefix, suffix, false, 64)
+        build_hex_pattern(prefix, suffix, contains, false, 64)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {

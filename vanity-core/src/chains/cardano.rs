@@ -60,9 +60,11 @@ impl ChainGrinder for CardanoGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
-        let mut pattern = build_base58_pattern(prefix, suffix, exact, BECH32_CHARSET, 108)?;
+        let mut pattern =
+            build_base58_pattern(prefix, suffix, contains, exact, BECH32_CHARSET, 108)?;
         if pattern.has_prefix() && !pattern.prefix.starts_with("addr") {
             pattern.prefix = format!("addr1{}", pattern.prefix);
             pattern.prefix_match = if pattern.ignore_case {

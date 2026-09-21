@@ -14,7 +14,7 @@
         <img src="/logo.svg" alt="" class="topbar-logo" width="32" height="32" />
         <div class="topbar-text">
           <span class="topbar-title">Vanity Address</span>
-          <span class="topbar-sub">v0.5.0 · local, offline vanity keypair generator</span>
+          <span class="topbar-sub">v0.6.0 · local, offline vanity keypair generator</span>
         </div>
       </header>
 
@@ -23,13 +23,13 @@
       <section id="screen-home" class="screen screen-centered is-active">
         <div class="splash-box">
           <img src="/logo.svg" alt="Vanity Address" class="splash-logo" width="120" height="120" />
-          <div class="splash-frame">Vanity Address · v0.5.0</div>
+          <div class="splash-frame">Vanity Address · v0.6.0</div>
           <p class="splash-tagline">multi-chain vanity address generator</p>
         </div>
         <ul class="trust-list">
           <li>Keys generated &amp; stored on this machine only</li>
           <li>No internet — fully offline, nothing ever uploaded</li>
-          <li>25 chains · prefix/suffix · multi-core grinding</li>
+          <li>31 chains · prefix/suffix/contains · multi-core grinding</li>
         </ul>
         <div class="home-actions">
           <button id="btn-start" class="primary wide">Start a new grind</button>
@@ -43,7 +43,7 @@
         <h1>Help &amp; pattern rules</h1>
         <div class="help-body">
           <h2>What is Vanity Address?</h2>
-          <p>Generates wallet addresses matching a custom prefix or suffix — e.g. ending in <code>axay</code>.</p>
+          <p>Generates wallet addresses matching a custom prefix, suffix, or contains pattern — e.g. ending in <code>axay</code>, or containing <code>pump</code>. Use <code>*</code> as a wildcard; comma separates OR alternatives (<code>moon,pump</code>).</p>
           <h2>Security</h2>
           <ul>
             <li>100% local · no internet</li>
@@ -76,9 +76,10 @@
           <button class="tab active" data-kind="suffix" role="tab">Suffix</button>
           <button class="tab" data-kind="prefix" role="tab">Prefix</button>
           <button class="tab" data-kind="both" role="tab">Both</button>
+          <button class="tab" data-kind="contains" role="tab">Contains</button>
         </div>
 
-        <div class="field-row">
+        <div class="field-row" id="affix-fields">
           <label class="field" id="field-prefix">
             <span class="field-label">Prefix</span>
             <input id="input-prefix" type="text" autocomplete="off" spellcheck="false" disabled />
@@ -88,6 +89,11 @@
             <input id="input-suffix" type="text" autocomplete="off" spellcheck="false" />
           </label>
         </div>
+
+        <label class="field" id="field-contains" hidden>
+          <span class="field-label">Contains (* wildcards OK · comma = OR)</span>
+          <input id="input-contains" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. pump or p*p or moon,dao" />
+        </label>
 
         <label class="checkbox-row" id="exact-row">
           <input id="input-exact" type="checkbox" />

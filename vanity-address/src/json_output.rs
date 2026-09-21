@@ -124,8 +124,10 @@ mod tests {
         Pattern {
             prefix: String::new(),
             suffix: suffix.to_string(),
+            contains: String::new(),
             prefix_match: String::new(),
             suffix_match: suffix.to_string(),
+            contains_match: String::new(),
             ignore_case: true,
         }
     }

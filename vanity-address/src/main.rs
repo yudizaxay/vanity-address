@@ -4,7 +4,7 @@ mod menu;
 mod terminal;
 mod warnings;
 
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 use json_output::{print_error_json, print_success_json, ErrorCode};
@@ -13,8 +13,9 @@ use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use vanity_core::{
-    benchmark, format_attempts, grind, grind_estimate, CancelToken, Chain, ChainGrinder,
-    GrindResult, Pattern, PatternRisk, SystemProfile,
+    benchmark, build_pattern_list, expected_attempts_any, format_attempts, grind_estimate, grind_n,
+    grind_patterns, patterns_description, verify_address, CancelToken, Chain, ChainGrinder,
+    Create2Grinder, GrindResult, Pattern, PatternRisk, SystemProfile,
 };
 
 const BENCHMARK_SECS: f64 = 2.0;
@@ -26,23 +27,34 @@ const DEFAULT_RESULTS_FILE: &str = "vanity-results.txt";
     version,
     author,
     about = "Fast, local multi-chain vanity address generator",
-    long_about = "Generate cryptocurrency keypairs whose public address matches a prefix \
-                  and/or suffix pattern. All keys are generated locally on your machine.\n\n\
+    long_about = "Generate cryptocurrency keypairs whose public address matches a prefix, \
+                  suffix, and/or contains pattern. All keys are generated locally.\n\n\
                   Run without flags for the interactive menu."
 )]
 struct Cli {
-    /// Blockchain: ada, algo, aptos, btc, cosmos, dash, doge, dot, erd, evm, fil, hedera, icp, kaspa, ksm, ltc, near, osmo, sol, sui, ton, trx, xlm, xrp, xtz
+    #[command(subcommand)]
+    command: Option<Commands>,
+
+    /// Blockchain id or alias (e.g. sol, evm, robinhood, base, btc-segwit, sei)
     #[arg(long)]
     chain: Option<String>,
 
-    #[arg(long)]
+    #[arg(long, help = "Address must start with this (supports * and comma OR)")]
     prefix: Option<String>,
 
-    #[arg(long)]
+    #[arg(long, help = "Address must end with this (supports * and comma OR)")]
     suffix: Option<String>,
 
+    /// Substring anywhere in the address (supports `*` wildcards)
     #[arg(long)]
+    contains: Option<String>,
+
+    #[arg(long, help = "Exact casing (base58 chains only)")]
     exact: bool,
+
+    /// Stop after finding N matches (default 1)
+    #[arg(long, default_value_t = 1)]
+    count: usize,
 
     #[arg(short, long)]
     quiet: bool,
@@ -66,16 +78,43 @@ struct Cli {
     #[arg(long)]
     force: bool,
 
-    /// Machine-readable JSON on stdout (implies direct mode; use with --chain and --suffix/--prefix)
+    /// Machine-readable JSON on stdout (implies direct mode; use with --chain and pattern)
     #[arg(long)]
     json: bool,
+
+    /// EVM CREATE2 salt grind (requires --deployer and --init-code-hash)
+    #[arg(long)]
+    create2: bool,
+
+    /// CREATE2 deployer address (20-byte hex)
+    #[arg(long, value_name = "HEX")]
+    deployer: Option<String>,
+
+    /// CREATE2 init code hash (32-byte hex)
+    #[arg(long, value_name = "HEX")]
+    init_code_hash: Option<String>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Verify that a private key (or CREATE2 salt) derives an address
+    Verify {
+        #[arg(long)]
+        chain: String,
+        #[arg(long)]
+        address: String,
+        #[arg(long)]
+        key: String,
+    },
 }
 
 struct RunConfig {
     chain: Chain,
     prefix: Option<String>,
     suffix: Option<String>,
+    contains: Option<String>,
     exact: bool,
+    count: usize,
     quiet: bool,
     threads: Option<usize>,
     /// Skip the big system dump (interactive already showed a summary).
@@ -96,7 +135,9 @@ impl Clone for RunConfig {
             chain: self.chain.clone(),
             prefix: self.prefix.clone(),
             suffix: self.suffix.clone(),
+            contains: self.contains.clone(),
             exact: self.exact,
+            count: self.count,
             quiet: self.quiet,
             threads: self.threads,
             compact_header: self.compact_header,
@@ -112,10 +153,13 @@ impl Clone for RunConfig {
 
 impl Cli {
     fn uses_direct_mode(&self) -> bool {
-        self.chain.is_some()
+        self.command.is_some()
+            || self.chain.is_some()
             || self.prefix.is_some()
             || self.suffix.is_some()
+            || self.contains.is_some()
             || self.exact
+            || self.count != 1
             || self.quiet
             || self.threads.is_some()
             || self.save
@@ -123,22 +167,38 @@ impl Cli {
             || self.no_benchmark
             || self.force
             || self.json
+            || self.create2
     }
 
     fn into_run_config(self) -> Result<RunConfig, String> {
-        if self.json && self.prefix.is_none() && self.suffix.is_none() {
-            return Err("--json requires --prefix and/or --suffix".into());
+        if self.json && self.prefix.is_none() && self.suffix.is_none() && self.contains.is_none() {
+            return Err("--json requires --prefix, --suffix, and/or --contains".into());
         }
 
-        let chain = match self.chain {
-            Some(id) => Chain::from_id(&id)?,
-            None => Chain::Solana(Default::default()),
+        let chain = if self.create2 {
+            let deployer = self
+                .deployer
+                .as_deref()
+                .ok_or("--create2 requires --deployer")?;
+            let init_hash = self
+                .init_code_hash
+                .as_deref()
+                .ok_or("--create2 requires --init-code-hash")?;
+            Chain::Create2(Create2Grinder::parse(deployer, init_hash)?)
+        } else {
+            match self.chain {
+                Some(id) => Chain::from_id(&id)?,
+                None => Chain::Solana(Default::default()),
+            }
         };
+
         Ok(RunConfig {
             chain,
             prefix: self.prefix,
             suffix: self.suffix,
+            contains: self.contains,
             exact: self.exact,
+            count: self.count.max(1),
             quiet: self.quiet,
             threads: self.threads,
             compact_header: false,
@@ -191,16 +251,26 @@ fn run_grind(config: RunConfig) {
         );
     }
 
-    let pattern = match chain.build_pattern(
+    let patterns = match build_pattern_list(
+        &chain,
         config.prefix.as_deref(),
         config.suffix.as_deref(),
+        config.contains.as_deref(),
         config.exact,
     ) {
         Ok(p) => p,
         Err(e) => exit_error(&e, ErrorCode::InvalidPattern, json),
     };
 
-    let expected = chain.expected_attempts(&pattern);
+    let expected = expected_attempts_any(
+        &patterns
+            .iter()
+            .map(|p| chain.expected_attempts(p))
+            .collect::<Vec<_>>(),
+    );
+    // Representative pattern for display / warnings (first alternative).
+    let pattern = patterns[0].clone();
+    let pattern_desc = patterns_description(&patterns);
 
     let mut profile = SystemProfile::detect();
     if let Some(threads) = config.threads {
@@ -297,7 +367,7 @@ fn run_grind(config: RunConfig) {
                 "  {}  {} · {}",
                 "Grinding".cyan().bold(),
                 chain.display_name().bold(),
-                pattern.description().dimmed()
+                pattern_desc.dimmed()
             );
             println!("  {}", "(Ctrl+C to stop)".dimmed());
             println!();
@@ -311,8 +381,15 @@ fn run_grind(config: RunConfig) {
                 profile.worker_description().green()
             );
             println!("  {}  {}", "Chain".dimmed(), chain.display_name().bold());
-            println!("  {}  {}", "Target".dimmed(), pattern.description().bold());
+            println!("  {}  {}", "Target".dimmed(), pattern_desc.bold());
             println!("  {}  {}", "Mode".dimmed(), pattern.case_mode());
+            if config.count > 1 {
+                println!(
+                    "  {}  {}",
+                    "Count".dimmed(),
+                    config.count.to_string().cyan()
+                );
+            }
             println!(
                 "  {}  ~{} attempts (average)",
                 "Expected".dimmed(),
@@ -338,102 +415,132 @@ fn run_grind(config: RunConfig) {
         Some(bar)
     };
 
-    let result = match grind(
-        chain.clone(),
-        pattern.clone(),
-        &profile,
-        &CancelToken::new(),
-        |attempts, rate, eta_min| {
-            if let Some(ref bar) = pb {
-                bar.set_message(format!(
-                    "{} keys | {} keys/s | ~{:.0} min remaining",
-                    format_attempts(attempts as f64).cyan(),
-                    format!("{rate:.0}").green(),
-                    eta_min
-                ));
-            }
-        },
-    ) {
-        Ok(r) => r,
-        Err(e) => exit_error(&e, ErrorCode::GrindFailed, json),
+    let results = if config.count <= 1 {
+        match grind_patterns(
+            chain.clone(),
+            &patterns,
+            &profile,
+            &CancelToken::new(),
+            |attempts, rate, eta_min| {
+                if let Some(ref bar) = pb {
+                    bar.set_message(format!(
+                        "{} keys | {} keys/s | ~{:.0} min remaining",
+                        format_attempts(attempts as f64).cyan(),
+                        format!("{rate:.0}").green(),
+                        eta_min
+                    ));
+                }
+            },
+        ) {
+            Ok(r) => vec![r],
+            Err(e) => exit_error(&e, ErrorCode::GrindFailed, json),
+        }
+    } else {
+        match grind_n(
+            chain.clone(),
+            &patterns,
+            config.count,
+            &profile,
+            &CancelToken::new(),
+            |attempts, rate, eta_min, which| {
+                if let Some(ref bar) = pb {
+                    bar.set_message(format!(
+                        "match {}/{} · {} keys | {} keys/s | ~{:.0} min",
+                        which,
+                        config.count,
+                        format_attempts(attempts as f64).cyan(),
+                        format!("{rate:.0}").green(),
+                        eta_min
+                    ));
+                }
+            },
+        ) {
+            Ok(r) => r,
+            Err(e) => exit_error(&e, ErrorCode::GrindFailed, json),
+        }
     };
 
     if let Some(ref bar) = pb {
         bar.finish_and_clear();
     }
 
-    if json {
-        // JSON path: optional auto-save, then emit structured stdout.
+    for (idx, result) in results.iter().enumerate() {
+        if json {
+            let output_path = config
+                .output
+                .clone()
+                .unwrap_or_else(|| PathBuf::from(DEFAULT_RESULTS_FILE));
+            let mut saved_to: Option<String> = None;
+            if config.save {
+                match save_result(&output_path, &chain, &pattern, result) {
+                    Ok(path) => saved_to = Some(path),
+                    Err(e) => exit_error(
+                        &format!("could not save results: {e}"),
+                        ErrorCode::IoError,
+                        json,
+                    ),
+                }
+            }
+            if let Err(e) = print_success_json(
+                chain.id(),
+                chain.display_name(),
+                &pattern,
+                result,
+                measured_keys_per_sec,
+                saved_to.as_deref(),
+            ) {
+                exit_error(
+                    &format!("could not serialize JSON: {e}"),
+                    ErrorCode::IoError,
+                    json,
+                );
+            }
+            continue;
+        }
+
+        if config.quiet {
+            println!("{}", result.keypair.address);
+            for export in &result.keypair.exports {
+                println!("{}: {}", export.label, export.value);
+            }
+        } else {
+            if results.len() > 1 {
+                println!();
+                println!("  {}  {}/{}", "Match".cyan().bold(), idx + 1, results.len());
+            }
+            print_success(result, &pattern);
+        }
+
         let output_path = config
             .output
             .clone()
             .unwrap_or_else(|| PathBuf::from(DEFAULT_RESULTS_FILE));
-        let mut saved_to: Option<String> = None;
-        if config.save {
-            match save_result(&output_path, &chain, &pattern, &result) {
-                Ok(path) => saved_to = Some(path),
-                Err(e) => exit_error(
-                    &format!("could not save results: {e}"),
-                    ErrorCode::IoError,
-                    json,
-                ),
-            }
-        }
-        if let Err(e) = print_success_json(
-            chain.id(),
-            chain.display_name(),
-            &pattern,
-            &result,
-            measured_keys_per_sec,
-            saved_to.as_deref(),
-        ) {
-            exit_error(
-                &format!("could not serialize JSON: {e}"),
-                ErrorCode::IoError,
-                json,
-            );
-        }
-        return;
-    }
+        let save_prompt = format!("  Save keys to {}? [y/N]: ", output_path.display());
 
-    if config.quiet {
-        println!("{}", result.keypair.address);
-        for export in &result.keypair.exports {
-            println!("{}: {}", export.label, export.value);
-        }
-    } else {
-        print_success(&result, &pattern);
-    }
+        let should_save = if config.save {
+            true
+        } else if config.prompt_save && !config.quiet && idx == results.len() - 1 {
+            println!();
+            terminal::read_yes_no_key(&save_prompt, false, false).unwrap_or(false)
+        } else {
+            false
+        };
 
-    let output_path = config
-        .output
-        .clone()
-        .unwrap_or_else(|| PathBuf::from(DEFAULT_RESULTS_FILE));
-    let save_prompt = format!("  Save keys to {}? [y/N]: ", output_path.display());
-
-    let should_save = if config.save {
-        true
-    } else if config.prompt_save && !config.quiet {
-        println!();
-        terminal::read_yes_no_key(&save_prompt, false, false).unwrap_or(false)
-    } else {
-        false
-    };
-
-    if should_save {
-        match save_result(&output_path, &chain, &pattern, &result) {
-            Ok(path) => {
-                if !config.quiet {
-                    println!("  {}  {}", "Saved →".green().bold(), path.cyan());
-                    println!(
-                        "  {}",
-                        "This file contains private keys — do not commit or share it."
-                            .red()
-                            .dimmed()
-                    );
+        if should_save {
+            match save_result(&output_path, &chain, &pattern, result) {
+                Ok(path) => {
+                    if !config.quiet {
+                        println!("  {}  {}", "Saved →".green().bold(), path.cyan());
+                        println!(
+                            "  {}",
+                            "This file contains private keys — do not commit or share it."
+                                .red()
+                                .dimmed()
+                        );
+                    }
                 }
+                Err(e) => print_error(&format!("could not save results: {e}")),
             }
-            Err(e) => print_error(&format!("could not save results: {e}")),
         }
     }
 
@@ -518,11 +625,12 @@ fn print_success(result: &GrindResult, pattern: &Pattern) {
     );
 }
 
-/// Render address with matched prefix/suffix highlighted in green.
+/// Render address with matched prefix/suffix/contains highlighted in green.
 fn highlight_address(address: &str, pattern: &Pattern) -> String {
     let ignore_case = pattern.ignore_case;
     let prefix = &pattern.prefix_match;
     let suffix = &pattern.suffix_match;
+    let contains = &pattern.contains_match;
 
     let starts = !prefix.is_empty()
         && address.len() >= prefix.len()
@@ -540,27 +648,61 @@ fn highlight_address(address: &str, pattern: &Pattern) -> String {
             address.ends_with(suffix.as_str())
         };
 
-    let mid_start = if starts { prefix.len() } else { 0 };
-    let mid_end = if ends {
-        address.len() - suffix.len()
+    if starts || ends {
+        let mid_start = if starts { prefix.len() } else { 0 };
+        let mid_end = if ends {
+            address.len() - suffix.len()
+        } else {
+            address.len()
+        };
+        let mid_end = mid_end.max(mid_start);
+
+        let mut out = String::new();
+        if starts {
+            out.push_str(&address[..mid_start].green().bold().to_string());
+        }
+        if mid_start < mid_end {
+            out.push_str(&address[mid_start..mid_end].bold().white().to_string());
+        }
+        if ends {
+            out.push_str(&address[mid_end..].green().bold().to_string());
+        }
+        return out;
+    }
+
+    // Contains: highlight first literal segment (ignore wildcards for display)
+    let needle = if contains.contains('*') {
+        contains
+            .split('*')
+            .find(|p| !p.is_empty())
+            .unwrap_or("")
+            .to_string()
     } else {
-        address.len()
+        contains.clone()
     };
+    if !needle.is_empty() {
+        let hay = if ignore_case {
+            address.to_ascii_lowercase()
+        } else {
+            address.to_string()
+        };
+        let n = if ignore_case {
+            needle.to_ascii_lowercase()
+        } else {
+            needle.clone()
+        };
+        if let Some(idx) = hay.find(&n) {
+            let end = idx + needle.len();
+            return format!(
+                "{}{}{}",
+                &address[..idx].bold().white().to_string(),
+                &address[idx..end].green().bold().to_string(),
+                &address[end..].bold().white().to_string()
+            );
+        }
+    }
 
-    // Guard overlapping prefix/suffix.
-    let mid_end = mid_end.max(mid_start);
-
-    let mut out = String::new();
-    if starts {
-        out.push_str(&address[..mid_start].green().bold().to_string());
-    }
-    if mid_start < mid_end {
-        out.push_str(&address[mid_start..mid_end].bold().white().to_string());
-    }
-    if ends {
-        out.push_str(&address[mid_end..].green().bold().to_string());
-    }
-    out
+    address.bold().white().to_string()
 }
 
 fn format_number(n: u64) -> String {
@@ -640,6 +782,28 @@ fn main() {
     let cli = Cli::parse();
     let json = cli.json;
 
+    if let Some(Commands::Verify {
+        chain,
+        address,
+        key,
+    }) = &cli.command
+    {
+        match verify_address(chain, address, key) {
+            Ok(()) => {
+                if json {
+                    println!(
+                        "{{\"ok\":true,\"chain\":\"{}\",\"address\":\"{}\"}}",
+                        chain, address
+                    );
+                } else {
+                    println!("  {}  key derives {}", "✓ verified".green().bold(), address);
+                }
+            }
+            Err(e) => exit_error(&e, ErrorCode::InvalidArgs, json),
+        }
+        return;
+    }
+
     if cli.uses_direct_mode() {
         match cli.into_run_config() {
             Ok(config) => run_grind(config),
@@ -665,7 +829,9 @@ fn main() {
             chain: config.chain.clone(),
             prefix: config.prefix.clone(),
             suffix: config.suffix.clone(),
+            contains: config.contains.clone(),
             exact: config.exact,
+            count: 1,
             quiet: false,
             threads: None,
             compact_header: true,

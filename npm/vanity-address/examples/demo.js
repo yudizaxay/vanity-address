@@ -28,6 +28,22 @@ async function main() {
   console.log("   address:", wallet1.address);
   console.log("   privateKey:", wallet1.privateKey);
 
+  console.log("\n3b) Contains pattern — Solana with 'a'");
+  const walletContains = await generateAddress({
+    chain: "sol",
+    contains: "a",
+    workers: 2,
+  });
+  console.log("   address:", walletContains.address);
+
+  console.log("\n3c) OR suffixes — EVM ending a or b");
+  const walletOr = await generateAddress({
+    chain: "evm",
+    suffix: "a,b",
+    workers: 2,
+  });
+  console.log("   address:", walletOr.address);
+
   console.log("\n4) Batch — two Bitcoin addresses starting with '1'");
   const batch = await generateAddresses({ chain: "btc", prefix: "1", count: 2, workers: 2 });
   console.log(

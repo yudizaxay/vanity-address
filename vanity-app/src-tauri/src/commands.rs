@@ -4,8 +4,9 @@ use std::io::Write;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_dialog::DialogExt;
 use vanity_core::{
-    benchmark, grind, grind_estimate, CancelToken, Chain, ChainGrinder, GrindResult, Pattern,
-    PatternRisk, SystemProfile, MENU_CHAINS,
+    benchmark, expected_attempts_any, grind_estimate, grind_patterns, patterns_description,
+    CancelToken, Chain, ChainGrinder, GrindResult, Pattern, PatternRisk, SystemProfile,
+    MENU_CHAINS,
 };
 
 const BENCHMARK_SECS: f64 = 2.0;
@@ -77,35 +78,42 @@ pub struct EstimateResult {
     length_guide: Option<String>,
     prefix_match: String,
     suffix_match: String,
+    contains_match: String,
     ignore_case: bool,
 }
 
-fn build_pattern_checked(
+fn build_patterns_checked(
     chain: &Chain,
     prefix: &str,
     suffix: &str,
+    contains: &str,
     exact: bool,
-) -> Result<Pattern, String> {
+) -> Result<Vec<vanity_core::Pattern>, String> {
     if exact && !chain.supports_exact_case() {
         return Err(format!(
             "Exact case is not supported for {}",
             chain.display_name()
         ));
     }
-    let prefix = if prefix.is_empty() {
-        None
-    } else {
-        Some(prefix)
-    };
-    let suffix = if suffix.is_empty() {
-        None
-    } else {
-        Some(suffix)
-    };
-    if prefix.is_none() && suffix.is_none() {
-        return Err("Enter a prefix and/or suffix".to_string());
-    }
-    chain.build_pattern(prefix, suffix, exact)
+    vanity_core::build_pattern_list(
+        chain,
+        if prefix.is_empty() {
+            None
+        } else {
+            Some(prefix)
+        },
+        if suffix.is_empty() {
+            None
+        } else {
+            Some(suffix)
+        },
+        if contains.is_empty() {
+            None
+        } else {
+            Some(contains)
+        },
+        exact,
+    )
 }
 
 fn risk_label(risk: PatternRisk) -> &'static str {
@@ -157,26 +165,34 @@ pub fn estimate(
     prefix: String,
     suffix: String,
     exact: bool,
+    contains: Option<String>,
 ) -> Result<EstimateResult, String> {
     let chain = Chain::from_id(&chain)?;
-    let pattern = build_pattern_checked(&chain, &prefix, &suffix, exact)?;
-    let expected = chain.expected_attempts(&pattern);
+    let contains = contains.unwrap_or_default();
+    let patterns = build_patterns_checked(&chain, &prefix, &suffix, &contains, exact)?;
+    let expected = expected_attempts_any(
+        &patterns
+            .iter()
+            .map(|p| chain.expected_attempts(p))
+            .collect::<Vec<_>>(),
+    );
+    let pattern = &patterns[0];
     let profile = SystemProfile::detect();
     let est = grind_estimate(
         expected,
         profile.estimated_keys_per_sec(chain.id()),
-        &pattern,
+        pattern,
     );
 
     let warning = risk_warning(&est);
-    let length_guide = if pattern.has_prefix() || pattern.has_suffix() {
+    let length_guide = if pattern.has_prefix() || pattern.has_suffix() || pattern.has_contains() {
         Some(length_guide(chain.id(), est.pattern_chars))
     } else {
         None
     };
 
     Ok(EstimateResult {
-        pattern_description: pattern.description(),
+        pattern_description: patterns_description(&patterns),
         case_mode: pattern.case_mode().to_string(),
         attempts_label: est.attempts_label,
         time_label: est.time_label,
@@ -188,6 +204,7 @@ pub fn estimate(
         length_guide,
         prefix_match: pattern.prefix_match.clone(),
         suffix_match: pattern.suffix_match.clone(),
+        contains_match: pattern.contains_match.clone(),
         ignore_case: pattern.ignore_case,
     })
 }
@@ -223,6 +240,7 @@ struct DonePayload {
     case_mode: String,
     prefix_match: String,
     suffix_match: String,
+    contains_match: String,
     ignore_case: bool,
 }
 
@@ -232,6 +250,7 @@ struct ErrorPayload {
 }
 
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 pub fn start_grind(
     app: AppHandle,
     state: State<AppState>,
@@ -240,6 +259,7 @@ pub fn start_grind(
     suffix: String,
     exact: bool,
     force: bool,
+    contains: Option<String>,
 ) -> Result<(), String> {
     {
         let mut job = state
@@ -250,13 +270,19 @@ pub fn start_grind(
             return Err("A grind is already running".to_string());
         }
         let chain_parsed = Chain::from_id(&chain)?;
-        let pattern = build_pattern_checked(&chain_parsed, &prefix, &suffix, exact)?;
-        let expected = chain_parsed.expected_attempts(&pattern);
+        let contains = contains.unwrap_or_default();
+        let patterns = build_patterns_checked(&chain_parsed, &prefix, &suffix, &contains, exact)?;
+        let expected = expected_attempts_any(
+            &patterns
+                .iter()
+                .map(|p| chain_parsed.expected_attempts(p))
+                .collect::<Vec<_>>(),
+        );
         let profile = SystemProfile::detect();
         let pre = grind_estimate(
             expected,
             profile.estimated_keys_per_sec(chain_parsed.id()),
-            &pattern,
+            &patterns[0],
         );
         if pre.risk == PatternRisk::Impractical && !force {
             return Err(
@@ -270,7 +296,7 @@ pub fn start_grind(
         drop(job);
 
         std::thread::spawn(move || {
-            run_grind_job(app, chain_parsed, pattern, profile, cancel);
+            run_grind_job(app, chain_parsed, patterns, profile, cancel);
         });
     }
     Ok(())
@@ -279,19 +305,24 @@ pub fn start_grind(
 fn run_grind_job(
     app: AppHandle,
     chain: Chain,
-    pattern: Pattern,
+    patterns: Vec<Pattern>,
     mut profile: SystemProfile,
     cancel: CancelToken,
 ) {
     let _ = app.emit("grind-calibrating", ());
+    let expected = expected_attempts_any(
+        &patterns
+            .iter()
+            .map(|p| chain.expected_attempts(p))
+            .collect::<Vec<_>>(),
+    );
 
     if let Ok(rate) = benchmark(chain.clone(), &profile, BENCHMARK_SECS) {
         profile = profile.with_benchmark(rate);
-        let expected = chain.expected_attempts(&pattern);
         let calibrated = grind_estimate(
             expected,
             profile.estimated_keys_per_sec(chain.id()),
-            &pattern,
+            &patterns[0],
         );
         let _ = app.emit(
             "grind-speed",
@@ -308,13 +339,16 @@ fn run_grind_job(
         return;
     }
 
-    let prefix_match = pattern.prefix_match.clone();
-    let suffix_match = pattern.suffix_match.clone();
-    let ignore_case = pattern.ignore_case;
+    let prefix_match = patterns[0].prefix_match.clone();
+    let suffix_match = patterns[0].suffix_match.clone();
+    let contains_match = patterns[0].contains_match.clone();
+    let ignore_case = patterns[0].ignore_case;
+    let pattern_description = patterns_description(&patterns);
+    let case_mode = patterns[0].case_mode().to_string();
 
-    let result: Result<GrindResult, String> = grind(
+    let result: Result<GrindResult, String> = grind_patterns(
         chain.clone(),
-        pattern.clone(),
+        &patterns,
         &profile,
         &cancel,
         |attempts, rate, eta_min| {
@@ -349,10 +383,11 @@ fn run_grind_job(
                     attempts: r.attempts,
                     elapsed_secs: r.elapsed_secs,
                     chain_display_name: chain.display_name().to_string(),
-                    pattern_description: pattern.description(),
-                    case_mode: pattern.case_mode().to_string(),
+                    pattern_description,
+                    case_mode,
                     prefix_match,
                     suffix_match,
+                    contains_match,
                     ignore_case,
                 },
             );
@@ -504,7 +539,14 @@ mod tests {
 
     #[test]
     fn estimate_reports_pattern_and_risk() {
-        let result = estimate("sol".to_string(), String::new(), "ax".to_string(), false).unwrap();
+        let result = estimate(
+            "sol".to_string(),
+            String::new(),
+            "ax".to_string(),
+            false,
+            None,
+        )
+        .unwrap();
         assert!(result.pattern_description.contains("ax"));
         assert_eq!(result.risk, "None");
         assert!(result.length_guide.is_some());
@@ -517,6 +559,7 @@ mod tests {
             String::new(),
             "akshaysingheavysuffix".to_string(),
             false,
+            None,
         )
         .unwrap();
         assert_eq!(result.risk, "Impractical");
@@ -525,13 +568,21 @@ mod tests {
 
     #[test]
     fn estimate_rejects_empty_pattern() {
-        let err = estimate("sol".to_string(), String::new(), String::new(), false).unwrap_err();
-        assert!(err.contains("prefix"));
+        let err =
+            estimate("sol".to_string(), String::new(), String::new(), false, None).unwrap_err();
+        assert!(err.contains("prefix") || err.contains("contains"));
     }
 
     #[test]
     fn estimate_rejects_unsupported_exact_case() {
-        let err = estimate("evm".to_string(), String::new(), "dead".to_string(), true).unwrap_err();
+        let err = estimate(
+            "evm".to_string(),
+            String::new(),
+            "dead".to_string(),
+            true,
+            None,
+        )
+        .unwrap_err();
         assert!(err.contains("Exact case"));
     }
 

@@ -1,6 +1,6 @@
 {
   "name": "vanity-address",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Fast, offline, multi-chain vanity address generator — CLI + WASM SDK, no telemetry",
   "license": "MIT",
   "author": "yudizaxay",
@@ -64,10 +64,10 @@
     "node": ">=18"
   },
   "optionalDependencies": {
-    "vanity-address-darwin-arm64": "0.5.0",
-    "vanity-address-darwin-x64": "0.5.0",
-    "vanity-address-linux-x64": "0.5.0",
-    "vanity-address-win32-x64": "0.5.0"
+    "vanity-address-darwin-arm64": "0.6.0",
+    "vanity-address-darwin-x64": "0.6.0",
+    "vanity-address-linux-x64": "0.6.0",
+    "vanity-address-win32-x64": "0.6.0"
   },
   "preferGlobal": true
 }

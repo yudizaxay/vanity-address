@@ -6,7 +6,7 @@
 
 **Fast, local, multi-chain vanity address generator**
 
-Generate multi-chain keypairs whose public address matches your desired prefix and/or suffix — entirely on your machine. No servers. No tracking. Keys never leave your device.
+Generate multi-chain keypairs whose public address matches your desired prefix, suffix, and/or contains pattern — entirely on your machine. No servers. No tracking. Keys never leave your device.
 
 **Privacy-first:** keys are generated on your device only. No accounts. No telemetry. Audit the source before you trust any vanity tool.
 
@@ -43,6 +43,8 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 | --------------------------- | :----: | :------: |
 | Prefix matching             |   ✅   |    ✅    |
 | Suffix matching             |   ✅   |    ✅    |
+| Contains + `*` wildcards    |   ✅   |    ✅    |
+| Multi-pattern OR            |   ✅   |    ✅    |
 | Case-insensitive mode       |   ✅   | ✅ (hex) |
 | Exact case mode             |   ✅   |    —     |
 | Parallel CPU grinding       |   ✅   |    ✅    |
@@ -50,7 +52,7 @@ Generate multi-chain keypairs whose public address matches your desired prefix a
 | Multiple key export formats |   ✅   |    ✅    |
 | 100% offline / local        |   ✅   |    ✅    |
 
-**25 chains** · **CLI + desktop app** · **MIT licensed** · **privacy-first** (keys never leave your machine)
+**31 chains** · **CLI + desktop + npm SDK** · **MIT licensed** · **privacy-first** (keys never leave your machine)
 
 ---
 
@@ -122,22 +124,28 @@ cargo install vanity-address
 vanity-address
 ```
 
-Wizard flow: **chain → prefix/suffix → pattern → estimate → confirm → grind**.
+Wizard flow: **chain → match kind → pattern → estimate → confirm → grind**.
 
 ### Direct mode
 
 ```bash
 vanity-address --chain sol --suffix axay
 vanity-address --chain evm --prefix dead --suffix beef -q
-vanity-address --chain sol --suffix ax --json --no-benchmark --force
+vanity-address --chain sol --contains pump --count 3
+vanity-address --chain sol --suffix moon,pump,dao
+vanity-address --chain btc-segwit --suffix cafe
+vanity-address --chain robinhood --suffix dead
+vanity-address verify --chain sol --address <addr> --key <hex-or-base58>
+vanity-address --create2 --deployer 0x… --init-code-hash 0x… --prefix cafe
 ```
 
 ### Common flags
 
 | Flag              | Description                              |
 | ----------------- | ---------------------------------------- |
-| `--chain <ID>`    | `sol`, `evm`, `btc`, `ltc`, `doge`, …   |
-| `--prefix` / `--suffix` | Match start or end of address    |
+| `--chain <ID>`    | `sol`, `evm`, `robinhood`, `btc-segwit`, `sei`, … |
+| `--prefix` / `--suffix` / `--contains` | Match start, end, or anywhere (`*` OK) |
+| `--count N`       | Find N matches                           |
 | `--json`          | Machine-readable output (scripts)        |
 | `--save`          | Append keys to `vanity-results.txt`      |
 | `-q, --quiet`     | Minimal output for scripts               |
@@ -196,7 +204,7 @@ Home → Chain → Pattern → Summary → Grind → Result
 
 | Feature | Desktop |
 | ------- | ------- |
-| 25 chains, live ETA, stop mid-grind | ✅ |
+| 31 chains, live ETA, stop mid-grind | ✅ |
 | Impractical-pattern warning | ✅ |
 | Masked keys + reveal / copy / save | ✅ |
 

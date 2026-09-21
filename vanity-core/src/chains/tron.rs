@@ -62,9 +62,10 @@ impl ChainGrinder for TronGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
-        build_base58_pattern(prefix, suffix, exact, BASE58_ALPHABET, 34)
+        build_base58_pattern(prefix, suffix, contains, exact, BASE58_ALPHABET, 34)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {

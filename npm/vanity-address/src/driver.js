@@ -44,6 +44,7 @@ function normalizeOptions(options) {
     chain: opts.chain,
     prefix: opts.prefix || "",
     suffix: opts.suffix || "",
+    contains: opts.contains || "",
     caseSensitive: Boolean(opts.caseSensitive),
     onProgress: opts.onProgress,
     signal: opts.signal,
@@ -58,9 +59,9 @@ function requireChainPattern(opts) {
   if (!opts.chain || typeof opts.chain !== "string") {
     throw new VanityAddressError("options.chain is required", "INVALID_CHAIN");
   }
-  if (!opts.prefix && !opts.suffix) {
+  if (!opts.prefix && !opts.suffix && !opts.contains) {
     throw new VanityAddressError(
-      "options.prefix or options.suffix is required",
+      "options.prefix, options.suffix, or options.contains is required",
       "INVALID_PATTERN",
     );
   }
@@ -117,6 +118,7 @@ function grindSingleThreaded(grindChunk, opts, expectedAttempts) {
           opts.suffix,
           !opts.caseSensitive,
           CHUNK_SIZE,
+          opts.contains || undefined,
         );
       } catch (e) {
         const code = (e && e.code) || "INTERNAL";
@@ -194,14 +196,28 @@ function createSdk(wasm, extras) {
     const workers = Math.max(1, Number(opts.workers) || 1);
     const userKps = opts.keysPerSec && opts.keysPerSec > 0 ? opts.keysPerSec : 0;
 
-    let est = estimateRaw(opts.chain, opts.prefix, opts.suffix, !opts.caseSensitive, userKps);
+    let est = estimateRaw(
+      opts.chain,
+      opts.prefix,
+      opts.suffix,
+      !opts.caseSensitive,
+      userKps,
+      opts.contains || undefined,
+    );
 
     // Re-run through the same wasm estimator at the scaled throughput so
     // risk/difficulty/timeLabel all stay consistent with the faster ETA,
     // instead of scaling avgSecs/keysPerSec in JS while reusing single-thread labels.
     if (workers > 1 && !userKps) {
       const scaledKps = est.keys_per_sec * workers;
-      est = estimateRaw(opts.chain, opts.prefix, opts.suffix, !opts.caseSensitive, scaledKps);
+      est = estimateRaw(
+        opts.chain,
+        opts.prefix,
+        opts.suffix,
+        !opts.caseSensitive,
+        scaledKps,
+        opts.contains || undefined,
+      );
     }
 
     return {
@@ -226,16 +242,22 @@ function createSdk(wasm, extras) {
         error: "options.chain is required",
       };
     }
-    if (!opts.prefix && !opts.suffix) {
+    if (!opts.prefix && !opts.suffix && !opts.contains) {
       return {
         ok: false,
-        error: "options.prefix or options.suffix is required",
+        error: "options.prefix, options.suffix, or options.contains is required",
       };
     }
     if (!validateRaw) {
       throw new VanityAddressError("validate_pattern is unavailable in this build", "INTERNAL");
     }
-    const raw = validateRaw(opts.chain, opts.prefix, opts.suffix, !opts.caseSensitive);
+    const raw = validateRaw(
+      opts.chain,
+      opts.prefix,
+      opts.suffix,
+      !opts.caseSensitive,
+      opts.contains || undefined,
+    );
     return {
       ok: Boolean(raw.ok),
       error: raw.error || undefined,
@@ -265,6 +287,7 @@ function createSdk(wasm, extras) {
           opts.suffix,
           !opts.caseSensitive,
           0,
+          opts.contains || undefined,
         );
         expectedAttempts = est.attempts || 0;
       }

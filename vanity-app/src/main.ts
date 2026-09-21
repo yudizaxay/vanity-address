@@ -13,7 +13,7 @@ import {
 } from "./api";
 
 type ScreenId = "home" | "help" | "chain" | "pattern" | "summary" | "grind" | "result";
-type MatchKind = "suffix" | "prefix" | "both";
+type MatchKind = "suffix" | "prefix" | "both" | "contains";
 
 const screens: Record<ScreenId, HTMLElement> = {
   home: el("#screen-home"),
@@ -90,6 +90,7 @@ function selectChain(chain: ChainInfo) {
   el("#pattern-hint").textContent = chain.pattern_hint;
   el<HTMLInputElement>("#input-prefix").value = "";
   el<HTMLInputElement>("#input-suffix").value = "";
+  el<HTMLInputElement>("#input-contains").value = "";
   el<HTMLInputElement>("#input-exact").checked = false;
 
   const exactRow = el("#exact-row");
@@ -110,18 +111,30 @@ function setMatchKind(kind: MatchKind) {
     tab.classList.toggle("active", tab.dataset.kind === kind);
   });
 
+  const affixFields = el("#affix-fields");
+  const containsField = el("#field-contains");
   const prefixField = el("#field-prefix");
   const suffixField = el("#field-suffix");
   const prefixInput = el<HTMLInputElement>("#input-prefix");
   const suffixInput = el<HTMLInputElement>("#input-suffix");
+  const containsInput = el<HTMLInputElement>("#input-contains");
 
-  prefixField.classList.toggle("inactive", kind === "suffix");
-  suffixField.classList.toggle("inactive", kind === "prefix");
-  prefixInput.disabled = kind === "suffix";
-  suffixInput.disabled = kind === "prefix";
+  const isContains = kind === "contains";
+  affixFields.hidden = isContains;
+  containsField.hidden = !isContains;
 
-  if (kind === "suffix") prefixInput.value = "";
-  if (kind === "prefix") suffixInput.value = "";
+  if (!isContains) {
+    prefixField.classList.toggle("inactive", kind === "suffix");
+    suffixField.classList.toggle("inactive", kind === "prefix");
+    prefixInput.disabled = kind === "suffix";
+    suffixInput.disabled = kind === "prefix";
+    if (kind === "suffix") prefixInput.value = "";
+    if (kind === "prefix") suffixInput.value = "";
+    containsInput.value = "";
+  } else {
+    prefixInput.value = "";
+    suffixInput.value = "";
+  }
 
   scheduleEstimate();
 }
@@ -141,24 +154,26 @@ function scheduleEstimate() {
 function currentPatternValues() {
   const prefix = el<HTMLInputElement>("#input-prefix").value.trim();
   const suffix = el<HTMLInputElement>("#input-suffix").value.trim();
+  const contains = el<HTMLInputElement>("#input-contains").value.trim();
   const exact = el<HTMLInputElement>("#input-exact").checked;
 
-  if (matchKind === "suffix") return { prefix: "", suffix, exact };
-  if (matchKind === "prefix") return { prefix, suffix: "", exact };
-  return { prefix, suffix, exact };
+  if (matchKind === "suffix") return { prefix: "", suffix, contains: "", exact };
+  if (matchKind === "prefix") return { prefix, suffix: "", contains: "", exact };
+  if (matchKind === "contains") return { prefix: "", suffix: "", contains, exact };
+  return { prefix, suffix, contains: "", exact };
 }
 
 async function runEstimate() {
   if (!selectedChain) return;
-  const { prefix, suffix, exact } = currentPatternValues();
+  const { prefix, suffix, contains, exact } = currentPatternValues();
 
-  if (!prefix && !suffix) {
+  if (!prefix && !suffix && !contains) {
     hideEstimate();
     return;
   }
 
   try {
-    const result = await estimate(selectedChain.id, prefix, suffix, exact);
+    const result = await estimate(selectedChain.id, prefix, suffix, exact, contains);
     lastEstimate = result;
     el("#pattern-error").hidden = true;
     el("#estimate-box").hidden = false;
@@ -200,7 +215,7 @@ async function showSummary() {
   impracticalConfirmShown = false;
   el("#confirm-impractical").hidden = true;
 
-  const { prefix, suffix, exact } = currentPatternValues();
+  const { prefix, suffix, contains, exact } = currentPatternValues();
   const sys = await getSystemProfile(selectedChain.id);
 
   el("#sum-chain").textContent = selectedChain.display_name;
@@ -246,6 +261,7 @@ async function showSummary() {
   // stash for grind
   el("#btn-grind").dataset.prefix = prefix;
   el("#btn-grind").dataset.suffix = suffix;
+  el("#btn-grind").dataset.contains = contains;
   el("#btn-grind").dataset.exact = String(exact);
 
   showScreen("summary");
@@ -263,6 +279,7 @@ async function beginGrind() {
   const btn = el<HTMLButtonElement>("#btn-grind");
   const prefix = btn.dataset.prefix ?? "";
   const suffix = btn.dataset.suffix ?? "";
+  const contains = btn.dataset.contains ?? "";
   const exact = btn.dataset.exact === "true";
   const force = lastEstimate.risk === "Impractical";
 
@@ -312,7 +329,7 @@ async function beginGrind() {
   });
 
   try {
-    await startGrind(selectedChain.id, prefix, suffix, exact, force);
+    await startGrind(selectedChain.id, prefix, suffix, exact, force, contains);
   } catch (e) {
     grindUnlisten?.();
     grindUnlisten = null;
@@ -350,6 +367,7 @@ function highlightAddress(
   address: string,
   prefixMatch: string,
   suffixMatch: string,
+  containsMatch: string,
   ignoreCase: boolean,
 ): string {
   const starts =
@@ -365,15 +383,28 @@ function highlightAddress(
       ? address.slice(-suffixMatch.length).toLowerCase() === suffixMatch.toLowerCase()
       : address.endsWith(suffixMatch));
 
-  if (starts && ends) {
-    const mid = address.slice(prefixMatch.length, address.length - suffixMatch.length);
-    return `<span class="match-hl">${escapeHtml(address.slice(0, prefixMatch.length))}</span>${escapeHtml(mid)}<span class="match-hl">${escapeHtml(address.slice(-suffixMatch.length))}</span>`;
-  }
-  if (starts) {
-    return `<span class="match-hl">${escapeHtml(address.slice(0, prefixMatch.length))}</span>${escapeHtml(address.slice(prefixMatch.length))}`;
-  }
-  if (ends) {
+  if (starts || ends) {
+    if (starts && ends) {
+      const mid = address.slice(prefixMatch.length, address.length - suffixMatch.length);
+      return `<span class="match-hl">${escapeHtml(address.slice(0, prefixMatch.length))}</span>${escapeHtml(mid)}<span class="match-hl">${escapeHtml(address.slice(-suffixMatch.length))}</span>`;
+    }
+    if (starts) {
+      return `<span class="match-hl">${escapeHtml(address.slice(0, prefixMatch.length))}</span>${escapeHtml(address.slice(prefixMatch.length))}`;
+    }
     return `${escapeHtml(address.slice(0, -suffixMatch.length))}<span class="match-hl">${escapeHtml(address.slice(-suffixMatch.length))}</span>`;
+  }
+
+  // Contains highlight (literal substring; skip wildcards)
+  const needle = containsMatch.includes("*")
+    ? containsMatch.split("*").find((p) => p.length > 0) || ""
+    : containsMatch;
+  if (needle) {
+    const hay = ignoreCase ? address.toLowerCase() : address;
+    const n = ignoreCase ? needle.toLowerCase() : needle;
+    const idx = hay.indexOf(n);
+    if (idx >= 0) {
+      return `${escapeHtml(address.slice(0, idx))}<span class="match-hl">${escapeHtml(address.slice(idx, idx + needle.length))}</span>${escapeHtml(address.slice(idx + needle.length))}`;
+    }
   }
   return escapeHtml(address);
 }
@@ -390,6 +421,7 @@ function showResult(payload: DonePayload) {
     payload.address,
     payload.prefix_match,
     payload.suffix_match,
+    payload.contains_match || "",
     payload.ignore_case,
   );
   el("#result-stats").textContent = `${formatCount(payload.attempts)} attempts in ${payload.elapsed_secs.toFixed(2)}s (${formatSpeed(rate)} keys/s avg)`;
@@ -468,6 +500,7 @@ function init() {
 
   el<HTMLInputElement>("#input-prefix").addEventListener("input", scheduleEstimate);
   el<HTMLInputElement>("#input-suffix").addEventListener("input", scheduleEstimate);
+  el<HTMLInputElement>("#input-contains").addEventListener("input", scheduleEstimate);
   el<HTMLInputElement>("#input-exact").addEventListener("change", scheduleEstimate);
   el("#btn-continue").addEventListener("click", showSummary);
   el("#btn-grind").addEventListener("click", beginGrind);

@@ -54,9 +54,10 @@ impl ChainGrinder for AptosGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         _exact: bool,
     ) -> Result<Pattern, String> {
-        build_hex_pattern(prefix, suffix, true, 64)
+        build_hex_pattern(prefix, suffix, contains, true, 64)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {

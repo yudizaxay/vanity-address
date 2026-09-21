@@ -55,9 +55,11 @@ impl ChainGrinder for MultiversXGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
-        let mut pattern = build_base58_pattern(prefix, suffix, exact, BECH32_CHARSET, 62)?;
+        let mut pattern =
+            build_base58_pattern(prefix, suffix, contains, exact, BECH32_CHARSET, 62)?;
         if pattern.has_prefix() && !pattern.prefix.starts_with("erd") {
             pattern.prefix = format!("erd1{}", pattern.prefix);
             pattern.prefix_match = if pattern.ignore_case {

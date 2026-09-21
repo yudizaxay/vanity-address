@@ -64,12 +64,14 @@ impl ChainGrinder for FilecoinGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
         let lower = |s: Option<&str>| s.map(|v| v.to_ascii_lowercase());
         let mut pattern = build_base58_pattern(
             lower(prefix).as_deref(),
             lower(suffix).as_deref(),
+            lower(contains).as_deref(),
             exact,
             BASE32_ALPHABET_LOWER,
             64,

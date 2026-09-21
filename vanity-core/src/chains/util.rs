@@ -1,5 +1,5 @@
 use crate::chain::GrindAttempt;
-use crate::pattern::{matches_both, Pattern};
+use crate::pattern::Pattern;
 use ed25519_dalek::{PublicKey, SecretKey as Ed25519SecretKey};
 use rand::rngs::OsRng;
 use rand::RngCore;
@@ -133,32 +133,43 @@ pub fn validate_chars(label: &str, pattern: &str, allowed: &str) -> Result<Strin
         return Err(format!("'{label}' cannot be empty"));
     }
     for c in pattern.chars() {
+        if c == '*' {
+            continue; // wildcard
+        }
         if !allowed.contains(c) {
-            return Err(format!("'{label}' contains '{c}' — allowed: {allowed}"));
+            return Err(format!(
+                "'{label}' contains '{c}' — allowed: {allowed} (and *)"
+            ));
         }
     }
     Ok(pattern.to_string())
 }
 
+fn literal_char_count(s: &str) -> usize {
+    s.chars().filter(|c| *c != '*').count()
+}
+
 pub fn build_base58_pattern(
     prefix: Option<&str>,
     suffix: Option<&str>,
+    contains: Option<&str>,
     exact: bool,
     allowed: &str,
     max_len: usize,
 ) -> Result<Pattern, String> {
     let prefix_raw = prefix.unwrap_or("").to_string();
     let suffix_raw = suffix.unwrap_or("").to_string();
+    let contains_raw = contains.unwrap_or("").to_string();
 
-    if prefix_raw.is_empty() && suffix_raw.is_empty() {
-        return Err("Provide at least one of --prefix or --suffix".into());
+    if prefix_raw.is_empty() && suffix_raw.is_empty() && contains_raw.is_empty() {
+        return Err("Provide at least one of --prefix, --suffix, or --contains".into());
     }
 
     let prefix = if prefix_raw.is_empty() {
         String::new()
     } else {
         let validated = validate_chars("prefix", &prefix_raw, allowed)?;
-        if validated.len() > max_len {
+        if literal_char_count(&validated) > max_len {
             return Err(format!("prefix is too long (max {max_len} characters)"));
         }
         validated
@@ -168,30 +179,49 @@ pub fn build_base58_pattern(
         String::new()
     } else {
         let validated = validate_chars("suffix", &suffix_raw, allowed)?;
-        if validated.len() > max_len {
+        if literal_char_count(&validated) > max_len {
             return Err(format!("suffix is too long (max {max_len} characters)"));
         }
         validated
     };
 
-    if !prefix.is_empty() && !suffix.is_empty() && prefix.len() + suffix.len() > max_len {
+    let contains = if contains_raw.is_empty() {
+        String::new()
+    } else {
+        let validated = validate_chars("contains", &contains_raw, allowed)?;
+        if literal_char_count(&validated) > max_len {
+            return Err(format!("contains is too long (max {max_len} characters)"));
+        }
+        validated
+    };
+
+    if !prefix.is_empty()
+        && !suffix.is_empty()
+        && literal_char_count(&prefix) + literal_char_count(&suffix) > max_len
+    {
         return Err(format!(
             "prefix + suffix length ({}) exceeds {max_len} characters",
-            prefix.len() + suffix.len()
+            literal_char_count(&prefix) + literal_char_count(&suffix)
         ));
     }
 
-    let (prefix_match, suffix_match) = if exact {
-        (prefix.clone(), suffix.clone())
+    let (prefix_match, suffix_match, contains_match) = if exact {
+        (prefix.clone(), suffix.clone(), contains.clone())
     } else {
-        (prefix.to_ascii_lowercase(), suffix.to_ascii_lowercase())
+        (
+            prefix.to_ascii_lowercase(),
+            suffix.to_ascii_lowercase(),
+            contains.to_ascii_lowercase(),
+        )
     };
 
     Ok(Pattern {
         prefix,
         suffix,
+        contains,
         prefix_match,
         suffix_match,
+        contains_match,
         ignore_case: !exact,
     })
 }
@@ -199,14 +229,16 @@ pub fn build_base58_pattern(
 pub fn build_hex_pattern(
     prefix: Option<&str>,
     suffix: Option<&str>,
+    contains: Option<&str>,
     with_0x_prefix: bool,
     max_hex_len: usize,
 ) -> Result<Pattern, String> {
     let prefix_raw = prefix.unwrap_or("").to_string();
     let suffix_raw = suffix.unwrap_or("").to_string();
+    let contains_raw = contains.unwrap_or("").to_string();
 
-    if prefix_raw.is_empty() && suffix_raw.is_empty() {
-        return Err("Provide at least one of --prefix or --suffix".into());
+    if prefix_raw.is_empty() && suffix_raw.is_empty() && contains_raw.is_empty() {
+        return Err("Provide at least one of --prefix, --suffix, or --contains".into());
     }
 
     let normalize = |label: &str, input: &str| -> Result<String, String> {
@@ -216,8 +248,13 @@ pub fn build_hex_pattern(
             return Err(format!("'{label}' cannot be empty"));
         }
         for c in normalized.chars() {
+            if c == '*' {
+                continue;
+            }
             if !c.is_ascii_hexdigit() {
-                return Err(format!("'{label}' contains '{c}' — must be hex (0-9, a-f)"));
+                return Err(format!(
+                    "'{label}' contains '{c}' — must be hex (0-9, a-f) or *"
+                ));
             }
         }
         Ok(normalized)
@@ -227,7 +264,7 @@ pub fn build_hex_pattern(
         String::new()
     } else {
         let normalized = normalize("prefix", &prefix_raw)?;
-        if normalized.len() > max_hex_len {
+        if literal_char_count(&normalized) > max_hex_len {
             return Err(format!("prefix is too long (max {max_hex_len} hex chars)"));
         }
         if with_0x_prefix {
@@ -241,40 +278,57 @@ pub fn build_hex_pattern(
         String::new()
     } else {
         let normalized = normalize("suffix", &suffix_raw)?;
-        if normalized.len() > max_hex_len {
+        if literal_char_count(&normalized) > max_hex_len {
             return Err(format!("suffix is too long (max {max_hex_len} hex chars)"));
         }
         normalized
     };
 
-    let prefix_hex_len = prefix.strip_prefix("0x").unwrap_or(&prefix).len();
-    if !prefix.is_empty() && !suffix.is_empty() && prefix_hex_len + suffix.len() > max_hex_len {
+    let contains = if contains_raw.is_empty() {
+        String::new()
+    } else {
+        let normalized = normalize("contains", &contains_raw)?;
+        if literal_char_count(&normalized) > max_hex_len {
+            return Err(format!(
+                "contains is too long (max {max_hex_len} hex chars)"
+            ));
+        }
+        normalized
+    };
+
+    let prefix_hex_len = literal_char_count(prefix.strip_prefix("0x").unwrap_or(&prefix));
+    if !prefix.is_empty()
+        && !suffix.is_empty()
+        && prefix_hex_len + literal_char_count(&suffix) > max_hex_len
+    {
         return Err(format!(
             "prefix + suffix length ({}) exceeds {max_hex_len} hex characters",
-            prefix_hex_len + suffix.len()
+            prefix_hex_len + literal_char_count(&suffix)
         ));
     }
 
     Ok(Pattern {
         prefix: prefix.clone(),
         suffix: suffix.clone(),
+        contains: contains.clone(),
         prefix_match: prefix,
         suffix_match: suffix,
+        contains_match: contains,
         ignore_case: true,
     })
 }
 
 pub fn base58_combinations(pattern: &str) -> f64 {
-    58f64.powi(pattern.len() as i32)
+    58f64.powi(literal_char_count(pattern) as i32)
 }
 
 pub fn hex_combinations(pattern: &str) -> f64 {
-    let hex_len = pattern.strip_prefix("0x").unwrap_or(pattern).len();
-    16f64.powi(hex_len as i32)
+    let hex = pattern.strip_prefix("0x").unwrap_or(pattern);
+    16f64.powi(literal_char_count(hex) as i32)
 }
 
 pub fn bech32_combinations(pattern: &str) -> f64 {
-    32f64.powi(pattern.len() as i32)
+    32f64.powi(literal_char_count(pattern) as i32)
 }
 
 pub fn base32_combinations(pattern: &str) -> f64 {
@@ -416,6 +470,10 @@ pub fn expected_from_pattern(pattern: &Pattern, per_char: impl Fn(&str) -> f64) 
     if pattern.has_suffix() {
         combos *= per_char(&pattern.suffix);
     }
+    if pattern.has_contains() {
+        // Contains is harder to estimate; treat literals like a free-floating suffix.
+        combos *= per_char(&pattern.contains);
+    }
     combos
 }
 
@@ -425,10 +483,11 @@ pub fn matches_pattern(address: &str, pattern: &Pattern, force_lower: bool) -> b
     } else {
         address.to_string()
     };
-    matches_both(
+    crate::pattern::matches_full(
         &addr,
         &pattern.prefix_match,
         &pattern.suffix_match,
+        &pattern.contains_match,
         pattern.ignore_case || force_lower,
     )
 }
