@@ -352,8 +352,22 @@
     border-radius: 12px;
     padding: 10px 12px 8px;
     box-shadow: 2px 2px 0 var(--ink);
-    transform: rotate(var(--r, 0deg));
+    opacity: 0;
+    animation: stickerDrop .45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation-play-state: paused;
+    animation-delay: var(--d, 0s);
     transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .chains-wall.in-view .sticker { animation-play-state: running; }
+  .sticker.dropped {
+    animation: none;
+    opacity: 1;
+    transform: rotate(var(--r, 0deg));
+  }
+  @keyframes stickerDrop {
+    0% { opacity: 0; transform: translateY(-70px) rotate(var(--r, 0deg)); }
+    55% { opacity: 1; }
+    100% { opacity: 1; transform: translateY(0) rotate(var(--r, 0deg)); }
   }
   .sticker:nth-child(4n) { background: #fff7e6; }
   .sticker:nth-child(4n+1) { background: #e8f5ef; }
@@ -551,6 +565,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .hero-ascii { animation: none !important; }
+    .sticker { animation: none !important; opacity: 1; transform: rotate(var(--r, 0deg)); }
   }
 </style>
 </head>
@@ -1038,9 +1053,24 @@
       var el = document.createElement("div");
       el.className = "sticker";
       el.style.setProperty("--r", ((i % 5) - 2) * 1.4 + "deg");
+      el.style.setProperty("--d", (i * 0.09) + "s");
       el.innerHTML = "<span class='cid'>" + c[0] + "</span><span class='cname'>" + c[1] + "</span>";
+      el.addEventListener("animationend", function () {
+        el.classList.add("dropped");
+      });
       grid.appendChild(el);
     });
+
+    /* drop the stickers in once the wall scrolls into view */
+    var stickerIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          grid.classList.add("in-view");
+          stickerIO.disconnect();
+        }
+      });
+    }, { threshold: 0.15 });
+    stickerIO.observe(grid);
   }
 
   /* install tabs */
