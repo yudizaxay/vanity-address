@@ -695,9 +695,9 @@ fn highlight_address(address: &str, pattern: &Pattern) -> String {
             let end = idx + needle.len();
             return format!(
                 "{}{}{}",
-                &address[..idx].bold().white().to_string(),
-                &address[idx..end].green().bold().to_string(),
-                &address[end..].bold().white().to_string()
+                address[..idx].bold().white(),
+                address[idx..end].green().bold(),
+                address[end..].bold().white()
             );
         }
     }
