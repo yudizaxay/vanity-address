@@ -65,7 +65,7 @@
     position: sticky; top: 0; z-index: 40;
     background: rgba(232, 237, 242, 0.92);
     backdrop-filter: blur(10px);
-    border-bottom: 2px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
     transition: background-color .25s ease, border-color .25s ease;
   }
   .nav.on-dark {
@@ -264,7 +264,7 @@
   }
 
   /* download tickets */
-  #download { background: var(--paper-deep); border-block: 3px solid var(--ink); }
+  #download { background: var(--paper-deep); }
   .platform-row {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
   }
@@ -370,7 +370,7 @@
   .sticker .cname { font-weight: 700; font-size: 0.92rem; }
 
   /* install */
-  #install { background: var(--white); border-block: 3px solid var(--ink); }
+  #install { background: var(--white); }
   .tabs {
     display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
   }
@@ -438,7 +438,7 @@
   .final .hero-ctas { justify-content: center; }
 
   footer.site-footer {
-    border-top: 3px solid var(--ink);
+    border-top: 1px solid var(--ink);
     padding: 22px 0;
     background: var(--paper-deep);
   }
@@ -535,6 +535,18 @@
 
   @media (max-width: 900px) and (max-height: 680px) {
     .hero-ctas .btn { padding: 10px 14px; }
+  }
+
+  /* short desktop windows too (not just narrow/mobile ones) — a wide
+     but vertically cramped Chrome window shouldn't force huge min-heights */
+  @media (min-width: 901px) and (max-height: 760px) {
+    .hero-splash { min-height: 0; }
+    .hero-splash-inner { padding: 20px 28px; }
+    .hero-ascii-wrap { min-height: min(50vh, 380px); }
+    .hero-ctas { margin-top: 18px; }
+  }
+  @media (min-width: 901px) and (max-height: 560px) {
+    .hero-ascii-wrap { min-height: min(42vh, 260px); }
   }
 
   @media (prefers-reduced-motion: reduce) {
