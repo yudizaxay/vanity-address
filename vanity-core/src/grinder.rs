@@ -57,20 +57,6 @@ pub fn benchmark<G: ChainGrinder>(
     Ok(counter.load(Ordering::Relaxed) as f64 / elapsed)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::SolanaGrinder;
-
-    #[test]
-    fn benchmark_returns_positive_rate() {
-        let grinder = SolanaGrinder;
-        let profile = SystemProfile::detect().with_threads(2);
-        let rate = benchmark(grinder, &profile, 0.5).expect("benchmark");
-        assert!(rate > 1_000.0, "expected at least 1k keys/sec, got {rate}");
-    }
-}
-
 pub fn grind<G: ChainGrinder>(
     grinder: G,
     pattern: Pattern,
@@ -174,4 +160,18 @@ pub fn grind_n<G: ChainGrinder + Clone>(
         return Err("cancelled".into());
     }
     Ok(results)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::SolanaGrinder;
+
+    #[test]
+    fn benchmark_returns_positive_rate() {
+        let grinder = SolanaGrinder;
+        let profile = SystemProfile::detect().with_threads(2);
+        let rate = benchmark(grinder, &profile, 0.5).expect("benchmark");
+        assert!(rate > 1_000.0, "expected at least 1k keys/sec, got {rate}");
+    }
 }

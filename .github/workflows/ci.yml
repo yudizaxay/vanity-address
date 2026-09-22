@@ -44,7 +44,7 @@ jobs:
         run: cargo test -p vanity-core -p vanity-address
 
       - name: Clippy
-        run: cargo clippy -p vanity-core -p vanity-address -- -D warnings
+        run: cargo clippy -p vanity-core -p vanity-address --all-targets -- -D warnings
 
   # vanity-app (Tauri) — validate on macOS + Windows (Linux needs WebKit/GTK)
   desktop:
@@ -98,7 +98,7 @@ jobs:
         run: cargo test -p vanity-app
 
       - name: Clippy
-        run: cargo clippy -p vanity-app -- -D warnings
+        run: cargo clippy -p vanity-app --all-targets -- -D warnings
 
   # vanity-wasm + the npm package's programmatic SDK (generateAddress()).
   # Linux is used because Ubuntu's clang ships the WebAssembly LLVM target by

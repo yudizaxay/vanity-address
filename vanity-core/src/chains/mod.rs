@@ -253,71 +253,6 @@ impl Chain {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::Chain;
-    use crate::chain::ChainGrinder;
-
-    #[test]
-    fn all_menu_chains_resolve_and_grind() {
-        assert_eq!(super::MENU_CHAINS.len(), 31);
-        assert_eq!(Chain::all_ids().len(), 31);
-        for (i, (id, _)) in super::MENU_CHAINS.iter().enumerate() {
-            let chain = Chain::from_menu_index(i).expect("menu index");
-            assert_eq!(chain.id(), *id);
-            let via_id = Chain::from_id(id).expect("from_id");
-            assert_eq!(via_id.id(), *id);
-            let (addr, attempt) = chain.grind_attempt();
-            assert!(!addr.is_empty(), "{id} empty address");
-            let finalized = chain.finalize(attempt);
-            assert_eq!(finalized.address, addr, "{id} finalize mismatch");
-            assert!(!finalized.exports.is_empty(), "{id} missing exports");
-        }
-    }
-
-    #[test]
-    fn from_menu_index_matches_menu_chains_order() {
-        for (i, (id, _)) in super::MENU_CHAINS.iter().enumerate() {
-            let chain = Chain::from_menu_index(i).expect("menu index");
-            assert_eq!(
-                chain.id(),
-                *id,
-                "from_menu_index({i}) misaligned with MENU_CHAINS"
-            );
-        }
-        assert!(Chain::from_menu_index(super::MENU_CHAINS.len()).is_none());
-    }
-
-    #[test]
-    fn menu_chains_sorted_a_to_z_by_label() {
-        let labels: Vec<&str> = super::MENU_CHAINS.iter().map(|(_, label)| *label).collect();
-        let mut sorted = labels.clone();
-        sorted.sort_by(|a, b| a.to_ascii_lowercase().cmp(&b.to_ascii_lowercase()));
-        assert_eq!(labels, sorted, "MENU_CHAINS must stay A–Z by display name");
-        for (i, (id, _)) in super::MENU_CHAINS.iter().enumerate() {
-            assert_eq!(Chain::all_ids()[i], *id);
-        }
-    }
-
-    #[test]
-    fn evm_trending_aliases_resolve() {
-        for id in [
-            "robinhood",
-            "hood",
-            "base",
-            "arb",
-            "optimism",
-            "polygon",
-            "avax",
-            "bnb",
-            "monad",
-        ] {
-            let c = Chain::from_id(id).unwrap_or_else(|e| panic!("{id}: {e}"));
-            assert_eq!(c.id(), "evm");
-        }
-    }
-}
-
 macro_rules! dispatch {
     ($self:expr, $method:ident ( $($arg:expr),* $(,)? )) => {
         match $self {
@@ -398,5 +333,70 @@ impl ChainGrinder for Chain {
 
     fn pattern_hint(&self) -> &'static str {
         dispatch!(self, pattern_hint())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Chain;
+    use crate::chain::ChainGrinder;
+
+    #[test]
+    fn all_menu_chains_resolve_and_grind() {
+        assert_eq!(super::MENU_CHAINS.len(), 31);
+        assert_eq!(Chain::all_ids().len(), 31);
+        for (i, (id, _)) in super::MENU_CHAINS.iter().enumerate() {
+            let chain = Chain::from_menu_index(i).expect("menu index");
+            assert_eq!(chain.id(), *id);
+            let via_id = Chain::from_id(id).expect("from_id");
+            assert_eq!(via_id.id(), *id);
+            let (addr, attempt) = chain.grind_attempt();
+            assert!(!addr.is_empty(), "{id} empty address");
+            let finalized = chain.finalize(attempt);
+            assert_eq!(finalized.address, addr, "{id} finalize mismatch");
+            assert!(!finalized.exports.is_empty(), "{id} missing exports");
+        }
+    }
+
+    #[test]
+    fn from_menu_index_matches_menu_chains_order() {
+        for (i, (id, _)) in super::MENU_CHAINS.iter().enumerate() {
+            let chain = Chain::from_menu_index(i).expect("menu index");
+            assert_eq!(
+                chain.id(),
+                *id,
+                "from_menu_index({i}) misaligned with MENU_CHAINS"
+            );
+        }
+        assert!(Chain::from_menu_index(super::MENU_CHAINS.len()).is_none());
+    }
+
+    #[test]
+    fn menu_chains_sorted_a_to_z_by_label() {
+        let labels: Vec<&str> = super::MENU_CHAINS.iter().map(|(_, label)| *label).collect();
+        let mut sorted = labels.clone();
+        sorted.sort_by_key(|a| a.to_ascii_lowercase());
+        assert_eq!(labels, sorted, "MENU_CHAINS must stay A–Z by display name");
+        for (i, (id, _)) in super::MENU_CHAINS.iter().enumerate() {
+            assert_eq!(Chain::all_ids()[i], *id);
+        }
+    }
+
+    #[test]
+    fn evm_trending_aliases_resolve() {
+        for id in [
+            "robinhood",
+            "hood",
+            "base",
+            "arb",
+            "optimism",
+            "polygon",
+            "avax",
+            "bnb",
+            "monad",
+        ] {
+            let c = Chain::from_id(id).unwrap_or_else(|e| panic!("{id}: {e}"));
+            assert_eq!(c.id(), "evm");
+        }
     }
 }

@@ -52,7 +52,14 @@ test("supports cancellation via AbortSignal", async () => {
 
 test("estimateDifficulty / listChains / validatePattern helpers", () => {
   const { estimateDifficulty, listChains, validatePattern, isValidChain } = require("../src/index.js");
-  assert.equal(listChains().length, 25);
+  const chains = listChains();
+  assert.ok(chains.length >= 25, `expected >= 25 chains, got ${chains.length}`);
+  const ids = new Set(chains.map((c) => c.id));
+  // Fresh 0.6.0 wasm includes trending chains; stale local artifacts may still be 25.
+  if (ids.has("sei")) {
+    assert.equal(chains.length, 31);
+    assert.ok(ids.has("btc-segwit") && ids.has("btc-taproot") && ids.has("inj"));
+  }
   assert.equal(isValidChain("eth"), true);
   assert.equal(isValidChain("nope"), false);
   const est = estimateDifficulty({ chain: "evm", prefix: "ab" });
