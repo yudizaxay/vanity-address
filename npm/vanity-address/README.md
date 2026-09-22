@@ -4,7 +4,7 @@
 
 # vanity-address
 
-**Generate custom crypto wallet addresses that start or end with YOUR word — Solana, Ethereum, Bitcoin + 22 more chains.**
+**Generate custom crypto wallet addresses that start, end, or contain YOUR word — Solana, Ethereum, Bitcoin SegWit/Taproot + 28 more chains.**
 
 [![npm](https://img.shields.io/npm/v/vanity-address?style=flat-square&logo=npm&color=cb3837)](https://www.npmjs.com/package/vanity-address)
 [![downloads](https://img.shields.io/npm/dm/vanity-address?style=flat-square&color=blue)](https://www.npmjs.com/package/vanity-address)
@@ -108,20 +108,25 @@ Example output:
 
 ---
 
-## Supported chains (25)
+## Supported chains (31)
 
 | Chain | `--chain` | Address style | Works with |
 | ----- | --------- | ------------- | ---------- |
 | Algorand | `algo` | base32 | Pera, Defly |
 | Aptos | `aptos` | `0x` hex | Petra |
 | Bitcoin | `btc` | base58 (P2PKH) | Electrum, Sparrow |
+| Bitcoin SegWit | `btc-segwit` | `bc1q…` | Sparrow, Electrum |
+| Bitcoin Taproot | `btc-taproot` | `bc1p…` | Sparrow |
 | Cardano | `ada` | `addr1…` enterprise | — |
+| Celestia | `tia` | bech32 (`celestia1…`) | Keplr |
 | Cosmos | `cosmos` | bech32 (`cosmos1…`) | Keplr |
 | Dash | `dash` | base58 (P2PKH `X…`) | Dash Core |
 | Dogecoin | `doge` | base58 | — |
-| Ethereum + all EVM | `evm` | `0x` hex | MetaMask, Rabby |
+| dYdX | `dydx` | bech32 | — |
+| Ethereum + all EVM | `evm` | `0x` hex | MetaMask, Rabby, Base, Robinhood… |
 | Filecoin | `fil` | `f1…` | Lotus, Glif |
 | Hedera | `hedera` | ed25519 pubkey hex | HashPack (0.0.N on-chain) |
+| Injective | `inj` | bech32 (`inj1…`) | Keplr |
 | Internet Computer | `icp` | principal | dfx / NNS |
 | Kaspa | `kaspa` | `kaspa:…` | Kaspium |
 | Kusama | `ksm` | SS58 ed25519 | Polkadot.js |
@@ -131,6 +136,7 @@ Example output:
 | Osmosis | `osmo` | bech32 (`osmo1…`) | Keplr |
 | Polkadot | `dot` | SS58 ed25519 | Polkadot.js |
 | Ripple | `xrp` | base58 (`r…`) | — |
+| Sei | `sei` | bech32 (`sei1…`) | Compass |
 | Solana | `sol` | base58 | Phantom, Solflare |
 | Stellar | `xlm` | strkey (`G…`) | — |
 | Sui | `sui` | `0x` hex | Sui Wallet |
@@ -145,8 +151,10 @@ Example output:
 | Flag | What it does | 
 | ---- | ------------ |
 | `--chain <ID>` | Which blockchain (see table above) |
-| `--prefix <WORD>` | Address must **start** with this |
-| `--suffix <WORD>` | Address must **end** with this |
+| `--prefix <WORD>` | Address must **start** with this (`*` OK) |
+| `--suffix <WORD>` | Address must **end** with this (`*` OK) |
+| `--contains <WORD>` | Address must **contain** this (`*` OK) |
+| `--count <N>` | Find N matches |
 | `--exact` | Match upper/lowercase exactly |
 | `--save` | Save keys to `vanity-results.txt` |
 | `--output <PATH>` | Custom file for saved keys |

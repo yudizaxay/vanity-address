@@ -14,7 +14,7 @@ vanity-address
 
 ```
 ╔══════════════════════════════════════════╗
-║         vanity-address  v0.5.0           ║
+║         vanity-address  v0.6.0           ║
 ╚══════════════════════════════════════════╝
 
   [1]  Start a new grind
@@ -24,7 +24,7 @@ vanity-address
   Choose option [1-3]:
 ```
 
-The wizard walks you through: **chain → prefix/suffix → pattern → estimate → confirm → grind**.
+The wizard walks you through: **chain → match kind → pattern → estimate → confirm → grind**.
 
 ---
 
@@ -33,6 +33,12 @@ The wizard walks you through: **chain → prefix/suffix → pattern → estimate
 ```bash
 vanity-address --chain sol --suffix axay
 vanity-address --chain evm --prefix dead --suffix beef -q
+vanity-address --chain sol --contains pump
+vanity-address --chain sol --suffix moon,pump,dao --count 3
+vanity-address --chain btc-segwit --suffix cafe
+vanity-address --chain robinhood --suffix dead
+vanity-address verify --chain evm --address 0x… --key 0x…
+vanity-address --create2 --deployer 0x… --init-code-hash 0x… --prefix cafe
 ```
 
 ---
@@ -95,7 +101,9 @@ $ vanity-address --chain evm --prefix dead --suffix beef
 
 Use `--chain` with any supported ID:
 
-`ada`, `algo`, `aptos`, `btc`, `cosmos`, `dash`, `doge`, `dot`, `erd`, `evm`, `fil`, `hedera`, `icp`, `kaspa`, `ksm`, `ltc`, `near`, `osmo`, `sol`, `sui`, `ton`, `trx`, `xlm`, `xrp`, `xtz`
+`ada`, `algo`, `aptos`, `btc`, `btc-segwit`, `btc-taproot`, `cosmos`, `dash`, `doge`, `dot`, `dydx`, `erd`, `evm`, `fil`, `hedera`, `icp`, `inj`, `kaspa`, `ksm`, `ltc`, `near`, `osmo`, `sei`, `sol`, `sui`, `tia`, `ton`, `trx`, `xlm`, `xrp`, `xtz`
+
+EVM aliases (same math as `evm`): `base`, `arb`, `op`, `polygon`, `robinhood`, …
 
 ---
 
@@ -111,7 +119,7 @@ Example success payload:
 
 ```json
 {
-  "version": "0.5.0",
+  "version": "0.6.0",
   "chain": "sol",
   "chain_name": "Solana",
   "pattern": {
@@ -137,10 +145,15 @@ Combine with `--save` / `--output` to persist keys; `saved_to` is included in th
 
 | Flag                 | Description                                        | Default |
 | -------------------- | -------------------------------------------------- | ------- |
-| `--chain <ID>`       | Blockchain (see [chain examples](#other-chains))   | `sol`   |
-| `--prefix <PATTERN>` | Address must start with pattern                    | —       |
-| `--suffix <PATTERN>` | Address must end with pattern                      | —       |
+| `--chain <ID>`       | Blockchain or alias (`robinhood`, `base`, …)       | `sol`   |
+| `--prefix <PATTERN>` | Address must start with pattern (`*` OK)           | —       |
+| `--suffix <PATTERN>` | Address must end with pattern (`*` OK; comma = OR) | —       |
+| `--contains <PAT>`   | Substring anywhere (`*` wildcards OK)              | —       |
+| `--count <N>`        | Find N matches                                     | `1`     |
 | `--exact`            | Exact casing (base58 chains)                       | off     |
+| `--create2`          | EVM CREATE2 salt grind (needs deployer + hash)     | off     |
+| `--deployer <HEX>`   | CREATE2 deployer (20 bytes)                        | —       |
+| `--init-code-hash`   | CREATE2 init code hash (32 bytes)                  | —       |
 | `--save`             | Append match (incl. private keys) to file          | off     |
 | `--output <PATH>`    | Custom save file (with `--save` or interactive)    | `vanity-results.txt` |
 | `--no-benchmark`     | Skip 2s speed calibration warm-up                  | off     |
@@ -148,17 +161,19 @@ Combine with `--save` / `--output` to persist keys; `saved_to` is included in th
 | `--json`             | Machine-readable JSON on stdout (direct mode)      | off     |
 | `-q, --quiet`        | Minimal plain-text output (script-friendly)        | off     |
 | `--threads <N>`      | Override worker threads                            | auto    |
+| `verify`             | Subcommand: check key derives address              | —       |
 | `-h, --help`         | Show help                                          | —       |
 | `-V, --version`      | Show version                                       | —       |
 
 ### Pattern rules
 
-- **Base58 chains** (Solana, Bitcoin, Litecoin, Dogecoin, Dash, Tron, Ripple, Stellar, Tezos, Polkadot, Kusama): no `0`, `O`, `I`, `l` (where applicable); Ripple uses its own alphabet
-- **Bech32** (Cosmos, Osmosis, Kaspa, Cardano, MultiversX): charset `qpzry9x8gf2tvdw0s3jn54khce6mua7l` (Kaspa uses `kaspa:` separator; Cardano `addr1…`; MultiversX `erd1…`)
+- **Contains / wildcards:** `--contains cafe` or `Cool*xyz` — `*` = any chars
+- **Multi-pattern OR:** `--suffix moon,pump,dao` (comma only in one of prefix/suffix/contains)
+- **Base58 chains** (Solana, Bitcoin P2PKH, Litecoin, Dogecoin, Dash, Tron, Ripple, Stellar, Tezos, Polkadot, Kusama): no `0`, `O`, `I`, `l` (where applicable); Ripple uses its own alphabet
+- **Bech32** (Cosmos, Osmosis, Sei, Injective, Celestia, dYdX, Kaspa, Cardano, MultiversX, BTC SegWit/Taproot): charset `qpzry9x8gf2tvdw0s3jn54khce6mua7l`
 - **Base32** (Algorand, Filecoin, ICP): Algorand uppercase; Filecoin `f1…`; ICP principals (dashes optional in pattern)
 - **Base64url** (TON): `UQ…` Wallet V4R2 non-bounceable
-- **Hex chains** (EVM, Aptos, Sui, NEAR, Hedera pubkey): `0-9`, `a-f`; EVM/Aptos/Sui accept optional `0x` prefix
-
+- **Hex chains** (EVM + aliases, Aptos, Sui, NEAR, Hedera pubkey, CREATE2): `0-9`, `a-f`; optional `0x`
 ---
 
 ## Performance

@@ -22,12 +22,14 @@ enum MatchKind {
     Suffix,
     Prefix,
     Both,
+    Contains,
 }
 
 pub struct InteractiveConfig {
     pub chain: Chain,
     pub prefix: Option<String>,
     pub suffix: Option<String>,
+    pub contains: Option<String>,
     pub exact: bool,
 }
 
@@ -77,6 +79,7 @@ fn run_wizard() -> Option<InteractiveConfig> {
     let mut match_kind = MatchKind::Suffix;
     let mut prefix: Option<String> = None;
     let mut suffix: Option<String> = None;
+    let mut contains: Option<String> = None;
     let mut exact = false;
 
     loop {
@@ -95,7 +98,7 @@ fn run_wizard() -> Option<InteractiveConfig> {
                     println!();
                     println!(
                         "  {}",
-                        "Tip: [10–13] type both digits within 2s · [1] then Enter for Solana"
+                        "Tip: type both digits for 10+ (e.g. 25) within 2s · Esc to go back"
                             .dimmed()
                     );
                 }
@@ -116,15 +119,16 @@ fn run_wizard() -> Option<InteractiveConfig> {
 
             WizardStep::MatchKind => {
                 banner::print_compact();
-                println!("{}", "── Step 2/4 · Prefix or suffix? ──".bold().cyan());
+                println!("{}", "── Step 2/4 · How to match? ──".bold().cyan());
                 println!();
-                println!("  {}  Suffix  — address ends with...", "[1]".green());
-                println!("  {}  Prefix  — address starts with...", "[2]".green());
-                println!("  {}  Both    — prefix + suffix", "[3]".green());
+                println!("  {}  Suffix   — address ends with…", "[1]".green());
+                println!("  {}  Prefix   — address starts with…", "[2]".green());
+                println!("  {}  Both     — prefix + suffix", "[3]".green());
+                println!("  {}  Contains — anywhere (wildcards OK)", "[4]".green());
                 println!("  {}  Back", "[0]".dimmed());
                 println!();
 
-                match read_menu_choice("  Press [0-3]: ", 1, 3, true) {
+                match read_menu_choice("  Press [0-4]: ", 1, 4, true) {
                     MenuChoice::Back => step = WizardStep::Chain,
                     MenuChoice::Selected(1) => {
                         match_kind = MatchKind::Suffix;
@@ -138,6 +142,10 @@ fn run_wizard() -> Option<InteractiveConfig> {
                         match_kind = MatchKind::Both;
                         step = WizardStep::Pattern;
                     }
+                    MenuChoice::Selected(4) => {
+                        match_kind = MatchKind::Contains;
+                        step = WizardStep::Pattern;
+                    }
                     _ => {}
                 }
             }
@@ -148,6 +156,7 @@ fn run_wizard() -> Option<InteractiveConfig> {
                     MatchKind::Suffix => "Enter suffix text",
                     MatchKind::Prefix => "Enter prefix text",
                     MatchKind::Both => "Enter prefix & suffix",
+                    MatchKind::Contains => "Enter contains text (* wildcards OK)",
                 };
 
                 println!("{}", format!("── Step 3/4 · {label} ──").bold().cyan());
@@ -170,6 +179,7 @@ fn run_wizard() -> Option<InteractiveConfig> {
                         Some(text) => {
                             prefix = None;
                             suffix = Some(text);
+                            contains = None;
                             true
                         }
                     },
@@ -185,6 +195,7 @@ fn run_wizard() -> Option<InteractiveConfig> {
                         Some(text) => {
                             prefix = Some(text);
                             suffix = None;
+                            contains = None;
                             true
                         }
                     },
@@ -209,8 +220,25 @@ fn run_wizard() -> Option<InteractiveConfig> {
                         }
                         prefix = Some(pre);
                         suffix = Some(suf);
+                        contains = None;
                         true
                     }
+                    MatchKind::Contains => match read_line_with_escape("  Contains: ") {
+                        None => {
+                            step = back_step;
+                            continue;
+                        }
+                        Some(text) if text.is_empty() => {
+                            show_error("Contains cannot be empty.");
+                            continue;
+                        }
+                        Some(text) => {
+                            prefix = None;
+                            suffix = None;
+                            contains = Some(text);
+                            true
+                        }
+                    },
                 };
 
                 if input_ok {
@@ -247,8 +275,12 @@ fn run_wizard() -> Option<InteractiveConfig> {
             }
 
             WizardStep::Summary => {
-                let pattern = match chain.build_pattern(prefix.as_deref(), suffix.as_deref(), exact)
-                {
+                let pattern = match chain.build_pattern(
+                    prefix.as_deref(),
+                    suffix.as_deref(),
+                    contains.as_deref(),
+                    exact,
+                ) {
                     Ok(p) => p,
                     Err(e) => {
                         show_error(&e);
@@ -299,6 +331,7 @@ fn run_wizard() -> Option<InteractiveConfig> {
                         chain,
                         prefix,
                         suffix,
+                        contains,
                         exact,
                     });
                 }
@@ -320,12 +353,21 @@ fn show_help() {
     println!();
     println!("  {}", "What is vanity-address?".bold());
     println!("  Generates wallet addresses matching a custom");
-    println!("  prefix or suffix — e.g. ending in 'axay'.");
+    println!("  prefix, suffix, or contains pattern — e.g. ending");
+    println!("  in 'axay', or containing 'pump'.");
+    println!();
+    println!("  {}", "Pattern power".bold());
+    println!("  • Contains — match anywhere in the address");
+    println!("  • Wildcards — use *  (e.g. Cool*xyz, p*p)");
+    println!("  • OR list — comma in one field (moon,pump,dao)");
     println!();
     println!("  {}", "Chains".bold());
     for (id, label) in MENU_CHAINS {
         println!("  • {id} — {label}");
     }
+    println!();
+    println!("  {}", "Aliases".bold());
+    println!("  • EVM: robinhood, base, arb, optimism, polygon, avax, bnb, …");
     println!();
     println!("  {}", "Security".bold().red());
     println!("  • 100% local · no internet");
@@ -424,7 +466,7 @@ fn print_summary(
 
     warnings::print_pattern_warnings(estimate);
 
-    if pattern.has_suffix() || pattern.has_prefix() {
+    if pattern.has_suffix() || pattern.has_prefix() || pattern.has_contains() {
         println!();
         print_length_guide(chain.id(), estimate.pattern_chars);
     }

@@ -41,10 +41,10 @@ test-app:
 clippy: clippy-cli clippy-app
 
 clippy-cli:
-	$(CARGO) clippy -p vanity-core -p vanity-address -- -D warnings
+	$(CARGO) clippy -p vanity-core -p vanity-address --all-targets -- -D warnings
 
 clippy-app:
-	$(CARGO) clippy -p vanity-app -- -D warnings
+	$(CARGO) clippy -p vanity-app --all-targets -- -D warnings
 
 build:
 	$(CARGO) build --release -p vanity-address

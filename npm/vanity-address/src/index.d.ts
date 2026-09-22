@@ -2,13 +2,18 @@ export type ChainId =
   | "algo"
   | "aptos"
   | "btc"
+  | "btc-segwit"
+  | "btc-taproot"
   | "ada"
+  | "tia"
   | "cosmos"
   | "dash"
   | "doge"
+  | "dydx"
   | "evm"
   | "fil"
   | "hedera"
+  | "inj"
   | "icp"
   | "kaspa"
   | "ksm"
@@ -18,6 +23,7 @@ export type ChainId =
   | "osmo"
   | "dot"
   | "xrp"
+  | "sei"
   | "sol"
   | "xlm"
   | "sui"
@@ -29,6 +35,8 @@ export interface GenerateAddressOptions {
   chain: ChainId | string;
   prefix?: string;
   suffix?: string;
+  /** Substring anywhere; `*` wildcards OK. Comma = OR alternatives. */
+  contains?: string;
   caseSensitive?: boolean;
   /** Called as (attempts, info) — first arg stays a number for backward compatibility. */
   onProgress?: (attempts: number, info: ProgressInfo) => void;

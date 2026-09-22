@@ -94,6 +94,7 @@ class WorkerPool {
         chain: opts.chain,
         prefix: opts.prefix,
         suffix: opts.suffix,
+        contains: opts.contains || "",
         ignoreCase: !opts.caseSensitive,
         chunkSize,
       };

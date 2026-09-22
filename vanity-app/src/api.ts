@@ -34,6 +34,7 @@ export interface EstimateResult {
   length_guide: string | null;
   prefix_match: string;
   suffix_match: string;
+  contains_match: string;
   ignore_case: boolean;
 }
 
@@ -64,6 +65,7 @@ export interface DonePayload {
   case_mode: string;
   prefix_match: string;
   suffix_match: string;
+  contains_match: string;
   ignore_case: boolean;
 }
 
@@ -84,8 +86,9 @@ export function estimate(
   prefix: string,
   suffix: string,
   exact: boolean,
+  contains = "",
 ): Promise<EstimateResult> {
-  return invoke("estimate", { chain, prefix, suffix, exact });
+  return invoke("estimate", { chain, prefix, suffix, exact, contains });
 }
 
 export function startGrind(
@@ -94,8 +97,9 @@ export function startGrind(
   suffix: string,
   exact: boolean,
   force = false,
+  contains = "",
 ): Promise<void> {
-  return invoke("start_grind", { chain, prefix, suffix, exact, force });
+  return invoke("start_grind", { chain, prefix, suffix, exact, force, contains });
 }
 
 export function stopGrind(): Promise<void> {

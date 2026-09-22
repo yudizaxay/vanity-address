@@ -51,14 +51,16 @@ autocomplete (`"sol" | "evm" | …`).
 ```ts
 interface GenerateAddressOptions {
   chain: string;              // required — see Supported chains
-  prefix?: string;            // at least one of prefix/suffix required
+  prefix?: string;            // at least one of prefix/suffix/contains required
   suffix?: string;
+  contains?: string;          // substring anywhere; `*` wildcards OK
   caseSensitive?: boolean;    // default: false
   onProgress?: (attempts: number, info: ProgressInfo) => void;
   signal?: AbortSignal;
   timeoutMs?: number;         // rejects with TimeoutError
   workers?: number;           // Node: default = CPU count; set 1 to disable pool
   keysPerSec?: number;        // override ETA heuristic
+  count?: number;             // generateAddresses batch size
 }
 
 interface ProgressInfo {
@@ -149,23 +151,27 @@ await generateAddress({
 
 ## Supported chains
 
-All **25** chains — same ids as the CLI `--chain` flag:
+All **31** chains — same ids as the CLI `--chain` flag:
 
 | id | chain | id | chain |
 |---|---|---|---|
-| `algo` | Algorand | `ltc` | Litecoin |
-| `aptos` | Aptos | `erd` | MultiversX |
-| `btc` | Bitcoin | `near` | NEAR |
-| `ada` | Cardano | `osmo` | Osmosis |
-| `cosmos` | Cosmos | `dot` | Polkadot |
-| `dash` | Dash | `xrp` | Ripple |
-| `doge` | Dogecoin | `sol` | Solana |
-| `evm` | EVM (Ethereum, etc.) | `xlm` | Stellar |
-| `fil` | Filecoin | `sui` | Sui |
-| `hedera` | Hedera | `xtz` | Tezos |
-| `icp` | Internet Computer | `ton` | TON |
-| `kaspa` | Kaspa | `trx` | Tron |
-| `ksm` | Kusama | | |
+| `algo` | Algorand | `ksm` | Kusama |
+| `aptos` | Aptos | `ltc` | Litecoin |
+| `btc` | Bitcoin (P2PKH) | `erd` | MultiversX |
+| `btc-segwit` | Bitcoin SegWit (`bc1q`) | `near` | NEAR |
+| `btc-taproot` | Bitcoin Taproot (`bc1p`) | `osmo` | Osmosis |
+| `ada` | Cardano | `dot` | Polkadot |
+| `tia` | Celestia | `xrp` | Ripple |
+| `cosmos` | Cosmos | `sei` | Sei |
+| `dash` | Dash | `sol` | Solana |
+| `doge` | Dogecoin | `xlm` | Stellar |
+| `dydx` | dYdX | `sui` | Sui |
+| `evm` | EVM (+ Base, Robinhood, …) | `xtz` | Tezos |
+| `fil` | Filecoin | `ton` | TON |
+| `hedera` | Hedera | `trx` | Tron |
+| `inj` | Injective | | |
+| `icp` | Internet Computer | | |
+| `kaspa` | Kaspa | | |
 
 ---
 

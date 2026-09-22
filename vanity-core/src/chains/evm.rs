@@ -51,12 +51,12 @@ impl ChainGrinder for EvmGrinder {
                 KeyExport {
                     label: "Private Key (hex)".into(),
                     value: hex::encode(secret_bytes),
-                    hint: Some("MetaMask / hardware wallet import".into()),
+                    hint: Some("MetaMask → Import account → Private key".into()),
                 },
                 KeyExport {
                     label: "Private Key (0x hex)".into(),
                     value: format!("0x{}", hex::encode(secret_bytes)),
-                    hint: Some("Standard EVM tooling format".into()),
+                    hint: Some("ethers.js / viem / Foundry / Hardhat".into()),
                 },
             ],
         }
@@ -66,9 +66,10 @@ impl ChainGrinder for EvmGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         _exact: bool,
     ) -> Result<Pattern, String> {
-        build_hex_pattern(prefix, suffix, true, 40)
+        build_hex_pattern(prefix, suffix, contains, true, 40)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {
@@ -96,7 +97,9 @@ mod tests {
     #[test]
     fn evm_prefix_normalizes_0x() {
         let g = EvmGrinder;
-        let p = g.build_pattern(Some("dead"), Some("beef"), false).unwrap();
+        let p = g
+            .build_pattern(Some("dead"), Some("beef"), None, false)
+            .unwrap();
         assert_eq!(p.prefix_match, "0xdead");
         assert_eq!(p.suffix_match, "beef");
     }
@@ -104,13 +107,15 @@ mod tests {
     #[test]
     fn evm_rejects_invalid_hex() {
         let g = EvmGrinder;
-        assert!(g.build_pattern(Some("zzzz"), None, false).is_err());
+        assert!(g.build_pattern(Some("zzzz"), None, None, false).is_err());
     }
 
     #[test]
     fn evm_matches_address() {
         let g = EvmGrinder;
-        let p = g.build_pattern(Some("dead"), Some("beef"), false).unwrap();
+        let p = g
+            .build_pattern(Some("dead"), Some("beef"), None, false)
+            .unwrap();
         assert!(g.matches("0xdead000000000000000000000000000000beef", &p));
         assert!(!g.matches("0xbeef000000000000000000000000000000dead", &p));
     }

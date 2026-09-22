@@ -44,11 +44,7 @@ pub struct GrindEstimate {
 }
 
 pub fn effective_pattern_chars(pattern: &Pattern) -> usize {
-    let prefix = pattern
-        .prefix_match
-        .strip_prefix("0x")
-        .unwrap_or(&pattern.prefix_match);
-    prefix.len() + pattern.suffix_match.len()
+    pattern.effective_literal_chars()
 }
 
 pub fn format_attempts(n: f64) -> String {
@@ -128,8 +124,10 @@ mod tests {
         Pattern {
             prefix: String::new(),
             suffix: suffix.to_string(),
+            contains: String::new(),
             prefix_match: String::new(),
             suffix_match: suffix.to_ascii_lowercase(),
+            contains_match: String::new(),
             ignore_case: true,
         }
     }

@@ -55,12 +55,14 @@ impl ChainGrinder for AlgorandGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
         let upper = |s: Option<&str>| s.map(|v| v.to_ascii_uppercase());
         build_base58_pattern(
             upper(prefix).as_deref(),
             upper(suffix).as_deref(),
+            upper(contains).as_deref(),
             exact,
             BASE32_ALPHABET,
             58,

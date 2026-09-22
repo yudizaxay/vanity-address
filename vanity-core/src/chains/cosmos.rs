@@ -32,6 +32,38 @@ impl CosmosGrinder {
         }
     }
 
+    pub fn sei() -> Self {
+        Self {
+            id: "sei",
+            display_name: "Sei",
+            hrp: "sei",
+        }
+    }
+
+    pub fn injective() -> Self {
+        Self {
+            id: "inj",
+            display_name: "Injective (INJ)",
+            hrp: "inj",
+        }
+    }
+
+    pub fn celestia() -> Self {
+        Self {
+            id: "tia",
+            display_name: "Celestia (TIA)",
+            hrp: "celestia",
+        }
+    }
+
+    pub fn dydx() -> Self {
+        Self {
+            id: "dydx",
+            display_name: "dYdX",
+            hrp: "dydx",
+        }
+    }
+
     fn derive(&self, secret: &SecretKey) -> String {
         let secp = secp256k1::Secp256k1::new();
         let pubkey = secret.public_key(&secp).serialize();
@@ -73,9 +105,11 @@ impl ChainGrinder for CosmosGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
-        let mut pattern = build_base58_pattern(prefix, suffix, exact, BECH32_CHARSET, 38)?;
+        let mut pattern =
+            build_base58_pattern(prefix, suffix, contains, exact, BECH32_CHARSET, 38)?;
         // Match on the data portion after hrp + "1"
         let hrp_prefix = format!("{}1", self.hrp);
         if pattern.has_prefix() && !pattern.prefix.starts_with(&hrp_prefix) {

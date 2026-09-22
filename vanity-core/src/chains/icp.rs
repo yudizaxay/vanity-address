@@ -69,6 +69,7 @@ impl ChainGrinder for IcpGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         _exact: bool,
     ) -> Result<Pattern, String> {
         let normalize = |s: Option<&str>| {
@@ -81,9 +82,11 @@ impl ChainGrinder for IcpGrinder {
         };
         let prefix_n = normalize(prefix);
         let suffix_n = normalize(suffix);
+        let contains_n = normalize(contains);
         build_base58_pattern(
             prefix_n.as_deref(),
             suffix_n.as_deref(),
+            contains_n.as_deref(),
             false,
             BASE32_ALPHABET_LOWER,
             63,

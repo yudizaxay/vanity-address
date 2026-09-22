@@ -33,6 +33,7 @@ pub trait ChainGrinder: Send + Sync + Clone {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String>;
     fn expected_attempts(&self, pattern: &Pattern) -> f64;

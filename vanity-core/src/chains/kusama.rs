@@ -66,9 +66,10 @@ impl ChainGrinder for KusamaGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
-        build_base58_pattern(prefix, suffix, exact, BASE58_ALPHABET, 48)
+        build_base58_pattern(prefix, suffix, contains, exact, BASE58_ALPHABET, 48)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {

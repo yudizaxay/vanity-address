@@ -77,9 +77,11 @@ impl ChainGrinder for TezosGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
-        let mut pattern = build_base58_pattern(prefix, suffix, exact, BASE58_ALPHABET, 36)?;
+        let mut pattern =
+            build_base58_pattern(prefix, suffix, contains, exact, BASE58_ALPHABET, 36)?;
         if pattern.has_prefix() && !pattern.prefix.starts_with("tz1") {
             pattern.prefix = format!("tz1{}", pattern.prefix);
             pattern.prefix_match = if pattern.ignore_case {

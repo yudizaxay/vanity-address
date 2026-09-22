@@ -56,9 +56,10 @@ impl ChainGrinder for RippleGrinder {
         &self,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
-        build_base58_pattern(prefix, suffix, exact, RIPPLE_ALPHABET, 35)
+        build_base58_pattern(prefix, suffix, contains, exact, RIPPLE_ALPHABET, 35)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {
