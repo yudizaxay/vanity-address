@@ -66,7 +66,19 @@
     background: rgba(232, 237, 242, 0.92);
     backdrop-filter: blur(10px);
     border-bottom: 2px solid var(--ink);
+    transition: background-color .25s ease, border-color .25s ease;
   }
+  .nav.on-dark {
+    background: #0b0b0b;
+    backdrop-filter: none;
+    border-bottom-color: transparent;
+  }
+  .nav.on-dark .brand { color: #fff; }
+  .nav.on-dark .nav-links { color: rgba(236, 233, 228, 0.7); }
+  .nav.on-dark .nav-links a:hover { color: #fff; }
+  .nav.on-dark .nav-toggle { border-color: rgba(236, 233, 228, 0.4); color: #fff; }
+  .nav.on-dark .nav-cta { border-color: rgba(236, 233, 228, 0.35); box-shadow: 3px 3px 0 rgba(236, 233, 228, 0.25); }
+  .nav.on-dark .nav-cta:hover { box-shadow: 4px 4px 0 rgba(236, 233, 228, 0.35); }
   .nav-inner {
     display: flex; align-items: center; justify-content: space-between;
     gap: 16px; max-width: 1120px; margin: 0 auto; padding: 12px 22px;
@@ -75,10 +87,12 @@
     display: flex; align-items: center; gap: 10px;
     font-family: var(--display); font-weight: 700; font-size: 1.15rem;
     letter-spacing: -0.02em;
+    transition: color .25s ease;
   }
   .brand img { width: 34px; height: 34px; }
   .nav-links {
     display: flex; gap: 22px; font-size: 0.95rem; color: var(--ink-soft); font-weight: 600;
+    transition: color .25s ease;
   }
   .nav-links a:hover { color: var(--forest); }
   .nav-cta {
@@ -106,76 +120,55 @@
     .nav-cta .cta-text { display: none; }
   }
 
-  /* ---- hero ---- */
-  .hero {
+  /* ---- hero splash: full-viewport ascii wordmark ---- */
+  .hero-splash {
     position: relative;
     min-height: calc(100svh - 64px);
     display: flex;
     align-items: center;
-    padding: 40px 0 36px;
+    justify-content: center;
     overflow: hidden;
     border-bottom: 3px solid var(--ink);
+    background: #0b0b0b;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 28px 28px;
   }
-  .hero-bg {
-    position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background:
-      radial-gradient(ellipse 50% 60% at 85% 45%, rgba(255, 107, 53, 0.14), transparent 65%),
-      radial-gradient(ellipse 40% 50% at 8% 75%, rgba(245, 183, 0, 0.14), transparent 60%);
-  }
-  .hero-inner {
-    position: relative; z-index: 1;
-    display: grid;
-    grid-template-columns: 1fr 1.15fr;
-    gap: clamp(24px, 4vw, 48px);
+  .hero-splash-inner {
+    display: flex;
+    flex-direction: column;
     align-items: center;
     width: 100%;
+    max-width: 1680px;
+    margin: 0 auto;
+    padding: 32px 28px;
+    box-sizing: border-box;
   }
-  .hero-copy { max-width: 520px; }
-  .brand-mark {
-    font-family: var(--display);
-    font-size: clamp(2.4rem, 5.5vw, 4.6rem);
-    font-weight: 800;
-    letter-spacing: -0.045em;
-    line-height: 1;
-    color: var(--forest);
-    margin-bottom: 16px;
-    white-space: nowrap;
+  .hero-ascii-wrap {
+    position: relative; z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: min(72vh, 640px);
+    overflow: hidden;
   }
-  .brand-mark em {
-    font-style: normal;
-    color: var(--stamp);
-    display: inline;
-    white-space: nowrap;
+  .hero-ascii {
+    margin: 0;
+    font-family: var(--mono);
+    line-height: 0.86;
+    letter-spacing: 0;
+    color: #ece9e4;
+    white-space: pre;
+    text-align: center;
+    user-select: none;
+    transform-origin: center center;
   }
-  .hero h1 {
-    font-family: var(--display);
-    font-size: clamp(1.45rem, 2.8vw, 1.95rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-    max-width: 18ch;
-    margin-bottom: 12px;
+  .hero-ctas {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px;
+    margin-top: clamp(28px, 4vw, 44px);
   }
-  .hero-sub {
-    max-width: 38ch;
-    color: var(--ink-soft);
-    font-size: 1.06rem;
-    margin-bottom: 22px;
-  }
-  .hero-meta {
-    display: flex; flex-wrap: wrap; gap: 8px;
-    margin-bottom: 22px;
-  }
-  .hero-meta span {
-    font-family: var(--mono); font-size: 0.78rem; font-weight: 500;
-    background: var(--white);
-    border: 2px solid var(--ink);
-    border-radius: 999px;
-    padding: 5px 11px;
-    box-shadow: 2px 2px 0 var(--ink);
-  }
-  .hero-meta span.accent { background: var(--wax); }
-  .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
   .btn {
     display: inline-flex; align-items: center; gap: 8px;
     font-family: var(--sans); font-weight: 700; font-size: 1rem;
@@ -189,331 +182,37 @@
   .btn:active { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--ink); }
   .btn-primary { background: var(--stamp); color: #fff; }
   .btn-ghost { background: var(--white); color: var(--ink); }
-
-  /* ---- match machine (hero visual) ---- */
-  .match-machine {
-    position: relative;
-    width: 100%;
-    max-width: 520px;
-    margin-left: auto;
-    border: 3px solid var(--ink);
-    border-radius: 24px;
-    background: linear-gradient(165deg, #1B4332 0%, #0D1B2A 55%, #132536 100%);
-    box-shadow: 10px 10px 0 var(--ink);
-    padding: 20px 20px 24px;
-    color: #FBFCFD;
-    overflow: hidden;
-  }
-  .match-machine::before {
-    content: "";
-    position: absolute; inset: 12px;
-    border: 1.5px dashed rgba(255,255,255,0.12);
-    border-radius: 16px;
-    pointer-events: none;
-  }
-  .mm-chrome {
-    position: relative; z-index: 1;
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 14px; gap: 10px;
-  }
-  .mm-badge {
-    font-family: var(--mono); font-size: 0.75rem; font-weight: 500;
-    background: var(--wax); color: var(--ink);
-    border: 2px solid #fff; border-radius: 999px;
-    padding: 4px 11px;
-  }
-  .mm-status {
-    font-family: var(--mono); font-size: 0.82rem;
-    letter-spacing: 0.04em; opacity: 0.85;
-  }
-  .mm-led {
-    width: 14px; height: 14px; border-radius: 50%;
-    background: var(--wax);
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 0 rgba(245, 183, 0, 0.6);
-    animation: ledPulse 1.1s ease-out infinite;
-    flex-shrink: 0;
-  }
-  .match-machine.is-match .mm-led {
-    background: #51cf66;
-    animation: ledWin 0.6s ease-out 2;
-  }
-  .mm-screen {
-    position: relative; z-index: 1;
-    background: #071018;
-    border: 3px solid var(--stamp);
-    border-radius: 16px;
-    padding: 18px 16px 16px;
-    min-height: 118px;
-    box-shadow: inset 0 0 0 2px rgba(255,107,53,0.25);
-  }
-  .mm-label {
-    font-family: var(--mono); font-size: 0.72rem;
-    color: rgba(255,255,255,0.45); margin-bottom: 10px;
-  }
-  .mm-reels {
-    font-family: var(--mono);
-    font-size: clamp(1.15rem, 2.6vw, 1.4rem);
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: rgba(232, 237, 242, 0.55);
-    min-height: 1.45em;
-  }
-  .mm-reels .hot { color: var(--stamp); font-weight: 700; }
-  .mm-target {
-    margin-top: 12px;
-    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-    font-family: var(--display); font-weight: 800;
-    font-size: 1.35rem; color: var(--wax);
-  }
-  .mm-kind {
-    font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
-    color: var(--ink);
-    background: #FBFCFD;
-    border: 1.5px solid #fff;
-    border-radius: 999px;
-    padding: 3px 9px;
-  }
-  .mm-target span.mm-target-label {
-    font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
-    color: rgba(255,255,255,0.5);
-  }
-  .mm-body {
-    position: relative; z-index: 1;
-    display: grid; grid-template-columns: 1fr 76px;
-    gap: 14px; align-items: end;
-    margin-top: 16px;
-  }
-  .mm-slot {
-    background: #F4E6C8;
-    border: 3px solid #fff;
-    border-radius: 14px;
-    height: 168px;
-    min-height: 168px;
-    overflow: hidden;
-    position: relative;
-    box-shadow: inset 0 0 0 2px var(--ink);
-  }
-  .mm-slot-label {
-    position: absolute; top: 8px; left: 12px;
-    font-family: var(--mono); font-size: 0.68rem;
-    color: rgba(13,27,42,0.55); z-index: 3;
-    pointer-events: none;
-    line-height: 1;
-  }
-  .mm-slot:has(.mm-ticket.is-out) .mm-slot-label {
-    opacity: 0;
-  }
-  .mm-ticket {
-    position: absolute; left: 10px; right: 10px;
-    top: calc(100% + 8px);
-    background: #FBFCFD;
-    border: 2.5px solid var(--ink);
-    border-radius: 10px;
-    padding: 14px 14px 12px;
-    box-shadow: 3px 3px 0 rgba(13,27,42,0.25);
-    transition: top 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-    z-index: 2;
-  }
-  .mm-ticket.is-out { top: 10px; }
-  .mm-ticket .chain {
-    font-family: var(--mono); font-size: 0.72rem;
-    color: var(--forest); font-weight: 500; margin-bottom: 6px;
-  }
-  .mm-ticket .addr {
-    font-family: var(--mono); font-size: 1rem; font-weight: 600;
-    color: var(--ink); word-break: break-all;
-    line-height: 1.3;
-  }
-  .mm-ticket .addr .hot { color: var(--stamp); }
-  .mm-ticket .ok {
-    margin-top: 8px;
-    display: inline-block;
-    font-family: var(--display); font-weight: 800; font-size: 0.85rem;
-    color: #1B4332;
-    background: var(--wax);
-    border: 1.5px solid var(--ink);
-    border-radius: 6px;
-    padding: 3px 10px;
-  }
-  .mm-lever {
-    width: 76px;
-    height: 128px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
-    position: relative;
-  }
-  .mm-lever-arm {
-    position: absolute;
-    bottom: 28px;
-    left: 50%;
-    width: 48px;
-    height: 96px;
-    margin-left: -24px;
-    transform-origin: 50% 90%;
-    transition: transform 0.36s cubic-bezier(0.34, 1.25, 0.64, 1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .mm-lever-knob {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: var(--stamp);
-    border: 3px solid #fff;
-    box-shadow: 0 5px 0 var(--ink);
-    flex-shrink: 0;
-    z-index: 2;
-    transition: transform 0.36s cubic-bezier(0.34, 1.25, 0.64, 1), box-shadow 0.36s ease;
-  }
-  .mm-lever-shaft {
-    width: 14px;
-    flex: 1;
-    min-height: 48px;
-    margin-top: -6px;
-    background: var(--wax);
-    border: 2.5px solid #fff;
-    border-radius: 8px;
-    box-shadow: 3px 0 0 rgba(13,27,42,0.35);
-  }
-  /* pull = arm swings out toward viewer / right, knob grows closer */
-  .match-machine.is-pull .mm-lever-arm {
-    transform: rotate(38deg) scale(1.06);
-  }
-  .match-machine.is-pull .mm-lever-knob {
-    transform: scale(1.18);
-    box-shadow: 0 8px 0 var(--ink), 0 0 18px rgba(255, 107, 53, 0.45);
-  }
-  .mm-lever-cap {
-    font-family: var(--mono); font-size: 0.65rem;
-    color: rgba(255,255,255,0.55); text-align: center;
-    position: relative; z-index: 1;
-  }
-  .match-machine.is-shake {
-    animation: machineShake 0.4s ease-out;
-  }
-  .mm-sparks {
-    position: absolute; inset: 0; pointer-events: none; z-index: 3;
-    opacity: 0;
-  }
-  .match-machine.is-match .mm-sparks {
-    opacity: 1;
-  }
-  .mm-sparks i {
-    position: absolute;
-    width: 8px; height: 8px; border-radius: 2px;
-    background: var(--wax);
-    border: 1.5px solid #fff;
-    animation: sparkPop 0.7s ease-out forwards;
-  }
-  .mm-sparks i:nth-child(1) { left: 18%; top: 28%; animation-delay: 0s; background: var(--stamp); }
-  .mm-sparks i:nth-child(2) { left: 72%; top: 22%; animation-delay: 0.05s; }
-  .mm-sparks i:nth-child(3) { left: 40%; top: 18%; animation-delay: 0.1s; background: #51cf66; }
-  .mm-sparks i:nth-child(4) { left: 58%; top: 36%; animation-delay: 0.08s; background: var(--stamp); }
-  .mm-sparks i:nth-child(5) { left: 28%; top: 40%; animation-delay: 0.12s; }
-
-  @keyframes ledPulse {
-    0% { box-shadow: 0 0 0 0 rgba(245, 183, 0, 0.55); }
-    70% { box-shadow: 0 0 0 10px rgba(245, 183, 0, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(245, 183, 0, 0); }
-  }
-  @keyframes ledWin {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(81, 207, 102, 0.5); }
-    50% { box-shadow: 0 0 0 12px rgba(81, 207, 102, 0); }
-  }
-  @keyframes machineShake {
-    0%, 100% { transform: translate(0, 0); }
-    20% { transform: translate(-3px, 2px) rotate(-0.4deg); }
-    40% { transform: translate(3px, -1px) rotate(0.4deg); }
-    60% { transform: translate(-2px, 1px); }
-    80% { transform: translate(2px, 0); }
-  }
-  @keyframes sparkPop {
-    0% { opacity: 0; transform: scale(0.4) translateY(0); }
-    30% { opacity: 1; transform: scale(1.1) translateY(-8px); }
-    100% { opacity: 0; transform: scale(0.6) translateY(-28px); }
-  }
+  .hero-splash .btn { border-color: rgba(236, 233, 228, 0.35); box-shadow: 4px 4px 0 rgba(236, 233, 228, 0.18); }
+  .hero-splash .btn:hover { box-shadow: 6px 6px 0 rgba(236, 233, 228, 0.28); }
+  .hero-splash .btn:active { box-shadow: 2px 2px 0 rgba(236, 233, 228, 0.18); }
+  .hero-splash .btn-primary { border-color: var(--stamp); }
+  .hero-splash .btn-ghost { background: transparent; color: #fff; }
 
   @media (max-width: 900px) {
-    .hero {
+    .hero-splash {
       min-height: calc(100svh - 56px);
       height: auto;
       max-height: none;
-      padding: 18px 0 22px;
-      align-items: center;
       box-sizing: border-box;
     }
-    .hero-inner {
-      grid-template-columns: 1fr;
-      grid-template-rows: none;
-      gap: 16px;
-      justify-items: stretch;
-      text-align: left;
-      height: auto;
-      width: 100%;
-      align-content: start;
-    }
-    .hero-copy {
-      max-width: 100%;
-      align-self: stretch;
-    }
-    .hero h1 {
-      max-width: none;
-      text-wrap: balance;
-      font-size: clamp(1.25rem, 3.8vw, 1.6rem);
-      margin-bottom: 8px;
-    }
-    .hero-sub {
-      max-width: none;
-      font-size: 0.98rem;
-      margin-bottom: 14px;
-    }
-    .hero-meta { margin-bottom: 14px; }
-    .match-machine {
-      margin: 0;
-      max-width: 100%;
-      width: 100%;
-      height: auto;
-      order: -1;
-      align-self: stretch;
-      flex: none;
-      min-height: 0;
-      overflow: visible;
-      padding: 14px 12px 14px;
-      border-radius: 18px;
-      box-shadow: 6px 6px 0 var(--ink);
-    }
-    .match-machine::before { inset: 8px; border-radius: 12px; }
-    .mm-chrome { margin-bottom: 10px; }
-    .mm-screen { padding: 12px 12px 10px; min-height: 0; }
-    .mm-body { grid-template-columns: 1fr 52px; gap: 10px; margin-top: 10px; align-items: end; }
-    .mm-slot { height: 108px; min-height: 108px; }
-    .mm-lever { width: 52px; height: 108px; }
-    .mm-lever-arm { width: 36px; height: 78px; margin-left: -18px; bottom: 20px; }
-    .mm-lever-knob { width: 32px; height: 32px; }
-    .brand-mark {
-      font-size: clamp(1.75rem, 7.5vw, 2.5rem);
-      margin-bottom: 8px;
-    }
+    .hero-ascii-wrap { min-height: clamp(180px, 46vw, 320px); }
     .hero-ctas {
-      flex-direction: column;
-      align-items: stretch;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin-top: 24px;
       gap: 10px;
     }
     .hero-ctas .btn {
-      width: 100%;
+      width: auto;
       justify-content: center;
       padding: 12px 16px;
       font-size: 0.95rem;
       white-space: nowrap;
     }
   }
-
 
   /* ---- sections ---- */
   section { padding: 72px 0; }
@@ -770,60 +469,14 @@
     .brand img { width: 30px; height: 30px; }
     .brand span { max-width: 11.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    .hero {
-      padding: 14px 0 18px;
+    .hero-splash {
       min-height: calc(100svh - 52px);
       height: auto;
       max-height: none;
     }
-    .hero-inner { gap: 14px; }
-    .brand-mark {
-      font-size: clamp(1.65rem, 8vw, 2.15rem);
-      margin-bottom: 6px;
-      letter-spacing: -0.04em;
-    }
-    .hero h1 { font-size: clamp(1.2rem, 5vw, 1.45rem); margin-bottom: 6px; }
-    .hero-sub {
-      font-size: 0.92rem;
-      margin-bottom: 12px;
-      line-height: 1.4;
-    }
-    .hero-meta { margin-bottom: 12px; gap: 6px; }
-    .hero-meta span { font-size: 0.7rem; padding: 4px 9px; }
-    .btn { font-size: 0.92rem; padding: 12px 16px; box-shadow: 3px 3px 0 var(--ink); }
+    .hero-ascii-wrap { min-height: clamp(140px, 50vw, 240px); }
+    .btn { font-size: 0.92rem; padding: 12px 16px; }
     .hero-ctas { gap: 9px; }
-
-    .match-machine {
-      max-width: 100%;
-      width: 100%;
-      height: auto;
-      padding: 12px 11px 13px;
-      border-radius: 16px;
-      box-shadow: 5px 5px 0 var(--ink);
-    }
-    .match-machine::before { inset: 7px; border-radius: 11px; }
-    .mm-chrome { margin-bottom: 8px; gap: 6px; }
-    .mm-badge { font-size: 0.64rem; padding: 3px 8px; }
-    .mm-status { font-size: 0.7rem; }
-    .mm-led { width: 11px; height: 11px; }
-    .mm-screen { padding: 10px 10px 9px; min-height: 0; border-radius: 10px; border-width: 2.5px; }
-    .mm-label { margin-bottom: 5px; font-size: 0.64rem; }
-    .mm-reels { font-size: 0.95rem; letter-spacing: 0.02em; min-height: 1.25em; }
-    .mm-target { font-size: 1.05rem; margin-top: 6px; gap: 6px; }
-    .mm-kind { font-size: 0.64rem; padding: 2px 7px; }
-    .mm-body { grid-template-columns: 1fr 48px; gap: 8px; margin-top: 8px; align-items: end; }
-    .mm-slot { height: 100px; min-height: 100px; border-radius: 10px; }
-    .mm-slot-label { top: 6px; left: 10px; font-size: 0.6rem; }
-    .mm-ticket { left: 6px; right: 6px; padding: 9px 8px 8px; border-radius: 8px; }
-    .mm-ticket.is-out { top: 6px; }
-    .mm-ticket .chain { font-size: 0.62rem; margin-bottom: 3px; }
-    .mm-ticket .addr { font-size: 0.74rem; line-height: 1.25; }
-    .mm-ticket .ok { margin-top: 5px; font-size: 0.68rem; padding: 2px 7px; }
-    .mm-lever { width: 48px; height: 100px; gap: 4px; }
-    .mm-lever-arm { width: 34px; height: 72px; margin-left: -17px; bottom: 18px; }
-    .mm-lever-knob { width: 30px; height: 30px; border-width: 2.5px; box-shadow: 0 3px 0 var(--ink); }
-    .mm-lever-shaft { width: 10px; min-height: 28px; }
-    .mm-lever-cap { font-size: 0.55rem; }
 
     section { padding: 52px 0; }
     .section-title { font-size: clamp(1.55rem, 7vw, 2.1rem); max-width: none; text-wrap: balance; }
@@ -873,47 +526,19 @@
     .fcopy { white-space: normal; font-size: 0.88rem; line-height: 1.4; }
   }
 
-  @media (max-width: 380px) {
-    .brand-mark { white-space: normal; }
-    .brand-mark em { display: inline; }
-    .mm-body { grid-template-columns: 1fr 44px; gap: 6px; }
-    .mm-lever { width: 44px; height: 92px; }
-    .mm-slot { height: 92px; min-height: 92px; }
-    .mm-lever-arm { width: 32px; height: 66px; margin-left: -16px; }
-    .mm-lever-knob { width: 28px; height: 28px; }
-  }
-
-  /* short phones: tighten spacing, never stretch the machine */
+  /* short phones: tighten spacing, never stretch the panel */
   @media (max-width: 900px) and (max-height: 780px) {
-    .hero { padding: 12px 0 14px; min-height: 0; }
-    .hero-inner { gap: 12px; }
-    .hero-meta { display: none; }
-    .mm-slot { height: 88px; min-height: 88px; }
-    .mm-lever { height: 88px; }
-    .brand-mark { font-size: clamp(1.5rem, 6.5vw, 1.9rem); }
-    .hero h1 { font-size: clamp(1.1rem, 4.2vw, 1.3rem); }
-    .hero-sub { font-size: 0.88rem; margin-bottom: 10px; }
+    .hero-splash { min-height: 0; }
+    .hero-splash-inner { padding: 16px 20px; }
+    .hero-ascii-wrap { min-height: clamp(120px, 40vw, 200px); }
   }
 
   @media (max-width: 900px) and (max-height: 680px) {
-    .hero-sub { display: none; }
-    .mm-target { display: none; }
-    .mm-slot { height: 78px; min-height: 78px; }
-    .mm-lever { height: 78px; }
     .hero-ctas .btn { padding: 10px 14px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .mm-led, .match-machine.is-shake, .mm-sparks i {
-      animation: none !important;
-    }
-    .mm-ticket { top: 10px !important; }
-    .mm-slot { height: 168px; min-height: 168px; }
-    .mm-slot-label { opacity: 0 !important; }
-  }
-  @media (max-width: 900px) and (prefers-reduced-motion: reduce) {
-    .mm-slot { height: 100px; min-height: 100px; }
-    .mm-ticket { top: 6px !important; }
+    .hero-ascii { animation: none !important; }
   }
 </style>
 </head>
@@ -947,64 +572,17 @@
 
 <main>
   <!-- HERO -->
-  <section class="hero">
-    <div class="hero-bg" aria-hidden="true"></div>
-    <div class="wrap hero-inner">
-      <div class="hero-copy">
-        <p class="brand-mark">vanity<em>-address</em></p>
-        <h1>Stamp your word onto a real wallet.</h1>
-        <p class="hero-sub">
-          Local CPU grinding that finds an address matching your prefix, suffix, or contains pattern — keys never leave your machine.
-        </p>
-        <div class="hero-meta" aria-hidden="true">
-          <span class="accent">31 chains</span>
-          <span>100% offline</span>
-          <span>MIT</span>
-        </div>
-        <div class="hero-ctas">
-          <a class="btn btn-primary" href="#install">Get started</a>
-          <a class="btn btn-ghost" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">npx vanity-address</a>
-        </div>
+  <section class="hero-splash">
+    <div class="hero-splash-inner">
+      <div class="hero-ascii-wrap" id="heroAsciiWrap" aria-hidden="true">
+        <pre class="hero-ascii" id="heroAscii"></pre>
       </div>
-
-      <div class="match-machine" id="matchMachine" aria-hidden="true">
-        <div class="mm-sparks" id="mmSparks"><i></i><i></i><i></i><i></i><i></i></div>
-        <div class="mm-chrome">
-          <span class="mm-badge">100% local</span>
-          <span class="mm-status" id="mmStatus">grinding…</span>
-          <span class="mm-led" id="mmLed" aria-hidden="true"></span>
-        </div>
-        <div class="mm-screen">
-          <div class="mm-label">address stream</div>
-          <div class="mm-reels" id="mmReels">··············</div>
-          <div class="mm-target">
-            <span class="mm-kind" id="mmKind">suffix</span>
-            <span class="mm-target-label">→</span>
-            <strong id="mmWord">moon</strong>
-          </div>
-        </div>
-        <div class="mm-body">
-          <div class="mm-slot">
-            <div class="mm-slot-label">ticket out</div>
-            <div class="mm-ticket" id="mmTicket">
-              <div class="chain" id="mmChain">sol · suffix</div>
-              <div class="addr" id="mmAddr">…QaU5vXrmoon</div>
-              <div class="ok" id="mmOk">✓ match</div>
-            </div>
-          </div>
-          <div class="mm-lever" id="mmLever">
-            <div class="mm-lever-arm">
-              <div class="mm-lever-knob"></div>
-              <div class="mm-lever-shaft"></div>
-            </div>
-            <div class="mm-lever-cap">PULL</div>
-          </div>
-        </div>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#install">Get started</a>
+        <a class="btn btn-ghost" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">npx vanity-address</a>
       </div>
     </div>
   </section>
-
-
 
   <!-- HOW -->
   <section id="how">
@@ -1245,119 +823,191 @@
     });
   }
 
-  /* match machine — grind → pull → ticket */
-  (function runMatchMachine() {
-    var machine = document.getElementById("matchMachine");
-    var status = document.getElementById("mmStatus");
-    var reels = document.getElementById("mmReels");
-    var wordEl = document.getElementById("mmWord");
-    var kindEl = document.getElementById("mmKind");
-    var ticket = document.getElementById("mmTicket");
-    var chainEl = document.getElementById("mmChain");
-    var addrEl = document.getElementById("mmAddr");
-    var okEl = document.getElementById("mmOk");
-    if (!machine || !reels || !ticket || !addrEl) return;
-
-    var CHARSET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-    var PATTERNS = [
-      { word: "moon", kind: "suffix", chain: "sol", left: "7xKp…QaU5vXr", right: "moon", hot: "right" },
-      { word: "axay", kind: "suffix", chain: "sol", left: "…E6bY", right: "axay", hot: "right" },
-      { word: "DeFi", kind: "prefix", chain: "sol", left: "DeFi", right: "N4qw…E6bY", hot: "left" },
-      { word: "cafe", kind: "suffix", chain: "btc-segwit", left: "bc1q7x…", right: "cafe", hot: "right" },
-      { word: "dead", kind: "prefix", chain: "evm", left: "0xdead", right: "…c0ffee", hot: "left" },
-      { word: "pump", kind: "contains", chain: "sol", left: "…Xr", right: "pump…Yt", hot: "right" }
-    ];
-    var i = 0;
-    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    function wait(ms) {
-      return new Promise(function (r) { setTimeout(r, ms); });
+  /* nav goes dark over the hero splash, default once scrolled past it */
+  (function navContrast() {
+    var navEl = document.querySelector(".nav");
+    var splash = document.querySelector(".hero-splash");
+    if (!navEl || !splash) return;
+    function update() {
+      var rect = splash.getBoundingClientRect();
+      var navH = navEl.offsetHeight;
+      if (rect.bottom > navH) navEl.classList.add("on-dark");
+      else navEl.classList.remove("on-dark");
     }
-    function randStr(n) {
-      var s = "";
-      for (var k = 0; k < n; k++) s += CHARSET[Math.floor(Math.random() * CHARSET.length)];
-      return s;
-    }
-    function formatAddr(p, locked) {
-      if (!locked) return randStr(4) + "…" + randStr(6);
-      if (p.hot === "left") {
-        return '<span class="hot">' + p.left + '</span>' + p.right;
-      }
-      return p.left + '<span class="hot">' + p.right + '</span>';
-    }
-    function applyMeta(p) {
-      wordEl.textContent = p.word;
-      if (kindEl) kindEl.textContent = p.kind;
-      chainEl.textContent = p.chain + " · " + p.kind;
-      if (okEl) okEl.textContent = "✓ " + p.kind + " · " + p.word;
-    }
-    function showStatic(p) {
-      applyMeta(p);
-      reels.innerHTML = formatAddr(p, true);
-      addrEl.innerHTML = formatAddr(p, true);
-      ticket.classList.add("is-out");
-      status.textContent = "match found";
-      machine.classList.add("is-match");
-    }
-
-    if (reduce) {
-      showStatic(PATTERNS[0]);
-      return;
-    }
-
-    async function cycle() {
-      /* timings aligned to CSS: lever 360ms, ticket 500ms, shake 400ms */
-      var PULL_MS = 380;
-      var PULL_DWELL_MS = 120;
-      var TICKET_MS = 520;
-      var HOLD_MS = 1600;
-      var SCRAMBLE_MS = 1200;
-
-      while (true) {
-        var p = PATTERNS[i % PATTERNS.length];
-        i++;
-
-        machine.classList.remove("is-match", "is-pull", "is-shake");
-        ticket.classList.remove("is-out");
-        applyMeta(p);
-        status.textContent = "grinding…";
-        addrEl.textContent = "············";
-
-        var scrambleUntil = performance.now() + SCRAMBLE_MS;
-        while (performance.now() < scrambleUntil) {
-          reels.textContent = randStr(5) + "…" + randStr(7);
-          await wait(55);
-        }
-
-        status.textContent = "pull!";
-        machine.classList.add("is-pull");
-        await wait(PULL_MS);
-        await wait(PULL_DWELL_MS);
-
-        reels.innerHTML = formatAddr(p, true);
-        addrEl.innerHTML = formatAddr(p, true);
-        status.textContent = "match found";
-        machine.classList.add("is-shake", "is-match");
-        await wait(140);
-
-        ticket.classList.add("is-out");
-        await wait(TICKET_MS);
-
-        machine.classList.remove("is-pull", "is-shake");
-        await wait(HOLD_MS);
-
-        ticket.classList.remove("is-out");
-        await wait(TICKET_MS * 0.55);
-        machine.classList.remove("is-match");
-        status.textContent = "next pattern…";
-        await wait(380);
-      }
-    }
-
-    cycle();
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
   })();
 
+  /* hero ascii wordmark — canvas-rasterized "vanity-address", mouse-reactive */
+  (function runHeroAscii() {
+    var wrap = document.getElementById("heroAsciiWrap");
+    var pre = document.getElementById("heroAscii");
+    if (!wrap || !pre) return;
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var state = {};
 
+    function buildAscii() {
+      var COLS = 175;
+      var set = "3FRT@#%*=4-.:";
+      var BW = 2000, BH = 460;
+      var big = document.createElement("canvas");
+      big.width = BW; big.height = BH;
+      var bc = big.getContext("2d");
+      bc.fillStyle = "#fff";
+      bc.textBaseline = "alphabetic";
+      bc.lineWidth = 14;
+      bc.strokeStyle = "#fff";
+      var t = "vanity-address";
+      var fs = 360;
+      bc.font = "700 " + fs + "px 'Source Sans 3', Arial, sans-serif";
+      var w = bc.measureText(t).width;
+      if (w > BW - 80) {
+        fs = Math.floor(fs * (BW - 80) / w);
+        bc.font = "700 " + fs + "px 'Source Sans 3', Arial, sans-serif";
+      }
+      var w2 = bc.measureText(t).width;
+      var baseline = BH * 0.72;
+      bc.fillText(t, (BW - w2) / 2, baseline);
+      bc.strokeText(t, (BW - w2) / 2, baseline);
+      var src = bc.getImageData(0, 0, BW, BH).data;
+      var x0 = BW, x1 = 0, y0 = BH, y1 = 0;
+      for (var y = 0; y < BH; y++) {
+        for (var x = 0; x < BW; x++) {
+          if (src[(y * BW + x) * 4 + 3] > 20) {
+            if (x < x0) x0 = x;
+            if (x > x1) x1 = x;
+            if (y < y0) y0 = y;
+            if (y > y1) y1 = y;
+          }
+        }
+      }
+      var bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+      var ROWS = Math.max(6, Math.round(COLS * (bh / bw) * 0.62 / 0.6));
+      var sm = document.createElement("canvas");
+      sm.width = COLS; sm.height = ROWS;
+      var sc = sm.getContext("2d");
+      sc.drawImage(big, x0, y0, bw, bh, 0, 0, COLS, ROWS);
+      var d = sc.getImageData(0, 0, COLS, ROWS).data;
+      var grid = [], dens = [];
+      for (var yy = 0; yy < ROWS; yy++) {
+        var line = [], drow = [];
+        for (var xx = 0; xx < COLS; xx++) {
+          var a = d[(yy * COLS + xx) * 4 + 3] / 255;
+          if (a > 0.32) { line.push(set[Math.floor(Math.random() * 9)]); drow.push(2); }
+          else if (a > 0.17) { line.push(set[9 + Math.floor(Math.random() * 4)]); drow.push(1); }
+          else { line.push(" "); drow.push(0); }
+        }
+        grid.push(line);
+        dens.push(drow);
+      }
+      state.grid = grid; state.dens = dens; state.cols = COLS; state.rows = ROWS;
+      state.cxT = COLS / 2; state.cyT = ROWS / 2;
+      renderStatic();
+      sizeAscii();
+      if (reduce) return;
+      startLoop();
+    }
+
+    function startLoop() {
+      if (state.rafId) cancelAnimationFrame(state.rafId);
+      var last = 0;
+      function frame(ts) {
+        state.rafId = requestAnimationFrame(frame);
+        if (ts - last < 40) return; /* ~25fps: smooth, not too busy */
+        last = ts;
+        renderAscii();
+      }
+      state.rafId = requestAnimationFrame(frame);
+    }
+
+    function sizeAscii() {
+      if (!state.cols) return;
+      var rect = wrap.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      pre.style.transform = "none";
+      var fs = Math.max(6, rect.height / (state.rows * 0.86));
+      pre.style.fontSize = fs + "px";
+      /* measure the actual rendered box (font metrics are only ever a guess)
+         and scale it down to exactly fit — a transform is precise by
+         construction, unlike re-guessing font-size */
+      var w = pre.getBoundingClientRect().width;
+      var h = pre.getBoundingClientRect().height;
+      var scale = 1;
+      if (w > rect.width) scale = rect.width / w;
+      if (h * scale > rect.height) scale = Math.min(scale, rect.height / h);
+      pre.style.transform = scale < 0.999 ? "scale(" + (scale * 0.985).toFixed(4) + ")" : "none";
+    }
+
+    function renderStatic() {
+      pre.textContent = state.grid.map(function (row) { return row.join(""); }).join("\n");
+    }
+
+    function renderAscii() {
+      var dense = "3FRT@#%*=", sparse = "4-.:", all = dense + sparse, hot = "@#%8&WM$";
+      var g = state.grid, dens = state.dens, cols = state.cols, rows = state.rows;
+      state.amp = (state.amp || 0) + ((state.hover ? 1 : 0) - (state.amp || 0)) * 0.12;
+      state.cxs = state.cxs == null ? state.cxT : state.cxs + (state.cxT - state.cxs) * 0.22;
+      state.cys = state.cys == null ? state.cyT : state.cys + (state.cyT - state.cys) * 0.22;
+      var amp = state.amp, cx = state.cxs || 0, cy = state.cys || 0, R = 11;
+      pre.style.textShadow = amp > 0.02
+        ? "0 0 " + (8 * amp).toFixed(1) + "px rgba(255,255,255," + (0.25 * amp).toFixed(2) + ")"
+        : "none";
+      var out = [];
+      for (var y = 0; y < rows; y++) {
+        var drow = dens[y], grow = g[y];
+        var line = "";
+        var dy = y - cy;
+        for (var x = 0; x < cols; x++) {
+          var k = drow[x];
+          var heat = 0;
+          if (amp > 0.01) {
+            var dx = (x - cx) * 0.62;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < R) { var tt = 1 - dist / R; heat = tt * tt * amp; }
+          }
+          if (k === 2) {
+            if (Math.random() < 0.05 + heat * 0.55) grow[x] = heat > 0.35 ? hot[Math.floor(Math.random() * 8)] : dense[Math.floor(Math.random() * 9)];
+            line += grow[x];
+          } else if (k === 1) {
+            if (Math.random() < 0.08 + heat * 0.55) grow[x] = heat > 0.3 ? hot[Math.floor(Math.random() * 8)] : sparse[Math.floor(Math.random() * 4)];
+            line += grow[x];
+          } else {
+            if (heat > 0.1) {
+              if (Math.random() < heat * 0.4) {
+                grow[x] = heat > 0.7 ? hot[Math.floor(Math.random() * 8)] : all[Math.floor(Math.random() * 13)];
+              }
+            } else if (grow[x] !== " " && Math.random() < 0.4) {
+              grow[x] = " "; /* snap hover dust back to blank once heat fades */
+            }
+            line += grow[x];
+          }
+        }
+        out.push(line);
+      }
+      pre.textContent = out.join("\n");
+    }
+
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(buildAscii);
+    else buildAscii();
+
+    if (!reduce) {
+      wrap.addEventListener("mousemove", function (e) {
+        if (!state.cols) return;
+        var r = wrap.getBoundingClientRect();
+        state.cxT = (e.clientX - r.left) / r.width * state.cols;
+        state.cyT = (e.clientY - r.top) / r.height * state.rows;
+        state.hover = true;
+      });
+      wrap.addEventListener("mouseleave", function () { state.hover = false; });
+    }
+
+    var resizeTimer;
+    window.addEventListener("resize", function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(sizeAscii, 150);
+    });
+  })();
 
   var CHAINS = [
     ["algo", "Algorand"], ["aptos", "Aptos"], ["btc", "Bitcoin"],
