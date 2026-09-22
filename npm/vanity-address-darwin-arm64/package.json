@@ -3,7 +3,7 @@
   "version": "0.6.0",
   "description": "macOS Apple Silicon binary for vanity-address",
   "license": "MIT",
-  "homepage": "https://github.com/yudizaxay/vanity-address",
+  "homepage": "https://vanity-address.netlify.app/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yudizaxay/vanity-address.git",

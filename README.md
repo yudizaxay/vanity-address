@@ -88,9 +88,9 @@ Generate multi-chain keypairs whose public address matches your desired prefix, 
 **Quick start (Linux):**
 
 ```bash
-# Replace 0.5.0 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.5.0/VanityAddress-0.5.0-Linux-CLI.tar.gz
-tar xzf VanityAddress-0.5.0-Linux-CLI.tar.gz
+# Replace 0.6.0 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.6.0/VanityAddress-0.6.0-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.6.0-Linux-CLI.tar.gz
 ./vanity-address
 ```
 
@@ -183,7 +183,7 @@ Also: `generateAddresses`, `validatePattern`, `listChains`, `timeoutMs`, rich `o
 ├───────────────────┴───┴─────────────────────┤
 │                vanity-core lib              │
 │  ┌────────┐ ┌─────┐ ┌──────────┐ ┌───────┐  │
-│  │ Solana │ │ EVM │ │ Bitcoin… │ │  +22  │  │
+│  │ Solana │ │ EVM │ │ Bitcoin… │ │  +28  │  │
 │  │Grinder │ │Grind│ │ Grinders │ │ more  │  │
 │  └────────┘ └─────┘ └──────────┘ └───────┘  │
 │              ChainGrinder trait             │

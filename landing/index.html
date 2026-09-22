@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>vanity-address — Fast, local, multi-chain vanity address generator</title>
-<meta name="description" content="Generate custom crypto wallet addresses that start or end with your word. 25 chains, 100% offline, open source." />
+<meta name="description" content="Generate custom crypto wallet addresses that start, end, or contain your word. 31 chains, 100% offline, open source." />
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
 
 <style>
@@ -475,7 +475,7 @@
             npx vanity-address
           </a>
         </div>
-        <p class="hero-caption">Works with 25 chains. 100% offline. MIT licensed.</p>
+        <p class="hero-caption">Works with 31 chains. 100% offline. MIT licensed.</p>
       </div>
 
       <div class="hero-visual" aria-hidden="true">
@@ -552,7 +552,7 @@
     <div class="wrap">
 
       <div class="stats reveal" id="statsRow">
-        <div class="stat"><div class="num" data-count="25">0</div><div class="label">Supported chains</div></div>
+        <div class="stat"><div class="num" data-count="31">0</div><div class="label">Supported chains</div></div>
         <div class="stat"><div class="num" data-count="100" data-suffix="%">0%</div><div class="label">Offline / local</div></div>
         <div class="stat"><div class="num" data-count="0">0</div><div class="label">Network calls</div></div>
         <div class="stat"><div class="num" data-count="2">0</div><div class="label">Frontends: CLI + Desktop</div></div>
@@ -576,8 +576,8 @@
         </div>
         <div class="feature-card reveal d3">
           <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
-          <h3>25 chains, one engine</h3>
-          <p>Solana, EVM, Bitcoin, Cosmos, Cardano, TON, and 19 more — same CLI, same desktop app, same trust model.</p>
+          <h3>31 chains, one engine</h3>
+          <p>Solana, EVM, Bitcoin (P2PKH / SegWit / Taproot), Sei, Injective, Celestia, dYdX, and more — same CLI, desktop, and SDK.</p>
         </div>
         <div class="feature-card reveal d1">
           <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
@@ -591,8 +591,8 @@
         </div>
         <div class="feature-card reveal d3">
           <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div>
-          <h3>Prefix, suffix, or both</h3>
-          <p>Exact-case or case-insensitive matching, impractical-pattern warnings, and honest time estimates up front.</p>
+          <h3>Prefix, suffix, or contains</h3>
+          <p><code class="inline">*</code> wildcards, comma OR patterns, exact-case matching, and honest time estimates up front.</p>
         </div>
       </div>
     </div>
@@ -620,7 +620,7 @@
   <section id="chains">
     <div class="wrap">
       <div class="section-head reveal">
-        <h2 class="section-title">All 25, same trust model</h2>
+        <h2 class="section-title">All 31, same trust model</h2>
         <p class="section-desc">Use any id with <code class="inline">--chain</code> — CLI, desktop, and SDK all match.</p>
       </div>
       <div class="chains-grid" id="chainsGrid"></div>
@@ -945,12 +945,15 @@
 
   /* ---------------- chains grid ---------------- */
   var CHAINS = [
-    ['algo','Algorand'], ['aptos','Aptos'], ['btc','Bitcoin'], ['ada','Cardano'],
-    ['cosmos','Cosmos'], ['dash','Dash'], ['doge','Dogecoin'], ['evm','EVM'],
-    ['fil','Filecoin'], ['hedera','Hedera'], ['icp','Internet Computer'], ['kaspa','Kaspa'],
+    ['algo','Algorand'], ['aptos','Aptos'], ['btc','Bitcoin'],
+    ['btc-segwit','BTC SegWit'], ['btc-taproot','BTC Taproot'], ['ada','Cardano'],
+    ['tia','Celestia'], ['cosmos','Cosmos'], ['dash','Dash'], ['doge','Dogecoin'],
+    ['dydx','dYdX'], ['evm','EVM'], ['fil','Filecoin'], ['hedera','Hedera'],
+    ['inj','Injective'], ['icp','Internet Computer'], ['kaspa','Kaspa'],
     ['ksm','Kusama'], ['ltc','Litecoin'], ['erd','MultiversX'], ['near','NEAR'],
-    ['osmo','Osmosis'], ['dot','Polkadot'], ['xrp','Ripple'], ['sol','Solana'],
-    ['xlm','Stellar'], ['sui','Sui'], ['xtz','Tezos'], ['ton','TON'], ['trx','Tron']
+    ['osmo','Osmosis'], ['dot','Polkadot'], ['xrp','Ripple'], ['sei','Sei'],
+    ['sol','Solana'], ['xlm','Stellar'], ['sui','Sui'], ['xtz','Tezos'],
+    ['ton','TON'], ['trx','Tron']
   ];
   var chainsGrid = document.getElementById('chainsGrid');
   CHAINS.forEach(function(c, idx){

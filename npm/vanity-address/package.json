@@ -8,7 +8,7 @@
   "types": "./src/index.d.ts",
   "type": "commonjs",
   "sideEffects": false,
-  "homepage": "https://github.com/yudizaxay/vanity-address",
+  "homepage": "https://vanity-address.netlify.app/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yudizaxay/vanity-address.git"

@@ -35,13 +35,14 @@ Requires **Node.js 18+**. Supported platforms:
 
 ## Programmatic API
 
-The **vanity-address** package ships a **WASM SDK** alongside the CLI — all 25
+The **vanity-address** package ships a **WASM SDK** alongside the CLI — all 31
 chains, in-process (no subprocess). On Node it uses a **multi-core
 `worker_threads` pool** by default.
 
-Highlights (v0.5+):
+Highlights (v0.6+):
 
 - `generateAddress()` / `generateAddresses({ count })`
+- `contains` + `*` wildcards (same as CLI)
 - `estimateDifficulty()`, `validatePattern()`, `listChains()`, `isValidChain()`
 - `wallet.privateKey`, rich `onProgress`, `timeoutMs`, `workers`
 

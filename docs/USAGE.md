@@ -101,7 +101,9 @@ $ vanity-address --chain evm --prefix dead --suffix beef
 
 Use `--chain` with any supported ID:
 
-`ada`, `algo`, `aptos`, `btc`, `cosmos`, `dash`, `doge`, `dot`, `erd`, `evm`, `fil`, `hedera`, `icp`, `kaspa`, `ksm`, `ltc`, `near`, `osmo`, `sol`, `sui`, `ton`, `trx`, `xlm`, `xrp`, `xtz`
+`ada`, `algo`, `aptos`, `btc`, `btc-segwit`, `btc-taproot`, `cosmos`, `dash`, `doge`, `dot`, `dydx`, `erd`, `evm`, `fil`, `hedera`, `icp`, `inj`, `kaspa`, `ksm`, `ltc`, `near`, `osmo`, `sei`, `sol`, `sui`, `tia`, `ton`, `trx`, `xlm`, `xrp`, `xtz`
+
+EVM aliases (same math as `evm`): `base`, `arb`, `op`, `polygon`, `robinhood`, …
 
 ---
 

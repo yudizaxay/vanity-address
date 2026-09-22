@@ -140,7 +140,7 @@ vanity-app (Tauri)    ──┼──► vanity-core
                         │      ├── pattern.rs
                         │      ├── estimate.rs
                         │      ├── system.rs    (CPU/memory tuning)
-                        │      └── chains/      (25 chain impls)
+                        │      └── chains/      (31 chain impls)
 ```
 
 CLI modules: `main.rs`, `menu.rs`, `terminal.rs`, `banner.rs`, `json_output.rs`, `warnings.rs`  
