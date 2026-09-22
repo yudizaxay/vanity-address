@@ -3,611 +3,1067 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>vanity-address — Fast, local, multi-chain vanity address generator</title>
+<title>vanity-address — stamp your own wallet word</title>
 <meta name="description" content="Generate custom crypto wallet addresses that start, end, or contain your word. 31 chains, 100% offline, open source." />
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
 <style>
-  :root{
-    --cyan:#14CAFC;
-    --purple:#BB3BFA;
-    --violet:#8156F5;
-    --blue:#3E9AFA;
-    --indigo:#646DF7;
-    --magenta:#AF40F8;
-    --bg:#05060a;
-    --bg-soft:#0a0c14;
-    --panel:#0d0f1a;
-    --panel-border:rgba(255,255,255,0.08);
-    --text:#e9ecf6;
-    --text-dim:#8b91ab;
-    --mono: "SF Mono", "Fira Code", "JetBrains Mono", Consolas, monospace;
-    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+  :root {
+    --paper: #E8EDF2;
+    --paper-deep: #D5DCE6;
+    --ink: #0D1B2A;
+    --ink-soft: #3A4A5C;
+    --forest: #1B4332;
+    --forest-mid: #2D6A4F;
+    --stamp: #FF6B35;
+    --stamp-deep: #E85A24;
+    --wax: #F5B700;
+    --white: #FBFCFD;
+    --line: rgba(13, 27, 42, 0.12);
+    --shadow: 0 12px 0 rgba(13, 27, 42, 0.08);
+    --display: "Fraunces", Georgia, serif;
+    --sans: "Source Sans 3", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
   }
 
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  html{ scroll-behavior:smooth; }
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:var(--sans);
-    overflow-x:hidden;
-    line-height:1.5;
-  }
-
-  ::selection{ background:var(--purple); color:#fff; }
-
-  a{ color:inherit; text-decoration:none; }
-
-  .wrap{ max-width:1180px; margin:0 auto; padding:0 24px; }
-
-  /* ---------- background canvas ---------- */
-  #bg-canvas{
-    position:fixed; inset:0; z-index:0; pointer-events:none;
-  }
-
-  .grid-overlay{
-    position:fixed; inset:0; z-index:0; pointer-events:none;
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.55;
+    overflow-x: hidden;
     background-image:
-      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
-    background-size:48px 48px;
-    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 90%);
+      radial-gradient(ellipse 80% 50% at 10% -10%, rgba(245, 183, 0, 0.18), transparent 55%),
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgba(255, 107, 53, 0.12), transparent 50%),
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 27px,
+        rgba(13, 27, 42, 0.03) 27px,
+        rgba(13, 27, 42, 0.03) 28px
+      );
+  }
+  ::selection { background: var(--stamp); color: #fff; }
+  a { color: inherit; text-decoration: none; }
+  img, svg { display: block; max-width: 100%; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 22px; }
+  code.inline {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--paper-deep);
+    padding: 0.12em 0.4em;
+    border-radius: 4px;
   }
 
-  .glow-blob{
-    position:fixed; z-index:0; pointer-events:none; filter:blur(90px);
-    border-radius:50%; opacity:0.35;
+  /* ---- nav ---- */
+  .nav {
+    position: sticky; top: 0; z-index: 40;
+    background: rgba(232, 237, 242, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid var(--ink);
   }
-  .glow-blob.one{ width:520px; height:520px; top:-180px; left:-120px; background:var(--purple); }
-  .glow-blob.two{ width:600px; height:600px; top:120px; right:-220px; background:var(--cyan); }
-  .glow-blob.three{ width:420px; height:420px; bottom:-160px; left:35%; background:var(--indigo); opacity:0.25; }
-
-  main, header, footer{ position:relative; z-index:1; }
-
-  /* ---------- nav ---------- */
-  header.nav{
-    position:sticky; top:0; z-index:50;
-    -webkit-backdrop-filter:blur(20px);
-    backdrop-filter:blur(20px);
-    background:rgba(5,6,10,0.88);
-    border-bottom:1px solid var(--panel-border);
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; max-width: 1120px; margin: 0 auto; padding: 12px 22px;
   }
-  .nav-inner{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:16px 24px; max-width:1180px; margin:0 auto;
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--display); font-weight: 700; font-size: 1.15rem;
+    letter-spacing: -0.02em;
   }
-  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-0.02em; }
-  .brand img{ width:28px; height:28px; filter:drop-shadow(0 0 10px rgba(20,202,252,0.5)); }
-  .brand span{ font-size:1.05rem; }
-  .nav-links{ display:flex; align-items:center; gap:28px; font-size:0.9rem; color:var(--text-dim); }
-  .nav-links a:hover{ color:#fff; }
-  .nav-right{ display:flex; align-items:center; gap:14px; }
-  .nav-cta{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:8px 16px; border-radius:8px; font-size:0.85rem; font-weight:600;
-    background:var(--cyan);
-    color:#04050a; white-space:nowrap;
-    box-shadow:0 6px 20px -6px rgba(187,59,250,0.55);
-    transition:box-shadow .2s ease, background .2s ease;
+  .brand img { width: 34px; height: 34px; }
+  .nav-links {
+    display: flex; gap: 22px; font-size: 0.95rem; color: var(--ink-soft); font-weight: 600;
   }
-  .nav-cta:hover{ background:#4dd8ff; box-shadow:0 8px 24px -6px rgba(187,59,250,0.75); }
-  .nav-cta svg{ width:16px; height:16px; flex-shrink:0; }
-  .nav-toggle{
-    display:none; background:none; border:none; color:var(--text); cursor:pointer;
-    padding:4px; align-items:center; justify-content:center;
+  .nav-links a:hover { color: var(--forest); }
+  .nav-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--forest); color: var(--white);
+    padding: 9px 14px; border-radius: 999px; font-weight: 700; font-size: 0.88rem;
+    border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease;
   }
-  .nav-toggle svg{ width:24px; height:24px; }
-
-  @media (max-width:760px){
-    .nav-links{
-      display:none; position:absolute; top:100%; left:0; right:0;
-      flex-direction:column; align-items:stretch; gap:0;
-      background:rgba(5,6,10,0.98); border-bottom:1px solid var(--panel-border);
-      padding:4px 24px 12px;
+  .nav-cta:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+  .nav-cta svg { width: 15px; height: 15px; }
+  .nav-toggle {
+    display: none; background: none; border: 2px solid var(--ink);
+    border-radius: 8px; padding: 6px; cursor: pointer; color: var(--ink);
+  }
+  @media (max-width: 800px) {
+    .nav-links {
+      display: none; position: absolute; top: 100%; left: 0; right: 0;
+      flex-direction: column; gap: 0; background: var(--paper);
+      border-bottom: 2px solid var(--ink); padding: 8px 22px 14px;
     }
-    .nav-links.mobile-open{ display:flex; }
-    .nav-links a{ padding:13px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
-    .nav-toggle{ display:flex; }
-    .nav-cta .cta-text{ display:none; }
-    .nav-cta{ padding:9px 11px; }
+    .nav-links.open { display: flex; }
+    .nav-links a { padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .nav-toggle { display: flex; }
+    .nav-cta .cta-text { display: none; }
   }
 
-  /* ---------- hero ---------- */
-  .hero{ padding:150px 0 110px; }
-  .hero-grid{
-    display:grid; grid-template-columns:1.05fr 1fr; gap:56px; align-items:center;
+  /* ---- hero ---- */
+  .hero {
+    position: relative;
+    min-height: calc(100svh - 64px);
+    display: flex;
+    align-items: center;
+    padding: 40px 0 36px;
+    overflow: hidden;
+    border-bottom: 3px solid var(--ink);
   }
-  .hero-copy{ max-width:540px; }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 50% 60% at 85% 45%, rgba(255, 107, 53, 0.14), transparent 65%),
+      radial-gradient(ellipse 40% 50% at 8% 75%, rgba(245, 183, 0, 0.14), transparent 60%);
+  }
+  .hero-inner {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: clamp(24px, 4vw, 48px);
+    align-items: center;
+    width: 100%;
+  }
+  .hero-copy { max-width: 520px; }
+  .brand-mark {
+    font-family: var(--display);
+    font-size: clamp(2.4rem, 5.5vw, 4.6rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 1;
+    color: var(--forest);
+    margin-bottom: 16px;
+    white-space: nowrap;
+  }
+  .brand-mark em {
+    font-style: normal;
+    color: var(--stamp);
+    display: inline;
+    white-space: nowrap;
+  }
+  .hero h1 {
+    font-family: var(--display);
+    font-size: clamp(1.45rem, 2.8vw, 1.95rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    max-width: 18ch;
+    margin-bottom: 12px;
+  }
+  .hero-sub {
+    max-width: 38ch;
+    color: var(--ink-soft);
+    font-size: 1.06rem;
+    margin-bottom: 22px;
+  }
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 22px;
+  }
+  .hero-meta span {
+    font-family: var(--mono); font-size: 0.78rem; font-weight: 500;
+    background: var(--white);
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    padding: 5px 11px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .hero-meta span.accent { background: var(--wax); }
+  .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--sans); font-weight: 700; font-size: 1rem;
+    padding: 13px 22px; border-radius: 14px;
+    border: 2.5px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    transition: transform .15s ease, box-shadow .15s ease;
+    cursor: pointer;
+  }
+  .btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+  .btn:active { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--ink); }
+  .btn-primary { background: var(--stamp); color: #fff; }
+  .btn-ghost { background: var(--white); color: var(--ink); }
 
-  h1.headline{
-    font-size:clamp(2.6rem, 5vw, 4.1rem);
-    font-weight:800; letter-spacing:-0.03em; line-height:1.06;
-    margin-bottom:26px;
-    animation: fadeUp 0.8s ease both;
+  /* ---- match machine (hero visual) ---- */
+  .match-machine {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    margin-left: auto;
+    border: 3px solid var(--ink);
+    border-radius: 24px;
+    background: linear-gradient(165deg, #1B4332 0%, #0D1B2A 55%, #132536 100%);
+    box-shadow: 10px 10px 0 var(--ink);
+    padding: 20px 20px 24px;
+    color: #FBFCFD;
+    overflow: hidden;
+  }
+  .match-machine::before {
+    content: "";
+    position: absolute; inset: 12px;
+    border: 1.5px dashed rgba(255,255,255,0.12);
+    border-radius: 16px;
+    pointer-events: none;
+  }
+  .mm-chrome {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; gap: 10px;
+  }
+  .mm-badge {
+    font-family: var(--mono); font-size: 0.75rem; font-weight: 500;
+    background: var(--wax); color: var(--ink);
+    border: 2px solid #fff; border-radius: 999px;
+    padding: 4px 11px;
+  }
+  .mm-status {
+    font-family: var(--mono); font-size: 0.82rem;
+    letter-spacing: 0.04em; opacity: 0.85;
+  }
+  .mm-led {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--wax);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 0 rgba(245, 183, 0, 0.6);
+    animation: ledPulse 1.1s ease-out infinite;
+    flex-shrink: 0;
+  }
+  .match-machine.is-match .mm-led {
+    background: #51cf66;
+    animation: ledWin 0.6s ease-out 2;
+  }
+  .mm-screen {
+    position: relative; z-index: 1;
+    background: #071018;
+    border: 3px solid var(--stamp);
+    border-radius: 16px;
+    padding: 18px 16px 16px;
+    min-height: 118px;
+    box-shadow: inset 0 0 0 2px rgba(255,107,53,0.25);
+  }
+  .mm-label {
+    font-family: var(--mono); font-size: 0.72rem;
+    color: rgba(255,255,255,0.45); margin-bottom: 10px;
+  }
+  .mm-reels {
+    font-family: var(--mono);
+    font-size: clamp(1.15rem, 2.6vw, 1.4rem);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: rgba(232, 237, 242, 0.55);
+    min-height: 1.45em;
+  }
+  .mm-reels .hot { color: var(--stamp); font-weight: 700; }
+  .mm-target {
+    margin-top: 12px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    font-family: var(--display); font-weight: 800;
+    font-size: 1.35rem; color: var(--wax);
+  }
+  .mm-kind {
+    font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
+    color: var(--ink);
+    background: #FBFCFD;
+    border: 1.5px solid #fff;
+    border-radius: 999px;
+    padding: 3px 9px;
+  }
+  .mm-target span.mm-target-label {
+    font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
+    color: rgba(255,255,255,0.5);
+  }
+  .mm-body {
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1fr 76px;
+    gap: 14px; align-items: end;
+    margin-top: 16px;
+  }
+  .mm-slot {
+    background: #F4E6C8;
+    border: 3px solid #fff;
+    border-radius: 14px;
+    height: 168px;
+    min-height: 168px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 0 0 2px var(--ink);
+  }
+  .mm-slot-label {
+    position: absolute; top: 8px; left: 12px;
+    font-family: var(--mono); font-size: 0.68rem;
+    color: rgba(13,27,42,0.55); z-index: 3;
+    pointer-events: none;
+    line-height: 1;
+  }
+  .mm-slot:has(.mm-ticket.is-out) .mm-slot-label {
+    opacity: 0;
+  }
+  .mm-ticket {
+    position: absolute; left: 10px; right: 10px;
+    top: calc(100% + 8px);
+    background: #FBFCFD;
+    border: 2.5px solid var(--ink);
+    border-radius: 10px;
+    padding: 14px 14px 12px;
+    box-shadow: 3px 3px 0 rgba(13,27,42,0.25);
+    transition: top 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 2;
+  }
+  .mm-ticket.is-out { top: 10px; }
+  .mm-ticket .chain {
+    font-family: var(--mono); font-size: 0.72rem;
+    color: var(--forest); font-weight: 500; margin-bottom: 6px;
+  }
+  .mm-ticket .addr {
+    font-family: var(--mono); font-size: 1rem; font-weight: 600;
+    color: var(--ink); word-break: break-all;
+    line-height: 1.3;
+  }
+  .mm-ticket .addr .hot { color: var(--stamp); }
+  .mm-ticket .ok {
+    margin-top: 8px;
+    display: inline-block;
+    font-family: var(--display); font-weight: 800; font-size: 0.85rem;
+    color: #1B4332;
+    background: var(--wax);
+    border: 1.5px solid var(--ink);
+    border-radius: 6px;
+    padding: 3px 10px;
+  }
+  .mm-lever {
+    width: 76px;
+    height: 128px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    position: relative;
+  }
+  .mm-lever-arm {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    width: 48px;
+    height: 96px;
+    margin-left: -24px;
+    transform-origin: 50% 90%;
+    transition: transform 0.36s cubic-bezier(0.34, 1.25, 0.64, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .mm-lever-knob {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--stamp);
+    border: 3px solid #fff;
+    box-shadow: 0 5px 0 var(--ink);
+    flex-shrink: 0;
+    z-index: 2;
+    transition: transform 0.36s cubic-bezier(0.34, 1.25, 0.64, 1), box-shadow 0.36s ease;
+  }
+  .mm-lever-shaft {
+    width: 14px;
+    flex: 1;
+    min-height: 48px;
+    margin-top: -6px;
+    background: var(--wax);
+    border: 2.5px solid #fff;
+    border-radius: 8px;
+    box-shadow: 3px 0 0 rgba(13,27,42,0.35);
+  }
+  /* pull = arm swings out toward viewer / right, knob grows closer */
+  .match-machine.is-pull .mm-lever-arm {
+    transform: rotate(38deg) scale(1.06);
+  }
+  .match-machine.is-pull .mm-lever-knob {
+    transform: scale(1.18);
+    box-shadow: 0 8px 0 var(--ink), 0 0 18px rgba(255, 107, 53, 0.45);
+  }
+  .mm-lever-cap {
+    font-family: var(--mono); font-size: 0.65rem;
+    color: rgba(255,255,255,0.55); text-align: center;
+    position: relative; z-index: 1;
+  }
+  .match-machine.is-shake {
+    animation: machineShake 0.4s ease-out;
+  }
+  .mm-sparks {
+    position: absolute; inset: 0; pointer-events: none; z-index: 3;
+    opacity: 0;
+  }
+  .match-machine.is-match .mm-sparks {
+    opacity: 1;
+  }
+  .mm-sparks i {
+    position: absolute;
+    width: 8px; height: 8px; border-radius: 2px;
+    background: var(--wax);
+    border: 1.5px solid #fff;
+    animation: sparkPop 0.7s ease-out forwards;
+  }
+  .mm-sparks i:nth-child(1) { left: 18%; top: 28%; animation-delay: 0s; background: var(--stamp); }
+  .mm-sparks i:nth-child(2) { left: 72%; top: 22%; animation-delay: 0.05s; }
+  .mm-sparks i:nth-child(3) { left: 40%; top: 18%; animation-delay: 0.1s; background: #51cf66; }
+  .mm-sparks i:nth-child(4) { left: 58%; top: 36%; animation-delay: 0.08s; background: var(--stamp); }
+  .mm-sparks i:nth-child(5) { left: 28%; top: 40%; animation-delay: 0.12s; }
+
+  @keyframes ledPulse {
+    0% { box-shadow: 0 0 0 0 rgba(245, 183, 0, 0.55); }
+    70% { box-shadow: 0 0 0 10px rgba(245, 183, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 183, 0, 0); }
+  }
+  @keyframes ledWin {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(81, 207, 102, 0.5); }
+    50% { box-shadow: 0 0 0 12px rgba(81, 207, 102, 0); }
+  }
+  @keyframes machineShake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-3px, 2px) rotate(-0.4deg); }
+    40% { transform: translate(3px, -1px) rotate(0.4deg); }
+    60% { transform: translate(-2px, 1px); }
+    80% { transform: translate(2px, 0); }
+  }
+  @keyframes sparkPop {
+    0% { opacity: 0; transform: scale(0.4) translateY(0); }
+    30% { opacity: 1; transform: scale(1.1) translateY(-8px); }
+    100% { opacity: 0; transform: scale(0.6) translateY(-28px); }
   }
 
-  .subhead{
-    max-width:480px; margin:0 0 36px; color:var(--text-dim);
-    font-size:1.08rem; animation: fadeUp 0.8s ease 0.08s both;
-  }
-  .subhead strong{ color:var(--text); font-weight:600; }
-
-  .hero-ctas{
-    display:flex; gap:16px; flex-wrap:wrap; margin-bottom:30px;
-    animation: fadeUp 0.8s ease 0.16s both;
-  }
-  .btn{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:13px 26px; border-radius:10px; font-weight:600; font-size:0.95rem;
-    border:1px solid transparent; cursor:pointer; transition:transform .2s ease, box-shadow .2s ease;
-  }
-  .btn:hover{ transform:translateY(-2px); }
-  .btn-primary{
-    background:var(--cyan);
-    color:#04050a;
-    box-shadow:0 14px 40px -10px rgba(187,59,250,0.65), 0 4px 18px -6px rgba(20,202,252,0.4);
-  }
-  .btn-primary:hover{
-    background:#4dd8ff;
-    box-shadow:0 18px 50px -10px rgba(187,59,250,0.85), 0 6px 22px -6px rgba(20,202,252,0.55);
-  }
-  .btn-ghost{
-    background:rgba(255,255,255,0.03);
-    border-color:var(--panel-border);
-    color:var(--text);
-    font-family:var(--mono); font-size:0.88rem;
-  }
-  .btn-ghost:hover{ border-color:rgba(20,202,252,0.4); background:rgba(20,202,252,0.06); }
-  .btn-ghost svg{ width:16px; height:16px; opacity:0.8; }
-
-  .hero-caption{
-    font-size:0.9rem; color:var(--text-dim); line-height:1.7;
-    animation: fadeUp 0.8s ease 0.22s both;
-  }
-
-  /* ---------- kinetic address visual ---------- */
-  .hero-visual{ animation: fadeUp 0.9s ease 0.12s both; }
-  .term-line{ margin-bottom:18px; color:var(--text-dim); overflow-wrap:anywhere; font-family:var(--mono); font-size:0.88rem; }
-  .term-line .prompt{ color:var(--cyan); }
-  .term-line .cmd{ color:var(--text); }
-  .grind-chars{
-    display:block; font-family:var(--mono); font-weight:600;
-    font-size:clamp(1.5rem, 2.5vw, 2.15rem); line-height:1.4; letter-spacing:-0.01em;
-    color:#fff; word-break:break-all; overflow-wrap:anywhere;
-    padding-left:20px; border-left:2px solid rgba(20,202,252,0.35);
-  }
-  .grind-chars .match{
-    background:linear-gradient(120deg, var(--cyan), var(--purple));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    font-weight:800;
-  }
-  .grind-status{
-    color:var(--text-dim); font-size:0.85rem; font-family:var(--mono);
-    margin-top:18px; padding-left:22px;
-  }
-  .grind-status .found{ color:#28c840; font-weight:600; }
-  .cursor-blink{ display:inline-block; width:8px; height:1.1em; background:var(--cyan); vertical-align:text-bottom; animation:blink 1s step-end infinite; margin-left:2px; }
-
-  /* ---------- terminal chrome (shared with live-demo section) ---------- */
-  .terminal-bar{
-    display:flex; align-items:center; gap:8px; padding:12px 16px;
-    border-bottom:1px solid var(--panel-border); background:rgba(255,255,255,0.02);
-  }
-  .terminal-bar .tdot{ width:11px; height:11px; border-radius:50%; }
-  .tdot.r{ background:#ff5f57; } .tdot.y{ background:#febc2e; } .tdot.g{ background:#28c840; }
-  .terminal-bar .tlabel{
-    margin-left:8px; font-family:var(--mono); font-size:0.75rem; color:var(--text-dim);
-  }
-
-  @media (max-width:900px){
-    .hero-grid{ grid-template-columns:1fr; gap:48px; text-align:left; }
-    .hero-visual{ order:-1; }
-    .hero-copy{ max-width:none; }
+  @media (max-width: 900px) {
+    .hero {
+      min-height: calc(100svh - 56px);
+      height: auto;
+      max-height: none;
+      padding: 18px 0 22px;
+      align-items: center;
+      box-sizing: border-box;
+    }
+    .hero-inner {
+      grid-template-columns: 1fr;
+      grid-template-rows: none;
+      gap: 16px;
+      justify-items: stretch;
+      text-align: left;
+      height: auto;
+      width: 100%;
+      align-content: start;
+    }
+    .hero-copy {
+      max-width: 100%;
+      align-self: stretch;
+    }
+    .hero h1 {
+      max-width: none;
+      text-wrap: balance;
+      font-size: clamp(1.25rem, 3.8vw, 1.6rem);
+      margin-bottom: 8px;
+    }
+    .hero-sub {
+      max-width: none;
+      font-size: 0.98rem;
+      margin-bottom: 14px;
+    }
+    .hero-meta { margin-bottom: 14px; }
+    .match-machine {
+      margin: 0;
+      max-width: 100%;
+      width: 100%;
+      height: auto;
+      order: -1;
+      align-self: stretch;
+      flex: none;
+      min-height: 0;
+      overflow: visible;
+      padding: 14px 12px 14px;
+      border-radius: 18px;
+      box-shadow: 6px 6px 0 var(--ink);
+    }
+    .match-machine::before { inset: 8px; border-radius: 12px; }
+    .mm-chrome { margin-bottom: 10px; }
+    .mm-screen { padding: 12px 12px 10px; min-height: 0; }
+    .mm-body { grid-template-columns: 1fr 52px; gap: 10px; margin-top: 10px; align-items: end; }
+    .mm-slot { height: 108px; min-height: 108px; }
+    .mm-lever { width: 52px; height: 108px; }
+    .mm-lever-arm { width: 36px; height: 78px; margin-left: -18px; bottom: 20px; }
+    .mm-lever-knob { width: 32px; height: 32px; }
+    .brand-mark {
+      font-size: clamp(1.75rem, 7.5vw, 2.5rem);
+      margin-bottom: 8px;
+    }
+    .hero-ctas {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+    }
+    .hero-ctas .btn {
+      width: 100%;
+      justify-content: center;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
   }
 
-  @keyframes blink{ 50%{ opacity:0; } }
-  @keyframes fadeUp{ from{ opacity:0; transform:translateY(18px); } to{ opacity:1; transform:translateY(0); } }
 
-  /* ---------- reveal on scroll ---------- */
-  .reveal{ opacity:0; transform:translateY(28px); transition:opacity .7s ease, transform .7s ease; }
-  .reveal.in{ opacity:1; transform:translateY(0); }
-  .reveal.d1{ transition-delay:.08s; } .reveal.d2{ transition-delay:.16s; } .reveal.d3{ transition-delay:.24s; } .reveal.d4{ transition-delay:.32s; }
+  /* ---- sections ---- */
+  section { padding: 72px 0; }
+  .section-kicker {
+    font-family: var(--mono); font-size: 0.8rem; color: var(--stamp-deep);
+    font-weight: 500; margin-bottom: 10px;
+  }
+  .section-title {
+    font-family: var(--display);
+    font-size: clamp(1.9rem, 4vw, 2.7rem);
+    font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
+    margin-bottom: 12px; max-width: 18ch;
+  }
+  .section-desc {
+    color: var(--ink-soft); font-size: 1.05rem; max-width: 54ch; margin-bottom: 36px;
+  }
 
-  /* ---------- section shell ---------- */
-  section{ padding:110px 0; }
-  .section-head{ text-align:center; max-width:640px; margin:0 auto 56px; }
-  .section-title{ font-size:clamp(1.8rem, 4vw, 2.6rem); font-weight:800; letter-spacing:-0.02em; margin-bottom:14px; }
-  .section-desc{ color:var(--text-dim); font-size:1.03rem; }
+  /* how it works — sequential, not cards */
+  .steps {
+    display: grid; gap: 0;
+    border: 2.5px solid var(--ink);
+    border-radius: 20px;
+    overflow: hidden;
+    background: var(--white);
+    box-shadow: var(--shadow);
+  }
+  .step {
+    display: grid; grid-template-columns: 120px 1fr;
+    gap: 18px; align-items: center;
+    padding: 28px 28px;
+    border-bottom: 2px solid var(--line);
+  }
+  .step:last-child { border-bottom: none; }
+  .step-art { width: 96px; height: 96px; margin: 0 auto; }
+  .step h3 {
+    font-family: var(--display); font-size: 1.35rem; font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .step p { color: var(--ink-soft); max-width: 48ch; }
+  .step-num {
+    display: inline-block;
+    font-family: var(--mono); font-size: 0.75rem;
+    background: var(--wax); border: 1.5px solid var(--ink);
+    border-radius: 999px; padding: 2px 8px; margin-bottom: 8px;
+  }
+  @media (max-width: 640px) {
+    .step { grid-template-columns: 1fr; text-align: left; }
+    .step-art { margin: 0; }
+  }
 
-  /* ---------- download ---------- */
-  .version-tag{
-    display:inline-block; font-family:var(--mono); font-size:0.78rem; color:var(--cyan);
-    background:rgba(20,202,252,0.08); border:1px solid rgba(20,202,252,0.3);
-    padding:4px 12px; border-radius:999px; margin-bottom:16px;
+  /* download tickets */
+  #download { background: var(--paper-deep); border-block: 3px solid var(--ink); }
+  .platform-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
   }
-  .platform-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-bottom:46px; }
-  @media (max-width:820px){ .platform-grid{ grid-template-columns:1fr; } }
-  .platform-card{
-    padding:32px 26px; border-radius:18px; border:1px solid var(--panel-border);
-    background:linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0));
-    text-align:center; transition:transform .3s ease, border-color .3s ease, box-shadow .3s ease;
+  .ticket {
+    background: var(--white);
+    border: 2.5px solid var(--ink);
+    border-radius: 18px;
+    padding: 22px 20px;
+    box-shadow: 5px 5px 0 var(--ink);
+    position: relative;
   }
-  .platform-card:hover{ transform:translateY(-6px); border-color:rgba(20,202,252,0.35); box-shadow:0 20px 50px -20px rgba(20,202,252,0.35); }
-  .platform-icon{
-    width:56px; height:56px; margin:0 auto 18px; border-radius:14px;
-    display:flex; align-items:center; justify-content:center; color:var(--cyan);
-    background:linear-gradient(135deg, rgba(20,202,252,0.16), rgba(187,59,250,0.16));
-    border:1px solid rgba(255,255,255,0.08);
+  .ticket::before {
+    content: "";
+    position: absolute; top: 14px; right: 14px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    box-shadow: inset 0 0 0 3px var(--stamp);
   }
-  .platform-icon svg{ width:28px; height:28px; }
-  .platform-card h3{ font-size:1.1rem; margin-bottom:6px; }
-  .platform-card .psub{ color:var(--text-dim); font-size:0.85rem; margin-bottom:22px; }
-  .platform-card .btn-primary{ width:100%; justify-content:center; margin-bottom:12px; }
-  .platform-card .alt-link{
-    display:block; font-family:var(--mono); font-size:0.78rem; color:var(--text-dim);
+  .ticket h3 {
+    font-family: var(--display); font-size: 1.45rem; margin: 10px 0 4px;
   }
-  .platform-card .alt-link:hover{ color:var(--cyan); }
+  .ticket .psub { color: var(--ink-soft); font-size: 0.95rem; margin-bottom: 16px; }
+  .ticket .btn { width: 100%; justify-content: center; margin-bottom: 10px; }
+  .ticket .alt {
+    display: block; text-align: center; font-size: 0.88rem;
+    color: var(--forest-mid); font-weight: 600; text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .version-tag {
+    display: inline-block;
+    font-family: var(--mono); font-size: 0.78rem;
+    background: var(--wax); border: 1.5px solid var(--ink);
+    border-radius: 6px; padding: 3px 8px; margin-bottom: 10px;
+  }
+  .other-ways {
+    margin-top: 28px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  }
+  .other-ways-label { font-weight: 700; color: var(--ink-soft); margin-right: 4px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--white); border: 2px solid var(--ink);
+    border-radius: 999px; padding: 8px 14px; font-weight: 700; font-size: 0.9rem;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .pill:hover { background: var(--wax); }
+  .pill svg { width: 14px; height: 14px; }
+  @media (max-width: 860px) {
+    .platform-row { grid-template-columns: 1fr; }
+  }
 
-  .other-ways{ text-align:center; }
-  .other-ways-label{
-    font-family:var(--mono); font-size:0.75rem; letter-spacing:0.06em; text-transform:uppercase;
-    color:var(--text-dim); margin-bottom:20px;
+  /* demo */
+  .demo-shell {
+    border: 2.5px solid var(--ink);
+    border-radius: 18px;
+    overflow: hidden;
+    background: #102033;
+    color: #d7e2ef;
+    box-shadow: 8px 8px 0 var(--ink);
+    font-family: var(--mono); font-size: 0.88rem;
   }
-  .source-links{ display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
-  .source-link{
-    display:inline-flex; align-items:center; gap:10px; padding:12px 20px; border-radius:12px;
-    border:1px solid var(--panel-border); background:rgba(255,255,255,0.02);
-    font-size:0.9rem; font-weight:600; transition:all .25s ease;
+  .demo-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; background: #17263a;
+    border-bottom: 2px solid rgba(255,255,255,0.08);
   }
-  .source-link:hover{ border-color:rgba(187,59,250,0.4); background:rgba(187,59,250,0.06); transform:translateY(-2px); }
-  .source-link svg{ width:20px; height:20px; }
-  .source-link .npm-badge{
-    width:20px; height:20px; border-radius:4px; background:#CB3837; color:#fff;
-    font-family:var(--mono); font-size:0.55rem; font-weight:800; display:flex; align-items:center; justify-content:center;
-  }
-  .source-link .crate-icon{ color:#F74C00; }
+  .tdot { width: 10px; height: 10px; border-radius: 50%; }
+  .tdot.r { background: #ff6b6b; }
+  .tdot.y { background: #f5b700; }
+  .tdot.g { background: #51cf66; }
+  .tlabel { margin-left: 8px; opacity: 0.7; font-size: 0.78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .demo-body { padding: 18px 16px 22px; min-height: 220px; white-space: pre-wrap; line-height: 1.55; }
+  .demo-body .ok { color: #69db7c; }
+  .demo-body .dim { opacity: 0.55; }
+  .demo-body .hi { color: var(--wax); }
 
-  /* ---------- stats ---------- */
-  .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:24px; margin-bottom:90px; }
-  .stat{
-    text-align:center; padding:28px 16px; border:1px solid var(--panel-border); border-radius:14px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+  /* chains as stickers */
+  .chains-wall {
+    display: flex; flex-wrap: wrap; gap: 10px;
   }
-  .stat .num{
-    font-size:2.1rem; font-weight:800;
-    background:linear-gradient(120deg, var(--cyan), var(--purple));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
+  .sticker {
+    display: inline-flex; flex-direction: column; gap: 2px;
+    background: var(--white);
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    padding: 10px 12px 8px;
+    box-shadow: 2px 2px 0 var(--ink);
+    transform: rotate(var(--r, 0deg));
+    transition: transform .15s ease, box-shadow .15s ease;
   }
-  .stat .label{ color:var(--text-dim); font-size:0.85rem; margin-top:6px; }
-  @media (max-width:760px){ .stats{ grid-template-columns:repeat(2,1fr); } }
+  .sticker:nth-child(4n) { background: #fff7e6; }
+  .sticker:nth-child(4n+1) { background: #e8f5ef; }
+  .sticker:nth-child(4n+2) { background: #ffe8df; }
+  .sticker:nth-child(4n+3) { background: var(--white); }
+  .sticker:hover {
+    transform: rotate(0deg) scale(1.04);
+    box-shadow: 4px 4px 0 var(--ink);
+    z-index: 1;
+  }
+  .sticker .cid {
+    font-family: var(--mono); font-size: 0.72rem; color: var(--stamp-deep); font-weight: 500;
+  }
+  .sticker .cname { font-weight: 700; font-size: 0.92rem; }
 
-  /* ---------- feature cards ---------- */
-  .features-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
-  @media (max-width:900px){ .features-grid{ grid-template-columns:repeat(2,1fr); } }
-  @media (max-width:600px){ .features-grid{ grid-template-columns:1fr; } }
-  .feature-card{
-    padding:28px; border-radius:16px; border:1px solid var(--panel-border);
-    background:var(--panel);
-    transition:transform .3s ease, border-color .3s ease, box-shadow .3s ease;
-    position:relative; overflow:hidden;
+  /* install */
+  #install { background: var(--white); border-block: 3px solid var(--ink); }
+  .tabs {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
   }
-  .feature-card::before{
-    content:""; position:absolute; inset:0; opacity:0; transition:opacity .3s ease;
-    background:radial-gradient(400px circle at var(--mx,50%) var(--my,0%), rgba(20,202,252,0.12), transparent 60%);
+  .tab-btn {
+    font-family: var(--sans); font-weight: 700; font-size: 0.92rem;
+    background: var(--paper); color: var(--ink);
+    border: 2px solid var(--ink); border-radius: 999px;
+    padding: 8px 16px; cursor: pointer;
   }
-  .feature-card:hover{ transform:translateY(-6px); border-color:rgba(187,59,250,0.35); box-shadow:0 20px 50px -20px rgba(139,86,245,0.4); }
-  .feature-card:hover::before{ opacity:1; }
-  .feature-icon{
-    width:44px; height:44px; border-radius:11px; display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(135deg, rgba(20,202,252,0.18), rgba(187,59,250,0.18));
-    border:1px solid rgba(255,255,255,0.08);
-    margin-bottom:18px; color:var(--cyan);
+  .tab-btn.active {
+    background: var(--forest); color: var(--white);
   }
-  .feature-icon svg{ width:22px; height:22px; }
-  .feature-card h3{ font-size:1.08rem; margin-bottom:8px; font-weight:700; }
-  .feature-card p{ color:var(--text-dim); font-size:0.92rem; }
+  .code-block {
+    display: none;
+    position: relative;
+    background: #102033; color: #e8eef6;
+    border: 2.5px solid var(--ink); border-radius: 16px;
+    padding: 22px 18px 18px; font-family: var(--mono); font-size: 0.9rem;
+    box-shadow: 5px 5px 0 var(--ink); overflow-x: auto;
+  }
+  .code-block.active { display: block; }
+  .code-block .cmt { color: #7f93ab; }
+  .code-block .g { color: var(--wax); }
+  .copy-btn {
+    position: absolute; top: 12px; right: 12px;
+    background: var(--stamp); color: #fff; border: 2px solid #fff;
+    border-radius: 8px; padding: 5px 10px; font-family: var(--sans);
+    font-weight: 700; font-size: 0.78rem; cursor: pointer;
+  }
 
-  /* ---------- live demo ---------- */
-  .demo-terminal{
-    max-width:820px; margin:0 auto;
-    background:var(--panel); border:1px solid var(--panel-border); border-radius:16px;
-    box-shadow:0 40px 100px -40px rgba(0,0,0,0.85);
+  /* security strip */
+  #security {
+    background: var(--forest);
+    color: var(--white);
+    border-bottom: 3px solid var(--ink);
   }
-  .demo-body{ padding:30px 32px; font-family:var(--mono); font-size:0.9rem; min-height:340px; overflow-wrap:anywhere; }
-  .demo-body .out-line{ margin-bottom:8px; white-space:pre-wrap; word-break:break-word; overflow-wrap:anywhere; color:var(--text-dim); }
-  .demo-body .out-line b{ color:#fff; }
-  .demo-body .accent{ color:var(--cyan); }
-  .demo-body .ok{ color:#28c840; }
+  #security .section-title { color: var(--white); }
+  #security .section-desc { color: rgba(255,255,255,0.75); }
+  .rules {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  }
+  .rule {
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.25);
+    border-radius: 14px; padding: 18px 16px;
+  }
+  .rule h4 {
+    font-family: var(--display); font-size: 1.15rem; margin-bottom: 6px;
+    color: var(--wax);
+  }
+  .rule p { font-size: 0.95rem; opacity: 0.88; }
+  @media (max-width: 800px) {
+    .rules { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 520px) {
+    .rules { grid-template-columns: 1fr; }
+  }
 
-  /* ---------- chains grid ---------- */
-  .chains-grid{
-    display:grid; grid-template-columns:repeat(5,1fr); gap:14px;
+  /* final CTA */
+  .final {
+    text-align: center; padding: 80px 0 72px;
   }
-  @media (max-width:900px){ .chains-grid{ grid-template-columns:repeat(4,1fr); } }
-  @media (max-width:640px){ .chains-grid{ grid-template-columns:repeat(3,1fr); } }
-  .chain-chip{
-    padding:16px 10px; text-align:center; border-radius:12px;
-    background:rgba(255,255,255,0.02); border:1px solid var(--panel-border);
-    transition:transform .25s ease, border-color .25s ease, background .25s ease;
-  }
-  .chain-chip:hover{
-    transform:translateY(-4px) scale(1.03);
-    border-color:rgba(20,202,252,0.4);
-    background:rgba(20,202,252,0.05);
-  }
-  .chain-chip .cid{
-    font-family:var(--mono); font-size:0.72rem; color:var(--cyan); display:block; margin-bottom:4px;
-  }
-  .chain-chip .cname{ font-size:0.82rem; color:var(--text); }
+  .final .section-title { margin-left: auto; margin-right: auto; }
+  .final .section-desc { margin-left: auto; margin-right: auto; }
+  .final .hero-ctas { justify-content: center; }
 
-  /* ---------- install tabs ---------- */
-  .install-panel{ max-width:760px; margin:0 auto; }
-  .tabs{ display:flex; gap:8px; justify-content:center; margin-bottom:20px; flex-wrap:wrap; }
-  .tab-btn{
-    padding:9px 18px; border-radius:999px; font-size:0.85rem; font-family:var(--mono);
-    border:1px solid var(--panel-border); background:rgba(255,255,255,0.02); color:var(--text-dim);
-    cursor:pointer; transition:all .2s ease;
+  footer.site-footer {
+    border-top: 3px solid var(--ink);
+    padding: 22px 0;
+    background: var(--paper-deep);
   }
-  .tab-btn.active{
-    color:#04050a; border-color:transparent;
-    background:var(--cyan);
-    box-shadow:0 6px 18px -6px rgba(187,59,250,0.6);
-    font-weight:600;
+  footer.site-footer .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 28px;
+    flex-wrap: wrap;
   }
-  .code-block{
-    background:var(--panel); border:1px solid var(--panel-border); border-radius:14px;
-    padding:50px 24px 22px; font-family:var(--mono); font-size:0.9rem; position:relative;
-    display:none;
+  .flinks {
+    display: flex; flex-wrap: wrap; gap: 18px;
+    font-weight: 700; color: var(--forest);
   }
-  .code-block.active{ display:block; animation:fadeUp .4s ease both; }
-  .code-block pre{ white-space:pre-wrap; word-break:break-word; color:var(--text); line-height:1.7; }
-  .code-block .cmt{ color:var(--text-dim); }
-  .code-block .g{ color:var(--cyan); }
-  .copy-btn{
-    position:absolute; top:16px; right:16px;
-    background:rgba(255,255,255,0.06); border:1px solid var(--panel-border);
-    color:var(--text-dim); font-size:0.75rem; padding:6px 12px; border-radius:8px; cursor:pointer;
-    font-family:var(--mono); transition:all .2s ease;
+  .flinks a:hover { color: var(--stamp); }
+  .fcopy { color: var(--ink-soft); font-size: 0.95rem; white-space: nowrap; }
+  .fcopy a {
+    color: var(--forest);
+    font-weight: 700;
+    text-decoration: none;
   }
-  .copy-btn:hover{ color:#fff; border-color:rgba(20,202,252,0.4); }
-  .copy-btn.copied{ color:#28c840; border-color:rgba(40,200,64,0.4); }
+  .fcopy a:hover { color: var(--stamp); }
 
-  /* ---------- security ---------- */
-  .security-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
-  @media (max-width:900px){ .security-grid{ grid-template-columns:repeat(2,1fr); } }
-  @media (max-width:560px){ .security-grid{ grid-template-columns:1fr; } }
-  .sec-card{
-    text-align:center; padding:26px 16px; border-radius:14px; border:1px solid var(--panel-border);
-    background:rgba(255,255,255,0.02);
-  }
-  .sec-card .sicon{
-    width:40px; height:40px; margin:0 auto 12px; border-radius:11px;
-    display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(135deg, rgba(20,202,252,0.16), rgba(187,59,250,0.16));
-    border:1px solid rgba(255,255,255,0.08); color:var(--cyan);
-  }
-  .sec-card .sicon svg{ width:20px; height:20px; }
-  .sec-card h4{ font-size:0.95rem; margin-bottom:6px; }
-  .sec-card p{ color:var(--text-dim); font-size:0.82rem; }
+  @media (max-width: 640px) {
+    .wrap { padding: 0 16px; }
+    .nav-inner { padding: 10px 16px; gap: 10px; }
+    .brand { font-size: 1.02rem; gap: 8px; }
+    .brand img { width: 30px; height: 30px; }
+    .brand span { max-width: 11.5em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* ---------- footer cta ---------- */
-  .footer-cta{
-    text-align:center; padding:100px 0 60px; position:relative;
+    .hero {
+      padding: 14px 0 18px;
+      min-height: calc(100svh - 52px);
+      height: auto;
+      max-height: none;
+    }
+    .hero-inner { gap: 14px; }
+    .brand-mark {
+      font-size: clamp(1.65rem, 8vw, 2.15rem);
+      margin-bottom: 6px;
+      letter-spacing: -0.04em;
+    }
+    .hero h1 { font-size: clamp(1.2rem, 5vw, 1.45rem); margin-bottom: 6px; }
+    .hero-sub {
+      font-size: 0.92rem;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    .hero-meta { margin-bottom: 12px; gap: 6px; }
+    .hero-meta span { font-size: 0.7rem; padding: 4px 9px; }
+    .btn { font-size: 0.92rem; padding: 12px 16px; box-shadow: 3px 3px 0 var(--ink); }
+    .hero-ctas { gap: 9px; }
+
+    .match-machine {
+      max-width: 100%;
+      width: 100%;
+      height: auto;
+      padding: 12px 11px 13px;
+      border-radius: 16px;
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+    .match-machine::before { inset: 7px; border-radius: 11px; }
+    .mm-chrome { margin-bottom: 8px; gap: 6px; }
+    .mm-badge { font-size: 0.64rem; padding: 3px 8px; }
+    .mm-status { font-size: 0.7rem; }
+    .mm-led { width: 11px; height: 11px; }
+    .mm-screen { padding: 10px 10px 9px; min-height: 0; border-radius: 10px; border-width: 2.5px; }
+    .mm-label { margin-bottom: 5px; font-size: 0.64rem; }
+    .mm-reels { font-size: 0.95rem; letter-spacing: 0.02em; min-height: 1.25em; }
+    .mm-target { font-size: 1.05rem; margin-top: 6px; gap: 6px; }
+    .mm-kind { font-size: 0.64rem; padding: 2px 7px; }
+    .mm-body { grid-template-columns: 1fr 48px; gap: 8px; margin-top: 8px; align-items: end; }
+    .mm-slot { height: 100px; min-height: 100px; border-radius: 10px; }
+    .mm-slot-label { top: 6px; left: 10px; font-size: 0.6rem; }
+    .mm-ticket { left: 6px; right: 6px; padding: 9px 8px 8px; border-radius: 8px; }
+    .mm-ticket.is-out { top: 6px; }
+    .mm-ticket .chain { font-size: 0.62rem; margin-bottom: 3px; }
+    .mm-ticket .addr { font-size: 0.74rem; line-height: 1.25; }
+    .mm-ticket .ok { margin-top: 5px; font-size: 0.68rem; padding: 2px 7px; }
+    .mm-lever { width: 48px; height: 100px; gap: 4px; }
+    .mm-lever-arm { width: 34px; height: 72px; margin-left: -17px; bottom: 18px; }
+    .mm-lever-knob { width: 30px; height: 30px; border-width: 2.5px; box-shadow: 0 3px 0 var(--ink); }
+    .mm-lever-shaft { width: 10px; min-height: 28px; }
+    .mm-lever-cap { font-size: 0.55rem; }
+
+    section { padding: 52px 0; }
+    .section-title { font-size: clamp(1.55rem, 7vw, 2.1rem); max-width: none; text-wrap: balance; }
+    .section-desc { font-size: 0.98rem; margin-bottom: 28px; max-width: none; }
+
+    .step { padding: 20px 18px; gap: 12px; }
+    .step-art { width: 72px; height: 72px; }
+    .step h3 { font-size: 1.2rem; }
+
+    .ticket { padding: 18px 16px; box-shadow: 4px 4px 0 var(--ink); }
+    .other-ways { gap: 8px; }
+    .pill { font-size: 0.85rem; padding: 7px 12px; }
+
+    .demo-shell { box-shadow: 5px 5px 0 var(--ink); font-size: 0.8rem; }
+    .demo-bar { padding: 8px 10px; }
+    .tlabel { margin-left: 4px; font-size: 0.68rem; }
+    .demo-body { padding: 14px 12px 18px; min-height: 180px; }
+
+    .sticker { padding: 8px 10px 6px; }
+    .sticker .cname { font-size: 0.85rem; }
+
+    .tabs { gap: 6px; }
+    .tab-btn { font-size: 0.85rem; padding: 7px 12px; }
+    .code-block {
+      padding: 18px 12px 14px;
+      font-size: 0.78rem;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+    .copy-btn { top: 8px; right: 8px; padding: 4px 8px; font-size: 0.7rem; }
+
+    .final { padding: 56px 0 48px; }
+    .final .hero-ctas {
+      flex-direction: column;
+      align-items: stretch;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+    .final .hero-ctas .btn { width: 100%; justify-content: center; }
+
+    footer.site-footer { padding: 18px 0; }
+    footer.site-footer .wrap {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .flinks { gap: 14px; }
+    .fcopy { white-space: normal; font-size: 0.88rem; line-height: 1.4; }
   }
-  .footer-cta h2{ font-size:clamp(1.8rem,4vw,3rem); font-weight:800; margin-bottom:18px; letter-spacing:-0.02em; }
-  .footer-cta p{ color:var(--text-dim); margin-bottom:36px; }
 
-  footer.site-footer{
-    border-top:1px solid var(--panel-border); padding:36px 0; text-align:center;
-    color:var(--text-dim); font-size:0.85rem;
+  @media (max-width: 380px) {
+    .brand-mark { white-space: normal; }
+    .brand-mark em { display: inline; }
+    .mm-body { grid-template-columns: 1fr 44px; gap: 6px; }
+    .mm-lever { width: 44px; height: 92px; }
+    .mm-slot { height: 92px; min-height: 92px; }
+    .mm-lever-arm { width: 32px; height: 66px; margin-left: -16px; }
+    .mm-lever-knob { width: 28px; height: 28px; }
   }
-  footer.site-footer .flinks{ display:flex; gap:22px; justify-content:center; margin-bottom:16px; flex-wrap:wrap; }
-  footer.site-footer .flinks a:hover{ color:#fff; }
 
-  code.inline{ font-family:var(--mono); background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:5px; font-size:0.85em; }
+  /* short phones: tighten spacing, never stretch the machine */
+  @media (max-width: 900px) and (max-height: 780px) {
+    .hero { padding: 12px 0 14px; min-height: 0; }
+    .hero-inner { gap: 12px; }
+    .hero-meta { display: none; }
+    .mm-slot { height: 88px; min-height: 88px; }
+    .mm-lever { height: 88px; }
+    .brand-mark { font-size: clamp(1.5rem, 6.5vw, 1.9rem); }
+    .hero h1 { font-size: clamp(1.1rem, 4.2vw, 1.3rem); }
+    .hero-sub { font-size: 0.88rem; margin-bottom: 10px; }
+  }
 
-  /* ---------- small screens ---------- */
-  @media (max-width:480px){
-    section{ padding:70px 0; }
-    .hero{ padding:120px 0 50px; }
-    .nav-inner{ padding:14px 16px; }
-    .grind-chars{ font-size:1.15rem; padding-left:14px; }
-    .grind-status{ padding-left:16px; }
-    .demo-body{ padding:18px 16px; font-size:0.78rem; }
-    .code-block{ padding:46px 16px 18px; font-size:0.8rem; }
-    .platform-card{ padding:26px 20px; }
-    .source-link{ padding:10px 14px; font-size:0.82rem; }
-    .footer-cta{ padding:70px 0 50px; }
-    footer.site-footer .flinks{ gap:14px 18px; }
+  @media (max-width: 900px) and (max-height: 680px) {
+    .hero-sub { display: none; }
+    .mm-target { display: none; }
+    .mm-slot { height: 78px; min-height: 78px; }
+    .mm-lever { height: 78px; }
+    .hero-ctas .btn { padding: 10px 14px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mm-led, .match-machine.is-shake, .mm-sparks i {
+      animation: none !important;
+    }
+    .mm-ticket { top: 10px !important; }
+    .mm-slot { height: 168px; min-height: 168px; }
+    .mm-slot-label { opacity: 0 !important; }
+  }
+  @media (max-width: 900px) and (prefers-reduced-motion: reduce) {
+    .mm-slot { height: 100px; min-height: 100px; }
+    .mm-ticket { top: 6px !important; }
   }
 </style>
 </head>
 <body>
 
-<canvas id="bg-canvas"></canvas>
-<div class="grid-overlay"></div>
-<div class="glow-blob one"></div>
-<div class="glow-blob two"></div>
-<div class="glow-blob three"></div>
-
 <header class="nav">
   <div class="nav-inner">
-    <div class="brand">
-      <img src="assets/logo.svg" alt="vanity-address logo" />
+    <a class="brand" href="#">
+      <img src="assets/logo.svg" alt="" width="34" height="34" />
       <span>vanity-address</span>
-    </div>
-    <nav class="nav-links">
+    </a>
+    <nav class="nav-links" id="navLinks">
       <a href="#download">Download</a>
-      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
       <a href="#demo">Demo</a>
       <a href="#chains">Chains</a>
       <a href="#install">Install</a>
       <a href="#security">Security</a>
     </nav>
-    <div class="nav-right">
+    <div style="display:flex;align-items:center;gap:10px;">
       <a class="nav-cta" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
-        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
         <span class="cta-text">Star on GitHub</span>
       </a>
       <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       </button>
     </div>
   </div>
 </header>
 
 <main>
-
   <!-- HERO -->
   <section class="hero">
-    <div class="wrap hero-grid">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="wrap hero-inner">
       <div class="hero-copy">
-        <h1 class="headline">Type a word.<br/>Get a wallet<br/>that starts with it.</h1>
-        <p class="subhead">
-          Generate a real, fully working crypto wallet whose address matches what you type
-          — entirely on your machine. No servers, no accounts, no tracking.
+        <p class="brand-mark">vanity<em>-address</em></p>
+        <h1>Stamp your word onto a real wallet.</h1>
+        <p class="hero-sub">
+          Local CPU grinding that finds an address matching your prefix, suffix, or contains pattern — keys never leave your machine.
         </p>
+        <div class="hero-meta" aria-hidden="true">
+          <span class="accent">31 chains</span>
+          <span>100% offline</span>
+          <span>MIT</span>
+        </div>
         <div class="hero-ctas">
-          <a class="btn btn-primary" href="#install">Get started →</a>
-          <a class="btn btn-ghost" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-            npx vanity-address
-          </a>
+          <a class="btn btn-primary" href="#install">Get started</a>
+          <a class="btn btn-ghost" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">npx vanity-address</a>
         </div>
-        <p class="hero-caption">Works with 31 chains. 100% offline. MIT licensed.</p>
       </div>
 
-      <div class="hero-visual" aria-hidden="true">
-        <div class="term-line"><span class="prompt">$</span> <span class="cmd">vanity-address --chain sol --suffix axay</span></div>
-        <span class="grind-chars" id="grindChars">7xKpN4qwRnLB2fGhy9uMcVTAeWDs38ZjQaU</span>
-        <div class="grind-status" id="grindStatus">grinding<span class="cursor-blink"></span></div>
+      <div class="match-machine" id="matchMachine" aria-hidden="true">
+        <div class="mm-sparks" id="mmSparks"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="mm-chrome">
+          <span class="mm-badge">100% local</span>
+          <span class="mm-status" id="mmStatus">grinding…</span>
+          <span class="mm-led" id="mmLed" aria-hidden="true"></span>
+        </div>
+        <div class="mm-screen">
+          <div class="mm-label">address stream</div>
+          <div class="mm-reels" id="mmReels">··············</div>
+          <div class="mm-target">
+            <span class="mm-kind" id="mmKind">suffix</span>
+            <span class="mm-target-label">→</span>
+            <strong id="mmWord">moon</strong>
+          </div>
+        </div>
+        <div class="mm-body">
+          <div class="mm-slot">
+            <div class="mm-slot-label">ticket out</div>
+            <div class="mm-ticket" id="mmTicket">
+              <div class="chain" id="mmChain">sol · suffix</div>
+              <div class="addr" id="mmAddr">…QaU5vXrmoon</div>
+              <div class="ok" id="mmOk">✓ match</div>
+            </div>
+          </div>
+          <div class="mm-lever" id="mmLever">
+            <div class="mm-lever-arm">
+              <div class="mm-lever-knob"></div>
+              <div class="mm-lever-shaft"></div>
+            </div>
+            <div class="mm-lever-cap">PULL</div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- DOWNLOAD -->
-  <section id="download">
+
+
+  <!-- HOW -->
+  <section id="how">
     <div class="wrap">
-      <div class="section-head reveal">
-        <h2 class="section-title">Get vanity-address</h2>
-        <div><span class="version-tag" id="latestVersionTag">latest release</span></div>
-        <p class="section-desc">No Rust or Node.js required for pre-built downloads — pick your platform.</p>
-      </div>
+      <p class="section-kicker">three presses</p>
+      <h2 class="section-title">Pick a chain. Type a word. Press grind.</h2>
+      <p class="section-desc">Same Rust engine behind the CLI, desktop app, and npm SDK — 31 chains, one trust model.</p>
 
-      <div class="platform-grid">
-        <div class="platform-card reveal d1">
-          <div class="platform-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10.5 4.4V11.4H3V5.5ZM11.5 4.26 21 3V11.4H11.5V4.26ZM3 12.4H10.5V19.55L3 18.46V12.4ZM11.5 12.4H21V20.9L11.5 19.65V12.4Z"/></svg>
+      <div class="steps">
+        <article class="step">
+          <svg class="step-art" viewBox="0 0 96 96" aria-hidden="true">
+            <rect x="8" y="18" width="80" height="60" rx="12" fill="#E8F5EF" stroke="#0D1B2A" stroke-width="3"/>
+            <circle cx="32" cy="48" r="10" fill="#F5B700" stroke="#0D1B2A" stroke-width="2.5"/>
+            <circle cx="48" cy="48" r="10" fill="#FF6B35" stroke="#0D1B2A" stroke-width="2.5"/>
+            <circle cx="64" cy="48" r="10" fill="#1B4332" stroke="#0D1B2A" stroke-width="2.5"/>
+          </svg>
+          <div>
+            <span class="step-num">01 · chain</span>
+            <h3>Choose where it lives</h3>
+            <p>Solana, EVM, Bitcoin SegWit/Taproot, Sei, Injective, Celestia, dYdX — or any of the 31 menu ids.</p>
           </div>
-          <h3>Windows</h3>
-          <p class="psub">10 / 11 — desktop installer or CLI</p>
-          <a class="btn btn-primary" id="dlWinPrimary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">Download for Windows</a>
-          <a class="alt-link" id="dlWinSecondary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">or grab the CLI (.zip) →</a>
-        </div>
-
-        <div class="platform-card reveal d2">
-          <div class="platform-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.67.91-1.377 0-2.332-1.26-3.428-2.8-1.256-1.75-2.264-4.5-2.264-7.05 0-4.14 2.688-6.34 5.35-6.34 1.46 0 2.673.96 3.59.96.88 0 2.24-1.02 3.9-1.02.652 0 3.006.06 4.556 2.28-.118.075-2.72 1.59-2.72 4.85 0 3.9 3.42 5.28 3.264 5.26z"/></svg>
+        </article>
+        <article class="step">
+          <svg class="step-art" viewBox="0 0 96 96" aria-hidden="true">
+            <rect x="14" y="22" width="68" height="52" rx="10" fill="#FFF7E6" stroke="#0D1B2A" stroke-width="3"/>
+            <path d="M28 48h40" stroke="#FF6B35" stroke-width="4" stroke-linecap="round"/>
+            <text x="48" y="44" text-anchor="middle" font-family="Fraunces, serif" font-size="14" fill="#0D1B2A" font-weight="700">axay</text>
+            <circle cx="72" cy="30" r="8" fill="#F5B700" stroke="#0D1B2A" stroke-width="2"/>
+          </svg>
+          <div>
+            <span class="step-num">02 · pattern</span>
+            <h3>Prefix, suffix, or contains</h3>
+            <p>Use <code class="inline">*</code> wildcards and comma OR lists. Honest ETA before you start grinding.</p>
           </div>
-          <h3>macOS</h3>
-          <p class="psub">Apple Silicon (M1–M4) — .dmg or CLI</p>
-          <a class="btn btn-primary" id="dlMacPrimary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">Download for Mac</a>
-          <a class="alt-link" id="dlMacSecondary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">Intel Mac / CLI builds →</a>
-        </div>
-
-        <div class="platform-card reveal d3">
-          <div class="platform-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><path d="m9 8 3 3-3 3"/></svg>
+        </article>
+        <article class="step">
+          <svg class="step-art" viewBox="0 0 96 96" aria-hidden="true">
+            <rect x="18" y="16" width="60" height="64" rx="10" fill="#FFE8DF" stroke="#0D1B2A" stroke-width="3"/>
+            <path d="M34 40l10 10 20-22" fill="none" stroke="#1B4332" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="30" y="62" width="36" height="8" rx="3" fill="#0D1B2A"/>
+          </svg>
+          <div>
+            <span class="step-num">03 · keep it local</span>
+            <h3>Match found, keys stay put</h3>
+            <p>Export formats for Phantom, MetaMask, and friends. No network calls. No telemetry. Ever.</p>
           </div>
-          <h3>Linux</h3>
-          <p class="psub">x86_64 — terminal CLI</p>
-          <a class="btn btn-primary" id="dlLinuxPrimary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">Download for Linux</a>
-          <a class="alt-link" href="https://github.com/yudizaxay/vanity-address/blob/main/docs/INSTALL.md#build-from-source" target="_blank" rel="noopener">or build from source →</a>
-        </div>
-      </div>
-
-      <div class="other-ways reveal">
-        <div class="other-ways-label">Or get it from</div>
-        <div class="source-links">
-          <a class="source-link" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
-            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-            GitHub
-          </a>
-          <a class="source-link" href="https://crates.io/crates/vanity-address" target="_blank" rel="noopener">
-            <svg class="crate-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
-            crates.io
-          </a>
-          <a class="source-link" href="https://www.npmjs.com/package/vanity-address" target="_blank" rel="noopener">
-            <span class="npm-badge">npm</span>
-            vanity-address
-          </a>
-        </div>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- FEATURES -->
-  <section id="features">
-    <div class="wrap">
-
-      <div class="stats reveal" id="statsRow">
-        <div class="stat"><div class="num" data-count="31">0</div><div class="label">Supported chains</div></div>
-        <div class="stat"><div class="num" data-count="100" data-suffix="%">0%</div><div class="label">Offline / local</div></div>
-        <div class="stat"><div class="num" data-count="0">0</div><div class="label">Network calls</div></div>
-        <div class="stat"><div class="num" data-count="2">0</div><div class="label">Frontends: CLI + Desktop</div></div>
-      </div>
-
-      <div class="section-head reveal">
-        <h2 class="section-title">Built for speed, privacy, and every chain</h2>
-        <p class="section-desc">One Rust engine, parallel CPU grinding, and zero compromises on where your keys live.</p>
-      </div>
-
-      <div class="features-grid" id="featureGrid">
-        <div class="feature-card reveal d1">
-          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-          <h3>Parallel CPU grinding</h3>
-          <p>Rayon-powered multi-core search finds matches in seconds to minutes — with a live keys/sec + ETA readout.</p>
-        </div>
-        <div class="feature-card reveal d2">
-          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-          <h3>100% local, always</h3>
-          <p>Every keypair is generated on your machine. No network calls, no telemetry, no accounts — ever.</p>
-        </div>
-        <div class="feature-card reveal d3">
-          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
-          <h3>31 chains, one engine</h3>
-          <p>Solana, EVM, Bitcoin (P2PKH / SegWit / Taproot), Sei, Injective, Celestia, dYdX, and more — same CLI, desktop, and SDK.</p>
-        </div>
-        <div class="feature-card reveal d1">
-          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
-          <h3>CLI + Desktop app</h3>
-          <p>Script it with <code class="inline">--json</code>, or use the native Tauri wizard with a live progress bar.</p>
-        </div>
-        <div class="feature-card reveal d2">
-          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg></div>
-          <h3>Programmatic SDK</h3>
-          <p><code class="inline">npm install vanity-address</code> gives you <code class="inline">generateAddress()</code>, batch generation, and <code class="inline">estimateDifficulty()</code> — with a multi-core worker pool on Node.</p>
-        </div>
-        <div class="feature-card reveal d3">
-          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div>
-          <h3>Prefix, suffix, or contains</h3>
-          <p><code class="inline">*</code> wildcards, comma OR patterns, exact-case matching, and honest time estimates up front.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- LIVE DEMO -->
+  <!-- DEMO -->
   <section id="demo">
     <div class="wrap">
-      <div class="section-head reveal">
-        <h2 class="section-title">Chain → pattern → grind → match</h2>
-        <p class="section-desc">The exact flow you'll see in your own terminal.</p>
-      </div>
-
-      <div class="demo-terminal reveal">
-        <div class="terminal-bar">
+      <p class="section-kicker">live ink</p>
+      <h2 class="section-title">Watch a grind land.</h2>
+      <p class="section-desc">The same flow you’ll see in your own terminal.</p>
+      <div class="demo-shell">
+        <div class="demo-bar">
           <span class="tdot r"></span><span class="tdot y"></span><span class="tdot g"></span>
           <span class="tlabel">vanity-address --chain evm --prefix dead --suffix beef</span>
         </div>
@@ -616,60 +1072,100 @@
     </div>
   </section>
 
+  <!-- DOWNLOAD -->
+  <section id="download">
+    <div class="wrap">
+      <p class="section-kicker">pick up a build</p>
+      <h2 class="section-title">Get vanity-address</h2>
+      <span class="version-tag" id="latestVersionTag">v0.6.0</span>
+      <p class="section-desc">No Rust or Node required for pre-built downloads — grab your platform ticket.</p>
+
+      <div class="platform-row">
+        <div class="ticket">
+          <h3>Windows</h3>
+          <p class="psub">10 / 11 — desktop installer or CLI</p>
+          <a class="btn btn-primary" id="dlWinPrimary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">Download for Windows</a>
+          <a class="alt" id="dlWinSecondary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">or grab the CLI (.zip)</a>
+        </div>
+        <div class="ticket">
+          <h3>macOS</h3>
+          <p class="psub">Apple Silicon (M1–M4) — .dmg or CLI</p>
+          <a class="btn btn-primary" id="dlMacPrimary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">Download for Mac</a>
+          <a class="alt" id="dlMacSecondary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">Intel Mac / CLI builds</a>
+        </div>
+        <div class="ticket">
+          <h3>Linux</h3>
+          <p class="psub">x86_64 — terminal CLI</p>
+          <a class="btn btn-primary" id="dlLinuxPrimary" href="https://github.com/yudizaxay/vanity-address/releases/latest" target="_blank" rel="noopener">Download for Linux</a>
+          <a class="alt" href="https://github.com/yudizaxay/vanity-address/blob/main/docs/INSTALL.md#build-from-source" target="_blank" rel="noopener">or build from source</a>
+        </div>
+      </div>
+
+      <div class="other-ways">
+        <span class="other-ways-label">Also on</span>
+        <a class="pill" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a class="pill" href="https://crates.io/crates/vanity-address" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
+          crates.io
+        </a>
+        <a class="pill" href="https://www.npmjs.com/package/vanity-address" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M0 0v16h16V0H0zm13 13h-2V5H8.5v8h-5V3H13v10z"/></svg>
+          npm
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- CHAINS -->
   <section id="chains">
     <div class="wrap">
-      <div class="section-head reveal">
-        <h2 class="section-title">All 31, same trust model</h2>
-        <p class="section-desc">Use any id with <code class="inline">--chain</code> — CLI, desktop, and SDK all match.</p>
-      </div>
-      <div class="chains-grid" id="chainsGrid"></div>
+      <p class="section-kicker">sticker wall · 31</p>
+      <h2 class="section-title">All 31, same trust model.</h2>
+      <p class="section-desc">Use any id with <code class="inline">--chain</code> — CLI, desktop, and SDK all match.</p>
+      <div class="chains-wall" id="chainsGrid"></div>
     </div>
   </section>
 
   <!-- INSTALL -->
   <section id="install">
     <div class="wrap">
-      <div class="section-head reveal">
-        <h2 class="section-title">Pick your poison</h2>
-        <p class="section-desc">No Rust or Node.js required for pre-built downloads.</p>
+      <p class="section-kicker">quick paths</p>
+      <h2 class="section-title">Install in one command.</h2>
+      <p class="section-desc">Pre-built downloads above, or pick a package manager.</p>
+
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" data-tab="npm" type="button">npm</button>
+        <button class="tab-btn" data-tab="brew" type="button">Homebrew</button>
+        <button class="tab-btn" data-tab="cargo" type="button">Cargo</button>
+        <button class="tab-btn" data-tab="binary" type="button">Direct download</button>
       </div>
 
-      <div class="install-panel reveal">
-        <div class="tabs">
-          <button class="tab-btn active" data-tab="npm">npm</button>
-          <button class="tab-btn" data-tab="brew">Homebrew</button>
-          <button class="tab-btn" data-tab="cargo">Cargo</button>
-          <button class="tab-btn" data-tab="binary">Direct download</button>
-        </div>
-
-        <div class="code-block active" data-panel="npm">
-          <button class="copy-btn" data-copy="npx vanity-address">Copy</button>
-          <pre><span class="cmt"># no install needed — runs instantly</span>
+      <div class="code-block active" data-panel="npm">
+        <button class="copy-btn" data-copy="npx vanity-address" type="button">Copy</button>
+        <pre><span class="cmt"># no install needed — runs instantly</span>
 <span class="g">$</span> npx vanity-address
 
 <span class="cmt"># or install globally</span>
 <span class="g">$</span> npm install -g vanity-address</pre>
-        </div>
-
-        <div class="code-block" data-panel="brew">
-          <button class="copy-btn" data-copy="brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address">Copy</button>
-          <pre><span class="g">$</span> brew tap yudizaxay/tap
+      </div>
+      <div class="code-block" data-panel="brew">
+        <button class="copy-btn" data-copy="brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address" type="button">Copy</button>
+        <pre><span class="g">$</span> brew tap yudizaxay/tap
 <span class="g">$</span> brew trust yudizaxay/tap
 <span class="g">$</span> brew install vanity-address</pre>
-        </div>
-
-        <div class="code-block" data-panel="cargo">
-          <button class="copy-btn" data-copy="cargo install vanity-address">Copy</button>
-          <pre><span class="cmt"># requires Rust 1.70+, first compile ~3-8 min</span>
+      </div>
+      <div class="code-block" data-panel="cargo">
+        <button class="copy-btn" data-copy="cargo install vanity-address" type="button">Copy</button>
+        <pre><span class="cmt"># requires Rust 1.70+, first compile ~3–8 min</span>
 <span class="g">$</span> cargo install vanity-address</pre>
-        </div>
-
-        <div class="code-block" data-panel="binary">
-          <button class="copy-btn" data-copy="https://github.com/yudizaxay/vanity-address/releases/latest">Copy link</button>
-          <pre><span class="cmt"># pre-built CLI + desktop .dmg / .exe, no compiler needed</span>
-<span class="g">→</span> github.com/yudizaxay/vanity-address/releases/latest</pre>
-        </div>
+      </div>
+      <div class="code-block" data-panel="binary">
+        <button class="copy-btn" data-copy="https://github.com/yudizaxay/vanity-address/releases/latest" type="button">Copy link</button>
+        <pre><span class="cmt"># pre-built CLI + desktop .dmg / .exe</span>
+→ github.com/yudizaxay/vanity-address/releases/latest</pre>
       </div>
     </div>
   </section>
@@ -677,30 +1173,43 @@
   <!-- SECURITY -->
   <section id="security">
     <div class="wrap">
-      <div class="section-head reveal">
-        <h2 class="section-title">Read this before generating keys</h2>
-      </div>
-      <div class="security-grid">
-        <div class="sec-card reveal d1"><div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><h4>Local only</h4><p>Keys are generated on your machine, never sent anywhere.</p></div>
-        <div class="sec-card reveal d2"><div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.58 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg></div><h4>No network</h4><p>This tool never connects to the internet.</p></div>
-        <div class="sec-card reveal d3"><div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><h4>Open source</h4><p>Audit the Rust engine — trust, but verify.</p></div>
-        <div class="sec-card reveal d4"><div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><h4>Verify first</h4><p>Always double-check the address before sending funds.</p></div>
+      <p class="section-kicker" style="color:var(--wax)">before you stamp</p>
+      <h2 class="section-title">Read this before generating keys.</h2>
+      <p class="section-desc">A vanity wallet is a real wallet. Treat the private key like cash.</p>
+      <div class="rules">
+        <div class="rule">
+          <h4>Local only</h4>
+          <p>Keys are generated on your machine, never sent anywhere.</p>
+        </div>
+        <div class="rule">
+          <h4>No network</h4>
+          <p>This tool never connects to the internet while grinding.</p>
+        </div>
+        <div class="rule">
+          <h4>Open source</h4>
+          <p>Audit the Rust engine trust, but verify.</p>
+        </div>
+        <div class="rule">
+          <h4>Verify first</h4>
+          <p>Always double-check the address before sending funds.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- FOOTER CTA -->
-  <section class="footer-cta">
-    <div class="wrap reveal">
-      <h2>Grind your first address in 30 seconds.</h2>
-      <p>No accounts. No servers. Just <code class="inline">npx vanity-address</code>.</p>
-      <a class="btn btn-primary" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
-        <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-        Star on GitHub
-      </a>
+  <section class="final">
+    <div class="wrap">
+      <h2 class="section-title">Grind your first address in 30 seconds.</h2>
+      <p class="section-desc">No accounts. No servers. Just <code class="inline">npx vanity-address</code>.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#install">Get started</a>
+        <a class="btn btn-ghost" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
+          Star on GitHub
+        </a>
+      </div>
     </div>
   </section>
-
 </main>
 
 <footer class="site-footer">
@@ -712,299 +1221,264 @@
       <a href="https://github.com/yudizaxay/vanity-address/blob/main/SECURITY.md" target="_blank" rel="noopener">Security policy</a>
       <a href="https://www.npmjs.com/package/vanity-address" target="_blank" rel="noopener">npm</a>
     </div>
-    <div>MIT © yudizaxay — keys stay on your machine.</div>
+    <div class="fcopy">MIT © <a href="https://github.com/yudizaxay" target="_blank" rel="noopener">yudizaxay</a> — keys stay on your machine.</div>
   </div>
 </footer>
 
 <script>
-(function(){
+(function () {
   "use strict";
 
-  /* ---------------- background: falling address-character rain ---------------- */
-  var canvas = document.getElementById('bg-canvas');
-  var ctx = canvas.getContext('2d');
-  var W, H;
-  var RAIN_CHARS = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-  var COL_WIDTH = 26;
-  var ROW_HEIGHT = 18;
-  var drops = [];
-
-  function resize(){
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = Math.max(window.innerHeight, document.body.scrollHeight);
+  /* nav */
+  var toggle = document.getElementById("navToggle");
+  var links = document.getElementById("navLinks");
+  if (toggle && links) {
+    toggle.addEventListener("click", function () {
+      var open = links.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    links.querySelectorAll("a").forEach(function (a) {
+      a.addEventListener("click", function () {
+        links.classList.remove("open");
+        toggle.setAttribute("aria-expanded", "false");
+      });
+    });
   }
-  window.addEventListener('resize', function(){
-    resize(); initDrops();
+
+  /* match machine — grind → pull → ticket */
+  (function runMatchMachine() {
+    var machine = document.getElementById("matchMachine");
+    var status = document.getElementById("mmStatus");
+    var reels = document.getElementById("mmReels");
+    var wordEl = document.getElementById("mmWord");
+    var kindEl = document.getElementById("mmKind");
+    var ticket = document.getElementById("mmTicket");
+    var chainEl = document.getElementById("mmChain");
+    var addrEl = document.getElementById("mmAddr");
+    var okEl = document.getElementById("mmOk");
+    if (!machine || !reels || !ticket || !addrEl) return;
+
+    var CHARSET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+    var PATTERNS = [
+      { word: "moon", kind: "suffix", chain: "sol", left: "7xKp…QaU5vXr", right: "moon", hot: "right" },
+      { word: "axay", kind: "suffix", chain: "sol", left: "…E6bY", right: "axay", hot: "right" },
+      { word: "DeFi", kind: "prefix", chain: "sol", left: "DeFi", right: "N4qw…E6bY", hot: "left" },
+      { word: "cafe", kind: "suffix", chain: "btc-segwit", left: "bc1q7x…", right: "cafe", hot: "right" },
+      { word: "dead", kind: "prefix", chain: "evm", left: "0xdead", right: "…c0ffee", hot: "left" },
+      { word: "pump", kind: "contains", chain: "sol", left: "…Xr", right: "pump…Yt", hot: "right" }
+    ];
+    var i = 0;
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function wait(ms) {
+      return new Promise(function (r) { setTimeout(r, ms); });
+    }
+    function randStr(n) {
+      var s = "";
+      for (var k = 0; k < n; k++) s += CHARSET[Math.floor(Math.random() * CHARSET.length)];
+      return s;
+    }
+    function formatAddr(p, locked) {
+      if (!locked) return randStr(4) + "…" + randStr(6);
+      if (p.hot === "left") {
+        return '<span class="hot">' + p.left + '</span>' + p.right;
+      }
+      return p.left + '<span class="hot">' + p.right + '</span>';
+    }
+    function applyMeta(p) {
+      wordEl.textContent = p.word;
+      if (kindEl) kindEl.textContent = p.kind;
+      chainEl.textContent = p.chain + " · " + p.kind;
+      if (okEl) okEl.textContent = "✓ " + p.kind + " · " + p.word;
+    }
+    function showStatic(p) {
+      applyMeta(p);
+      reels.innerHTML = formatAddr(p, true);
+      addrEl.innerHTML = formatAddr(p, true);
+      ticket.classList.add("is-out");
+      status.textContent = "match found";
+      machine.classList.add("is-match");
+    }
+
+    if (reduce) {
+      showStatic(PATTERNS[0]);
+      return;
+    }
+
+    async function cycle() {
+      /* timings aligned to CSS: lever 360ms, ticket 500ms, shake 400ms */
+      var PULL_MS = 380;
+      var PULL_DWELL_MS = 120;
+      var TICKET_MS = 520;
+      var HOLD_MS = 1600;
+      var SCRAMBLE_MS = 1200;
+
+      while (true) {
+        var p = PATTERNS[i % PATTERNS.length];
+        i++;
+
+        machine.classList.remove("is-match", "is-pull", "is-shake");
+        ticket.classList.remove("is-out");
+        applyMeta(p);
+        status.textContent = "grinding…";
+        addrEl.textContent = "············";
+
+        var scrambleUntil = performance.now() + SCRAMBLE_MS;
+        while (performance.now() < scrambleUntil) {
+          reels.textContent = randStr(5) + "…" + randStr(7);
+          await wait(55);
+        }
+
+        status.textContent = "pull!";
+        machine.classList.add("is-pull");
+        await wait(PULL_MS);
+        await wait(PULL_DWELL_MS);
+
+        reels.innerHTML = formatAddr(p, true);
+        addrEl.innerHTML = formatAddr(p, true);
+        status.textContent = "match found";
+        machine.classList.add("is-shake", "is-match");
+        await wait(140);
+
+        ticket.classList.add("is-out");
+        await wait(TICKET_MS);
+
+        machine.classList.remove("is-pull", "is-shake");
+        await wait(HOLD_MS);
+
+        ticket.classList.remove("is-out");
+        await wait(TICKET_MS * 0.55);
+        machine.classList.remove("is-match");
+        status.textContent = "next pattern…";
+        await wait(380);
+      }
+    }
+
+    cycle();
+  })();
+
+
+
+  var CHAINS = [
+    ["algo", "Algorand"], ["aptos", "Aptos"], ["btc", "Bitcoin"],
+    ["btc-segwit", "BTC SegWit"], ["btc-taproot", "BTC Taproot"], ["ada", "Cardano"],
+    ["tia", "Celestia"], ["cosmos", "Cosmos"], ["dash", "Dash"], ["doge", "Dogecoin"],
+    ["dydx", "dYdX"], ["evm", "EVM"], ["fil", "Filecoin"], ["hedera", "Hedera"],
+    ["inj", "Injective"], ["icp", "Internet Computer"], ["kaspa", "Kaspa"],
+    ["ksm", "Kusama"], ["ltc", "Litecoin"], ["erd", "MultiversX"], ["near", "NEAR"],
+    ["osmo", "Osmosis"], ["dot", "Polkadot"], ["xrp", "Ripple"], ["sei", "Sei"],
+    ["sol", "Solana"], ["xlm", "Stellar"], ["sui", "Sui"], ["xtz", "Tezos"],
+    ["ton", "TON"], ["trx", "Tron"]
+  ];
+  var grid = document.getElementById("chainsGrid");
+  if (grid) {
+    CHAINS.forEach(function (c, i) {
+      var el = document.createElement("div");
+      el.className = "sticker";
+      el.style.setProperty("--r", ((i % 5) - 2) * 1.4 + "deg");
+      el.innerHTML = "<span class='cid'>" + c[0] + "</span><span class='cname'>" + c[1] + "</span>";
+      grid.appendChild(el);
+    });
+  }
+
+  /* install tabs */
+  document.querySelectorAll(".tab-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".code-block").forEach(function (p) { p.classList.remove("active"); });
+      btn.classList.add("active");
+      var panel = document.querySelector('.code-block[data-panel="' + btn.getAttribute("data-tab") + '"]');
+      if (panel) panel.classList.add("active");
+    });
   });
 
-  function randChar(){
-    return RAIN_CHARS[Math.floor(Math.random() * RAIN_CHARS.length)];
-  }
-
-  function initDrops(){
-    var cols = Math.max(1, Math.floor(W / COL_WIDTH));
-    drops = [];
-    for (var i = 0; i < cols; i++){
-      // Skip some columns so the effect stays airy, not a dense matrix wall.
-      if (Math.random() > 0.72) continue;
-      drops.push({
-        x: i * COL_WIDTH + COL_WIDTH / 2,
-        y: Math.random() * H,
-        speed: 0.3 + Math.random() * 0.5,
-        hue: Math.random() > 0.5 ? '20,202,252' : '187,59,250',
-        tail: 5 + Math.floor(Math.random() * 4),
-        chars: [],
-        changeEvery: 10 + Math.floor(Math.random() * 12),
-        tick: Math.floor(Math.random() * 20)
-      });
-    }
-  }
-
-  function tick(){
-    ctx.clearRect(0, 0, W, H);
-    ctx.font = '13px "SF Mono", "Fira Code", Consolas, monospace';
-    ctx.textAlign = 'center';
-
-    for (var i = 0; i < drops.length; i++){
-      var d = drops[i];
-      d.y += d.speed;
-      if (d.y - d.tail * ROW_HEIGHT > H) d.y = -Math.random() * 300;
-
-      d.tick++;
-      if (d.tick % d.changeEvery === 0 || d.chars.length < d.tail){
-        d.chars.unshift(randChar());
-        if (d.chars.length > d.tail) d.chars.pop();
+  /* copy */
+  document.querySelectorAll(".copy-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var text = btn.getAttribute("data-copy") || "";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          var old = btn.textContent;
+          btn.textContent = "Copied";
+          setTimeout(function () { btn.textContent = old; }, 1200);
+        });
       }
+    });
+  });
 
-      for (var j = 0; j < d.chars.length; j++){
-        var charY = d.y - j * ROW_HEIGHT;
-        if (charY < -ROW_HEIGHT || charY > H + ROW_HEIGHT) continue;
-        var alpha = j === 0 ? 0.48 : (1 - j / d.tail) * 0.3;
-        ctx.fillStyle = 'rgba(' + d.hue + ',' + alpha.toFixed(3) + ')';
-        ctx.fillText(d.chars[j], d.x, charY);
-      }
-    }
-
-    requestAnimationFrame(tick);
-  }
-
-  resize(); initDrops(); tick();
-
-  /* ---------------- latest release lookup ---------------- */
-  fetch('https://api.github.com/repos/yudizaxay/vanity-address/releases/latest')
-    .then(function(r){ return r.json(); })
-    .then(function(data){
+  /* GitHub latest release assets */
+  fetch("https://api.github.com/repos/yudizaxay/vanity-address/releases/latest")
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
       var assets = data.assets || [];
-      function find(regex){
-        var a = assets.find(function(x){ return regex.test(x.name); });
+      function find(regex) {
+        var a = assets.find(function (x) { return regex.test(x.name); });
         return a ? a.browser_download_url : null;
       }
-      function setHref(id, url){
+      function setHref(id, url) {
         if (!url) return;
         var el = document.getElementById(id);
         if (el) el.href = url;
       }
-      setHref('dlWinPrimary', find(/Windows-Desktop\.exe$/i));
-      setHref('dlWinSecondary', find(/Windows-CLI\.zip$/i));
-      setHref('dlMacPrimary', find(/Mac-AppleSilicon-Desktop\.dmg$/i));
-      setHref('dlMacSecondary', find(/Mac-AppleSilicon-CLI\.tar\.gz$/i) || find(/Mac-Intel-CLI\.tar\.gz$/i));
-      setHref('dlLinuxPrimary', find(/Linux-CLI\.tar\.gz$/i));
-      var tag = document.getElementById('latestVersionTag');
-      if (tag && data.tag_name) tag.textContent = data.tag_name;
+      setHref("dlWinPrimary", find(/Windows-Desktop\.exe$/i));
+      setHref("dlWinSecondary", find(/Windows-CLI\.zip$/i));
+      setHref("dlMacPrimary", find(/Mac-AppleSilicon-Desktop\.dmg$/i));
+      setHref("dlMacSecondary", find(/Mac-AppleSilicon-CLI\.tar\.gz$/i) || find(/Mac-Intel-CLI\.tar\.gz$/i));
+      setHref("dlLinuxPrimary", find(/Linux-CLI\.tar\.gz$/i));
+      var tag = document.getElementById("latestVersionTag");
+      if (tag) {
+        // Prefer live GitHub tag when >= 0.6.0; otherwise keep v0.6.0 (pending publish)
+        var name = data.tag_name || "";
+        var parts = name.replace(/^v/i, "").split(".").map(function (n) { return parseInt(n, 10) || 0; });
+        var isNewEnough = parts[0] > 0 || (parts[0] === 0 && parts[1] >= 6);
+        tag.textContent = isNewEnough ? name : "v0.6.0";
+      }
     })
-    .catch(function(){ /* fall back to the releases/latest links already in the HTML */ });
+    .catch(function () {});
 
-  /* ---------------- hero grind animation ---------------- */
-  var CHARSET58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-  var SUFFIX = "axay";
-  var grindEl = document.getElementById('grindChars');
-  var statusEl = document.getElementById('grindStatus');
-
-  function randomAddr(len){
-    var s = "";
-    for (var i = 0; i < len; i++){
-      s += CHARSET58[Math.floor(Math.random() * CHARSET58.length)];
-    }
-    return s;
-  }
-
-  function runGrindCycle(){
-    var ticks = 0;
-    var maxTicks = 26 + Math.floor(Math.random() * 10);
-    statusEl.innerHTML = 'grinding<span class="cursor-blink"></span>';
-    grindEl.innerHTML = randomAddr(38);
-
-    var interval = setInterval(function(){
-      ticks++;
-      if (ticks >= maxTicks){
-        clearInterval(interval);
-        var base = randomAddr(34);
-        grindEl.innerHTML = base + '<span class="match">' + SUFFIX + '</span>';
-        statusEl.innerHTML = '<span class="found">✓ match found</span> — attempts: ' +
-          (Math.floor(Math.random() * 400 + 200)) + ',000,000';
-        setTimeout(runGrindCycle, 2400);
-      } else {
-        grindEl.textContent = randomAddr(38);
-      }
-    }, 70);
-  }
-  runGrindCycle();
-
-  /* ---------------- scroll reveal ---------------- */
-  var revealEls = document.querySelectorAll('.reveal');
-  var io = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
-    });
-  }, { threshold: 0.15 });
-  revealEls.forEach(function(el){ io.observe(el); });
-
-  /* ---------------- animated counters ---------------- */
-  function animateCount(el){
-    var target = parseInt(el.getAttribute('data-count'), 10);
-    var suffix = el.getAttribute('data-suffix') || '';
-    var startTime = null;
-    var duration = 1200;
-    function step(ts){
-      if (!startTime) startTime = ts;
-      var progress = Math.min((ts - startTime) / duration, 1);
-      var eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.floor(eased * target) + suffix;
-      if (progress < 1) requestAnimationFrame(step);
-      else el.textContent = target + suffix;
-    }
-    requestAnimationFrame(step);
-  }
-  var statsIo = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if (e.isIntersecting){
-        e.target.querySelectorAll('.num').forEach(animateCount);
-        statsIo.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.4 });
-  var statsRow = document.getElementById('statsRow');
-  if (statsRow) statsIo.observe(statsRow);
-
-  /* ---------------- feature card mouse glow ---------------- */
-  document.querySelectorAll('.feature-card').forEach(function(card){
-    card.addEventListener('mousemove', function(e){
-      var rect = card.getBoundingClientRect();
-      card.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
-      card.style.setProperty('--my', (e.clientY - rect.top) + 'px');
-    });
-  });
-
-  /* ---------------- live demo typing sequence ---------------- */
-  var demoScript = [
-    { t: 'line', text: '$ vanity-address --chain evm --prefix dead --suffix beef', cls:'' },
-    { t: 'wait', ms: 400 },
-    { t: 'line', text: '  Chain     EVM (Ethereum)', cls:'' },
-    { t: 'line', text: "  Target    starting with '0xdead' and ending with 'beef'", cls:'' },
-    { t: 'line', text: '  Expected  ~1.1T attempts (average)', cls:'accent' },
-    { t: 'wait', ms: 300 },
-    { t: 'line', text: '  System    8 logical / 8 physical · 7 workers', cls:'' },
-    { t: 'wait', ms: 300 },
-    { t: 'line', text: '  ⠋ 42.7M keys | 2,412,880 keys/s | ~7 min remaining', cls:'accent' },
-    { t: 'wait', ms: 900 },
-    { t: 'line', text: '  ✓ Match found!', cls:'ok' },
-    { t: 'line', text: '  Address   0xdead7fB92c1a4E3d9C8bA0f5D1e2c3b4a5f6beef', cls:'' },
-    { t: 'line', text: '  Time      184.02s', cls:'' },
-    { t: 'wait', ms: 600 },
-    { t: 'line', text: '  Private Keys — never share these with anyone.', cls:'accent' }
+  /* typed demo */
+  var body = document.getElementById("demoBody");
+  var lines = [
+    { t: "$ vanity-address --chain evm --prefix dead --suffix beef", cls: "dim" },
+    { t: "", cls: "" },
+    { t: "  Chain     EVM", cls: "" },
+    { t: "  Target    starting with 'dead', ending with 'beef'", cls: "" },
+    { t: "  Estimate  ~few minutes on a laptop", cls: "dim" },
+    { t: "", cls: "" },
+    { t: "  grinding…  1.2M keys/s", cls: "" },
+    { t: "", cls: "" },
+    { t: "  ✓ Match", cls: "ok" },
+    { t: "  Address   0xdead…beef", cls: "hi" },
+    { t: "  Keys stay on this machine.", cls: "dim" }
   ];
-
-  var demoBody = document.getElementById('demoBody');
-  var demoStarted = false;
-
-  function runDemo(){
-    demoBody.innerHTML = '';
-    var i = 0;
-    function next(){
-      if (i >= demoScript.length){
-        setTimeout(runDemo, 3200);
-        return;
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (body) {
+    if (reduce) {
+      body.innerHTML = lines.map(function (l) {
+        return "<div class='" + l.cls + "'>" + (l.t || " ") + "</div>";
+      }).join("");
+    } else {
+      var i = 0;
+      function next() {
+        if (i >= lines.length) return;
+        var row = document.createElement("div");
+        row.className = lines[i].cls;
+        row.textContent = lines[i].t || " ";
+        body.appendChild(row);
+        i++;
+        setTimeout(next, i < 7 ? 220 : 380);
       }
-      var step = demoScript[i++];
-      if (step.t === 'wait'){ setTimeout(next, step.ms); return; }
-      var div = document.createElement('div');
-      div.className = 'out-line ' + (step.cls || '');
-      div.innerHTML = step.text.replace(/'([^']+)'/g, "<b>'$1'</b>");
-      demoBody.appendChild(div);
-      setTimeout(next, 55 + Math.random() * 40);
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            io.disconnect();
+            next();
+          }
+        });
+      }, { threshold: 0.35 });
+      io.observe(body);
     }
-    next();
   }
-
-  var demoIo = new IntersectionObserver(function(entries){
-    entries.forEach(function(e){
-      if (e.isIntersecting && !demoStarted){ demoStarted = true; runDemo(); }
-    });
-  }, { threshold: 0.3 });
-  demoIo.observe(document.getElementById('demo'));
-
-  /* ---------------- chains grid ---------------- */
-  var CHAINS = [
-    ['algo','Algorand'], ['aptos','Aptos'], ['btc','Bitcoin'],
-    ['btc-segwit','BTC SegWit'], ['btc-taproot','BTC Taproot'], ['ada','Cardano'],
-    ['tia','Celestia'], ['cosmos','Cosmos'], ['dash','Dash'], ['doge','Dogecoin'],
-    ['dydx','dYdX'], ['evm','EVM'], ['fil','Filecoin'], ['hedera','Hedera'],
-    ['inj','Injective'], ['icp','Internet Computer'], ['kaspa','Kaspa'],
-    ['ksm','Kusama'], ['ltc','Litecoin'], ['erd','MultiversX'], ['near','NEAR'],
-    ['osmo','Osmosis'], ['dot','Polkadot'], ['xrp','Ripple'], ['sei','Sei'],
-    ['sol','Solana'], ['xlm','Stellar'], ['sui','Sui'], ['xtz','Tezos'],
-    ['ton','TON'], ['trx','Tron']
-  ];
-  var chainsGrid = document.getElementById('chainsGrid');
-  CHAINS.forEach(function(c, idx){
-    var el = document.createElement('div');
-    el.className = 'chain-chip reveal d' + ((idx % 4) + 1);
-    el.innerHTML = '<span class="cid">' + c[0] + '</span><span class="cname">' + c[1] + '</span>';
-    chainsGrid.appendChild(el);
-  });
-  chainsGrid.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
-
-  /* ---------------- mobile nav toggle ---------------- */
-  var navToggle = document.getElementById('navToggle');
-  var navLinks = document.querySelector('.nav-links');
-  if (navToggle && navLinks){
-    navToggle.addEventListener('click', function(){
-      var open = navLinks.classList.toggle('mobile-open');
-      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-    navLinks.querySelectorAll('a').forEach(function(a){
-      a.addEventListener('click', function(){
-        navLinks.classList.remove('mobile-open');
-        navToggle.setAttribute('aria-expanded', 'false');
-      });
-    });
-  }
-
-  /* ---------------- install tabs ---------------- */
-  var tabBtns = document.querySelectorAll('.tab-btn');
-  var panels = document.querySelectorAll('.code-block');
-  tabBtns.forEach(function(btn){
-    btn.addEventListener('click', function(){
-      tabBtns.forEach(function(b){ b.classList.remove('active'); });
-      panels.forEach(function(p){ p.classList.remove('active'); });
-      btn.classList.add('active');
-      document.querySelector('.code-block[data-panel="' + btn.getAttribute('data-tab') + '"]').classList.add('active');
-    });
-  });
-
-  /* ---------------- copy buttons ---------------- */
-  document.querySelectorAll('.copy-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var text = btn.getAttribute('data-copy');
-      navigator.clipboard.writeText(text).then(function(){
-        var original = btn.textContent;
-        btn.textContent = 'Copied ✓';
-        btn.classList.add('copied');
-        setTimeout(function(){ btn.textContent = original; btn.classList.remove('copied'); }, 1800);
-      });
-    });
-  });
-
 })();
 </script>
 </body>
