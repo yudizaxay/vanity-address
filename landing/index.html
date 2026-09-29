@@ -8,7 +8,8 @@
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link id="webFonts" rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" /></noscript>
 
 <style>
   :root {
@@ -19,7 +20,8 @@
     --forest: #1B4332;
     --forest-mid: #2D6A4F;
     --stamp: #FF6B35;
-    --stamp-deep: #E85A24;
+    --stamp-deep: #9A3209;
+    --stamp-fill: #C2410C;
     --wax: #F5B700;
     --white: #FBFCFD;
     --line: rgba(13, 27, 42, 0.12);
@@ -52,6 +54,10 @@
   a { color: inherit; text-decoration: none; }
   img, svg { display: block; max-width: 100%; }
   .wrap { max-width: 1120px; margin: 0 auto; padding: 0 22px; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
   code.inline {
     font-family: var(--mono);
     font-size: 0.88em;
@@ -153,6 +159,7 @@
     width: 100%;
     min-height: min(72vh, 640px);
     overflow: hidden;
+    contain: size;
   }
   .hero-ascii {
     margin: 0;
@@ -180,12 +187,12 @@
   }
   .btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
   .btn:active { transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--ink); }
-  .btn-primary { background: var(--stamp); color: #fff; }
+  .btn-primary { background: var(--stamp-fill); color: #fff; }
   .btn-ghost { background: var(--white); color: var(--ink); }
   .hero-splash .btn { border-color: rgba(236, 233, 228, 0.35); box-shadow: 4px 4px 0 rgba(236, 233, 228, 0.18); }
   .hero-splash .btn:hover { box-shadow: 6px 6px 0 rgba(236, 233, 228, 0.28); }
   .hero-splash .btn:active { box-shadow: 2px 2px 0 rgba(236, 233, 228, 0.18); }
-  .hero-splash .btn-primary { border-color: var(--stamp); }
+  .hero-splash .btn-primary { border-color: var(--stamp-fill); }
   .hero-splash .btn-ghost { background: transparent; color: #fff; }
 
   @media (max-width: 900px) {
@@ -410,7 +417,7 @@
   .code-block .g { color: var(--wax); }
   .copy-btn {
     position: absolute; top: 12px; right: 12px;
-    background: var(--stamp); color: #fff; border: 2px solid #fff;
+    background: var(--stamp-fill); color: #fff; border: 2px solid #fff;
     border-radius: 8px; padding: 5px 10px; font-family: var(--sans);
     font-weight: 700; font-size: 0.78rem; cursor: pointer;
   }
@@ -431,7 +438,7 @@
     border: 2px solid rgba(255,255,255,0.25);
     border-radius: 14px; padding: 18px 16px;
   }
-  .rule h4 {
+  .rule h3 {
     font-family: var(--display); font-size: 1.15rem; margin-bottom: 6px;
     color: var(--wax);
   }
@@ -571,7 +578,7 @@
 </head>
 <body>
 
-<header class="nav">
+<header class="nav on-dark">
   <div class="nav-inner">
     <a class="brand" href="#">
       <img src="assets/logo.svg" alt="" width="34" height="34" />
@@ -586,7 +593,7 @@
       <a href="#security">Security</a>
     </nav>
     <div style="display:flex;align-items:center;gap:10px;">
-      <a class="nav-cta" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener">
+      <a class="nav-cta" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener" aria-label="Star on GitHub">
         <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
         <span class="cta-text">Star on GitHub</span>
       </a>
@@ -601,6 +608,7 @@
   <!-- HERO -->
   <section class="hero-splash">
     <div class="hero-splash-inner">
+      <h1 class="sr-only">vanity-address — offline multi-chain vanity address generator</h1>
       <div class="hero-ascii-wrap" id="heroAsciiWrap" aria-hidden="true">
         <pre class="hero-ascii" id="heroAscii"></pre>
       </div>
@@ -741,14 +749,14 @@
       <h2 class="section-title">Install in one command.</h2>
       <p class="section-desc">Pre-built downloads above, or pick a package manager.</p>
 
-      <div class="tabs" role="tablist">
-        <button class="tab-btn active" data-tab="npm" type="button">npm</button>
-        <button class="tab-btn" data-tab="brew" type="button">Homebrew</button>
-        <button class="tab-btn" data-tab="cargo" type="button">Cargo</button>
-        <button class="tab-btn" data-tab="binary" type="button">Direct download</button>
+      <div class="tabs" role="tablist" aria-label="Install method">
+        <button class="tab-btn active" data-tab="npm" type="button" role="tab" id="tab-npm" aria-controls="panel-npm" aria-selected="true">npm</button>
+        <button class="tab-btn" data-tab="brew" type="button" role="tab" id="tab-brew" aria-controls="panel-brew" aria-selected="false" tabindex="-1">Homebrew</button>
+        <button class="tab-btn" data-tab="cargo" type="button" role="tab" id="tab-cargo" aria-controls="panel-cargo" aria-selected="false" tabindex="-1">Cargo</button>
+        <button class="tab-btn" data-tab="binary" type="button" role="tab" id="tab-binary" aria-controls="panel-binary" aria-selected="false" tabindex="-1">Direct download</button>
       </div>
 
-      <div class="code-block active" data-panel="npm">
+      <div class="code-block active" data-panel="npm" role="tabpanel" id="panel-npm" aria-labelledby="tab-npm">
         <button class="copy-btn" data-copy="npx vanity-address" type="button">Copy</button>
         <pre><span class="cmt"># no install needed — runs instantly</span>
 <span class="g">$</span> npx vanity-address
@@ -756,18 +764,18 @@
 <span class="cmt"># or install globally</span>
 <span class="g">$</span> npm install -g vanity-address</pre>
       </div>
-      <div class="code-block" data-panel="brew">
+      <div class="code-block" data-panel="brew" role="tabpanel" id="panel-brew" aria-labelledby="tab-brew">
         <button class="copy-btn" data-copy="brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address" type="button">Copy</button>
         <pre><span class="g">$</span> brew tap yudizaxay/tap
 <span class="g">$</span> brew trust yudizaxay/tap
 <span class="g">$</span> brew install vanity-address</pre>
       </div>
-      <div class="code-block" data-panel="cargo">
+      <div class="code-block" data-panel="cargo" role="tabpanel" id="panel-cargo" aria-labelledby="tab-cargo">
         <button class="copy-btn" data-copy="cargo install vanity-address" type="button">Copy</button>
         <pre><span class="cmt"># requires Rust 1.70+, first compile ~3–8 min</span>
 <span class="g">$</span> cargo install vanity-address</pre>
       </div>
-      <div class="code-block" data-panel="binary">
+      <div class="code-block" data-panel="binary" role="tabpanel" id="panel-binary" aria-labelledby="tab-binary">
         <button class="copy-btn" data-copy="https://github.com/yudizaxay/vanity-address/releases/latest" type="button">Copy link</button>
         <pre><span class="cmt"># pre-built CLI + desktop .dmg / .exe</span>
 → github.com/yudizaxay/vanity-address/releases/latest</pre>
@@ -783,19 +791,19 @@
       <p class="section-desc">A vanity wallet is a real wallet. Treat the private key like cash.</p>
       <div class="rules">
         <div class="rule">
-          <h4>Local only</h4>
+          <h3>Local only</h3>
           <p>Keys are generated on your machine, never sent anywhere.</p>
         </div>
         <div class="rule">
-          <h4>No network</h4>
+          <h3>No network</h3>
           <p>This tool never connects to the internet while grinding.</p>
         </div>
         <div class="rule">
-          <h4>Open source</h4>
+          <h3>Open source</h3>
           <p>Audit the Rust engine trust, but verify.</p>
         </div>
         <div class="rule">
-          <h4>Verify first</h4>
+          <h3>Verify first</h3>
           <p>Always double-check the address before sending funds.</p>
         </div>
       </div>
@@ -854,16 +862,11 @@
   (function navContrast() {
     var navEl = document.querySelector(".nav");
     var splash = document.querySelector(".hero-splash");
-    if (!navEl || !splash) return;
-    function update() {
-      var rect = splash.getBoundingClientRect();
-      var navH = navEl.offsetHeight;
-      if (rect.bottom > navH) navEl.classList.add("on-dark");
-      else navEl.classList.remove("on-dark");
-    }
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
+    if (!navEl || !splash || !("IntersectionObserver" in window)) return;
+    /* rootMargin approximates the sticky nav height so no layout read is needed */
+    new IntersectionObserver(function (entries) {
+      navEl.classList.toggle("on-dark", entries[0].isIntersecting);
+    }, { rootMargin: "-60px 0px 0px 0px" }).observe(splash);
   })();
 
   /* hero ascii wordmark — canvas-rasterized "vanity-address", mouse-reactive */
@@ -877,20 +880,20 @@
     function buildAscii() {
       var COLS = 175;
       var set = "3FRT@#%*=4-.:";
-      var BW = 2000, BH = 460;
+      var BW = 1000, BH = 230;
       var big = document.createElement("canvas");
       big.width = BW; big.height = BH;
-      var bc = big.getContext("2d");
+      var bc = big.getContext("2d", { willReadFrequently: true });
       bc.fillStyle = "#fff";
       bc.textBaseline = "alphabetic";
-      bc.lineWidth = 14;
+      bc.lineWidth = 7;
       bc.strokeStyle = "#fff";
       var t = "vanity-address";
-      var fs = 360;
+      var fs = 180;
       bc.font = "700 " + fs + "px 'Source Sans 3', Arial, sans-serif";
       var w = bc.measureText(t).width;
-      if (w > BW - 80) {
-        fs = Math.floor(fs * (BW - 80) / w);
+      if (w > BW - 40) {
+        fs = Math.floor(fs * (BW - 40) / w);
         bc.font = "700 " + fs + "px 'Source Sans 3', Arial, sans-serif";
       }
       var w2 = bc.measureText(t).width;
@@ -931,7 +934,7 @@
       state.grid = grid; state.dens = dens; state.cols = COLS; state.rows = ROWS;
       state.cxT = COLS / 2; state.cyT = ROWS / 2;
       renderStatic();
-      sizeAscii();
+      applyFontSize();
       if (reduce) return;
       startLoop();
     }
@@ -948,22 +951,34 @@
       state.rafId = requestAnimationFrame(frame);
     }
 
-    function sizeAscii() {
-      if (!state.cols) return;
-      var rect = wrap.getBoundingClientRect();
-      if (!rect.width || !rect.height) return;
-      pre.style.transform = "none";
-      var fs = Math.max(6, rect.height / (state.rows * 0.86));
-      pre.style.fontSize = fs + "px";
-      /* measure the actual rendered box (font metrics are only ever a guess)
-         and scale it down to exactly fit — a transform is precise by
-         construction, unlike re-guessing font-size */
-      var w = pre.getBoundingClientRect().width;
-      var h = pre.getBoundingClientRect().height;
+    /* sizes come from ResizeObservers (delivered after layout), never from
+       synchronous reads — wrap is `contain: size` so its box is CSS-only */
+    var box = { w: 0, h: 0 }, preBox = { w: 0, h: 0 };
+    function applyFontSize() {
+      if (!state.rows || !box.h) return;
+      pre.style.fontSize = Math.max(6, box.h / (state.rows * 0.86)) + "px";
+    }
+    /* font metrics are only ever a guess, so scale the measured box down to
+       fit exactly — transform doesn't change the observed layout size */
+    function fitScale() {
+      if (!box.w || !preBox.w || !preBox.h) return;
       var scale = 1;
-      if (w > rect.width) scale = rect.width / w;
-      if (h * scale > rect.height) scale = Math.min(scale, rect.height / h);
+      if (preBox.w > box.w) scale = box.w / preBox.w;
+      if (preBox.h * scale > box.h) scale = Math.min(scale, box.h / preBox.h);
       pre.style.transform = scale < 0.999 ? "scale(" + (scale * 0.985).toFixed(4) + ")" : "none";
+    }
+    if ("ResizeObserver" in window) {
+      new ResizeObserver(function (entries) {
+        var r = entries[0].contentRect;
+        box.w = r.width; box.h = r.height;
+        applyFontSize();
+        fitScale();
+      }).observe(wrap);
+      new ResizeObserver(function (entries) {
+        var r = entries[0].contentRect;
+        preBox.w = r.width; preBox.h = r.height;
+        fitScale();
+      }).observe(pre);
     }
 
     function renderStatic() {
@@ -1015,8 +1030,23 @@
       pre.textContent = out.join("\n");
     }
 
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(buildAscii);
-    else buildAscii();
+    /* build after the first paint (rAF → timeout) with the fallback face,
+       then rebuild once Source Sans 3 is in */
+    function rebuildWithWebFont() {
+      if (!document.fonts || !document.fonts.load) return;
+      document.fonts.load("700 180px 'Source Sans 3'").then(function (faces) {
+        if (faces && faces.length) buildAscii();
+      }).catch(function () {});
+    }
+    var fontLink = document.getElementById("webFonts");
+    var fontsPending = fontLink && fontLink.rel !== "stylesheet";
+    if (fontsPending) fontLink.addEventListener("load", rebuildWithWebFont);
+    requestAnimationFrame(function () {
+      setTimeout(function () {
+        buildAscii();
+        if (!fontsPending) rebuildWithWebFont();
+      }, 0);
+    });
 
     if (!reduce) {
       wrap.addEventListener("mousemove", function (e) {
@@ -1028,12 +1058,6 @@
       });
       wrap.addEventListener("mouseleave", function () { state.hover = false; });
     }
-
-    var resizeTimer;
-    window.addEventListener("resize", function () {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(sizeAscii, 150);
-    });
   })();
 
   var CHAINS = [
@@ -1074,13 +1098,27 @@
   }
 
   /* install tabs */
-  document.querySelectorAll(".tab-btn").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.remove("active"); });
-      document.querySelectorAll(".code-block").forEach(function (p) { p.classList.remove("active"); });
-      btn.classList.add("active");
-      var panel = document.querySelector('.code-block[data-panel="' + btn.getAttribute("data-tab") + '"]');
-      if (panel) panel.classList.add("active");
+  var tabBtns = Array.prototype.slice.call(document.querySelectorAll(".tab-btn"));
+  function selectTab(btn) {
+    tabBtns.forEach(function (b) {
+      var on = b === btn;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-selected", on ? "true" : "false");
+      b.tabIndex = on ? 0 : -1;
+    });
+    document.querySelectorAll(".code-block").forEach(function (p) { p.classList.remove("active"); });
+    var panel = document.querySelector('.code-block[data-panel="' + btn.getAttribute("data-tab") + '"]');
+    if (panel) panel.classList.add("active");
+  }
+  tabBtns.forEach(function (btn, idx) {
+    btn.addEventListener("click", function () { selectTab(btn); });
+    btn.addEventListener("keydown", function (e) {
+      var step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      if (!step) return;
+      e.preventDefault();
+      var next = tabBtns[(idx + step + tabBtns.length) % tabBtns.length];
+      selectTab(next);
+      next.focus();
     });
   });
 
@@ -1098,7 +1136,8 @@
     });
   });
 
-  /* GitHub latest release assets */
+  /* GitHub latest release assets — fetched only as the download section nears */
+  function loadReleaseLinks() {
   fetch("https://api.github.com/repos/yudizaxay/vanity-address/releases/latest")
     .then(function (r) { return r.json(); })
     .then(function (data) {
@@ -1127,6 +1166,19 @@
       }
     })
     .catch(function () {});
+  }
+  var downloadSection = document.getElementById("download");
+  if (downloadSection && "IntersectionObserver" in window) {
+    var releaseIO = new IntersectionObserver(function (entries) {
+      if (entries[0].isIntersecting) {
+        releaseIO.disconnect();
+        loadReleaseLinks();
+      }
+    }, { rootMargin: "800px 0px" });
+    releaseIO.observe(downloadSection);
+  } else {
+    loadReleaseLinks();
+  }
 
   /* typed demo */
   var body = document.getElementById("demoBody");
@@ -1173,5 +1225,16 @@
   }
 })();
 </script>
+<!-- Cloudflare Web Analytics (injected after load to stay off the critical path) -->
+<script>
+window.addEventListener("load", function () {
+  var s = document.createElement("script");
+  s.defer = true;
+  s.src = "https://static.cloudflareinsights.com/beacon.min.js";
+  s.setAttribute("data-cf-beacon", '{"token": "891da9a78aa24a838bdd1e3e717c3a41"}');
+  document.body.appendChild(s);
+});
+</script>
+<!-- End Cloudflare Web Analytics -->
 </body>
 </html>
