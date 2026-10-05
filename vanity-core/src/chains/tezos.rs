@@ -2,14 +2,21 @@ use super::util::Keypair;
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
 
+use super::base58_odds::Base58Layout;
 use super::util::{
-    base58_check_encode_raw, base58_combinations, blake2b_var, build_base58_pattern,
-    expected_from_pattern, grind_ed25519, keypair_from_secret, matches_pattern,
-    secret_from_attempt, BASE58_ALPHABET,
+    base58_check_encode_raw, blake2b_var, build_base58_pattern, grind_ed25519, keypair_from_secret,
+    matches_pattern, secret_from_attempt, BASE58_ALPHABET,
 };
 
 /// tz1 = ed25519 public key hash (Blake2b-160) with Tezos prefix.
 const TZ1_PREFIX: [u8; 3] = [6, 161, 159];
+
+/// tz1 prefix + 20-byte hash + 4-byte checksum.
+const LAYOUT: Base58Layout = Base58Layout {
+    version: &TZ1_PREFIX,
+    random_len: 24,
+    alphabet: BASE58_ALPHABET,
+};
 /// edsk = ed25519 32-byte seed prefix. (Not to be confused with the
 /// same-looking "edsk" prefix `[43, 246, 78, 7]` used for the 64-byte
 /// *expanded* secret key — a different, longer format. Using that prefix
@@ -82,19 +89,12 @@ impl ChainGrinder for TezosGrinder {
     ) -> Result<Pattern, String> {
         let mut pattern =
             build_base58_pattern(prefix, suffix, contains, exact, BASE58_ALPHABET, 36)?;
-        if pattern.has_prefix() && !pattern.prefix.starts_with("tz1") {
-            pattern.prefix = format!("tz1{}", pattern.prefix);
-            pattern.prefix_match = if pattern.ignore_case {
-                pattern.prefix.to_ascii_lowercase()
-            } else {
-                pattern.prefix.clone()
-            };
-        }
+        LAYOUT.apply_lead("Tezos", &mut pattern, "tz1")?;
         Ok(pattern)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {
-        expected_from_pattern(pattern, base58_combinations)
+        LAYOUT.expected_attempts(pattern)
     }
 
     fn matches(&self, address: &str, pattern: &Pattern) -> bool {
@@ -106,7 +106,7 @@ impl ChainGrinder for TezosGrinder {
     }
 
     fn pattern_hint(&self) -> &'static str {
-        "Base58 — tz1 (ed25519) addresses."
+        "Base58 — tz1 (ed25519). After tz1 comes one of K–Z or a–i (tz1 is added for you)."
     }
 }
 

@@ -120,6 +120,7 @@ impl ChainGrinder for CosmosGrinder {
                 pattern.prefix.clone()
             };
         }
+        pattern.set_fixed_prefix(&hrp_prefix);
         Ok(pattern)
     }
 

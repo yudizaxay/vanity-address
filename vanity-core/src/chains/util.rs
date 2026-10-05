@@ -223,6 +223,7 @@ pub fn build_base58_pattern(
         suffix_match,
         contains_match,
         ignore_case: !exact,
+        fixed_prefix_len: 0,
     })
 }
 
@@ -307,6 +308,11 @@ pub fn build_hex_pattern(
         ));
     }
 
+    let fixed_prefix_len = if with_0x_prefix && !prefix.is_empty() {
+        2
+    } else {
+        0
+    };
     Ok(Pattern {
         prefix: prefix.clone(),
         suffix: suffix.clone(),
@@ -315,6 +321,7 @@ pub fn build_hex_pattern(
         suffix_match: suffix,
         contains_match: contains,
         ignore_case: true,
+        fixed_prefix_len,
     })
 }
 
@@ -332,11 +339,11 @@ pub fn bech32_combinations(pattern: &str) -> f64 {
 }
 
 pub fn base32_combinations(pattern: &str) -> f64 {
-    32f64.powi(pattern.len() as i32)
+    32f64.powi(literal_char_count(pattern) as i32)
 }
 
 pub fn base64url_combinations(pattern: &str) -> f64 {
-    64f64.powi(pattern.len() as i32)
+    64f64.powi(literal_char_count(pattern) as i32)
 }
 
 /// RFC 4648 base32 alphabet (Algorand / Filecoin / ICP).
@@ -462,10 +469,92 @@ pub fn crc16_xmodem(data: &[u8]) -> u16 {
     crc
 }
 
+/// Every address of a chain starts with `fixed`, and the characters right after it
+/// can only be `next[0]`, `next[1]`, …. Adds `fixed` and any leading single-option
+/// `next` characters when the user left them out (they aren't counted as
+/// difficulty) and rejects prefixes that can never occur.
+pub fn apply_address_start(
+    pattern: &mut Pattern,
+    chain_name: &str,
+    fixed: &str,
+    next: &[&str],
+) -> Result<(), String> {
+    if !pattern.has_prefix() {
+        return Ok(());
+    }
+    let ignore_case = pattern.ignore_case;
+    let same = |a: char, b: char| a == b || (ignore_case && a.eq_ignore_ascii_case(&b));
+    let starts_with = |s: &str, head: &str, wildcard: bool| {
+        s.chars().count() >= head.chars().count()
+            && s.chars()
+                .zip(head.chars())
+                .all(|(c, h)| same(c, h) || (wildcard && c == '*'))
+    };
+
+    let after_fixed = if starts_with(&pattern.prefix, fixed, false) {
+        pattern.prefix[fixed.len()..].to_string()
+    } else {
+        pattern.prefix.clone()
+    };
+    let forced: String = next.iter().take_while(|s| s.len() == 1).copied().collect();
+    let head = format!("{fixed}{forced}");
+    let rest = &next[forced.len()..];
+    let check = |user: &str| -> Result<(), String> {
+        for (i, (c, allowed)) in user.chars().zip(rest).enumerate() {
+            if c == '*' || allowed.chars().any(|a| same(c, a)) {
+                continue;
+            }
+            let before = format!("{head}{}", &user[..i]);
+            let options: Vec<String> = allowed.chars().map(|a| a.to_string()).collect();
+            return Err(format!(
+                "{chain_name} addresses can never have '{c}' after '{before}'. The next character is always {}. Try a prefix like '{}…'.",
+                options.join(" / "),
+                rest.iter().map(|s| &s[..1]).collect::<String>()
+            ));
+        }
+        Ok(())
+    };
+
+    // Typed the forced characters, or is that the start of their own text (Kaspa `q0` = `qq0…`)?
+    let mut user = after_fixed.as_str();
+    let mut result = check(user);
+    if starts_with(&after_fixed, &forced, true) {
+        let stripped = &after_fixed[forced.len()..];
+        let stripped_result = check(stripped);
+        if stripped_result.is_ok() || result.is_err() {
+            user = stripped;
+            result = stripped_result;
+        }
+    }
+    result?;
+
+    pattern.prefix = format!("{head}{user}");
+    pattern.prefix_match = if pattern.ignore_case {
+        pattern.prefix.to_ascii_lowercase()
+    } else {
+        pattern.prefix.clone()
+    };
+    pattern.set_fixed_prefix(&head);
+    Ok(())
+}
+
+/// Odds correction for the `next` positions of [`apply_address_start`]: they only
+/// have `allowed.len()` possible characters, not the whole `alphabet`.
+pub fn address_start_factor(pattern: &Pattern, next: &[&str], alphabet: f64) -> f64 {
+    let rest = next.iter().skip_while(|s| s.len() == 1);
+    pattern
+        .user_prefix()
+        .chars()
+        .zip(rest)
+        .filter(|(c, _)| *c != '*')
+        .map(|(_, allowed)| allowed.len() as f64 / alphabet)
+        .product()
+}
+
 pub fn expected_from_pattern(pattern: &Pattern, per_char: impl Fn(&str) -> f64) -> f64 {
     let mut combos = 1.0_f64;
     if pattern.has_prefix() {
-        combos *= per_char(&pattern.prefix);
+        combos *= per_char(pattern.user_prefix());
     }
     if pattern.has_suffix() {
         combos *= per_char(&pattern.suffix);

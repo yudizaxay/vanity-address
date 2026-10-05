@@ -1,5 +1,6 @@
 mod algorand;
 mod aptos;
+mod base58_odds;
 mod bitcoin_like;
 mod bitcoin_segwit;
 mod cardano;
@@ -409,6 +410,154 @@ mod tests {
         ] {
             let c = Chain::from_id(id).unwrap_or_else(|e| panic!("{id}: {e}"));
             assert_eq!(c.id(), "evm");
+        }
+    }
+
+    #[test]
+    fn chain_forced_prefix_is_not_counted_as_difficulty() {
+        for (id, input) in [
+            ("evm", "ab"),
+            ("evm-contract", "ab"),
+            ("kaspa", "pq"),
+            ("cosmos", "qp"),
+            ("sei", "qp"),
+            ("btc-segwit", "qp"),
+            ("btc-taproot", "qp"),
+            ("ada", "8x"),
+            ("erd", "qp"),
+            ("ton", "ab"),
+            ("xlm", "ab"),
+            ("xtz", "ab"),
+            ("fil", "ab"),
+            ("btc", "ab"),
+            ("ltc", "ab"),
+            ("doge", "ab"),
+            ("dash", "ph"),
+            ("trx", "ab"),
+            ("xrp", "ab"),
+            ("dot", "ab"),
+        ] {
+            let chain = Chain::from_id(id).unwrap();
+            let p = chain
+                .build_pattern(Some(input), None, None, false)
+                .unwrap_or_else(|e| panic!("{id} {input}: {e}"));
+            assert_eq!(
+                p.effective_literal_chars(),
+                2,
+                "{id} '{input}' → '{}'",
+                p.prefix
+            );
+            let est = crate::grind_estimate(chain.expected_attempts(&p), 500_000.0, &p);
+            assert_eq!(est.risk, crate::PatternRisk::None, "{id} '{input}'");
+        }
+    }
+
+    #[test]
+    fn impossible_address_starts_are_rejected() {
+        for (id, input) in [
+            ("kaspa", "ax"),
+            ("ada", "ax"),
+            ("ada", "va"),
+            ("ton", "zz"),
+            ("xlm", "XY"),
+            ("xlm", "GZ"),
+            ("doge", "z"),
+            ("ltc", "1"),
+            ("dash", "1"),
+            ("trx", "1"),
+            ("xtz", "1"),
+            ("ksm", "a"),
+        ] {
+            let chain = Chain::from_id(id).unwrap();
+            let err = chain
+                .build_pattern(Some(input), None, None, false)
+                .expect_err(&format!("{id} '{input}' should be rejected"));
+            assert!(err.contains("can never"), "{id} '{input}': {err}");
+        }
+    }
+
+    #[test]
+    fn constrained_start_lowers_expected_attempts() {
+        let chain = Chain::from_id("kaspa").unwrap();
+        let p = chain.build_pattern(Some("qp"), None, None, false).unwrap();
+        assert_eq!(p.prefix, "kaspa:qp");
+        // `q` is certain, `p` is 1 of 4 → about 4 tries, not 32².
+        assert!((chain.expected_attempts(&p) - 4.0).abs() < 1e-9);
+
+        let btc = Chain::from_id("btc").unwrap();
+        let p = btc.build_pattern(Some("1ab"), None, None, false).unwrap();
+        assert_eq!(p.prefix, "1ab");
+        assert_eq!(p.effective_literal_chars(), 2);
+
+        // Doge is `D` + one of 24 characters, so `Da` takes ~24 tries, not 58.
+        let doge = Chain::from_id("doge").unwrap();
+        let p = doge.build_pattern(Some("A"), None, None, true).unwrap();
+        let tries = doge.expected_attempts(&p);
+        assert!((20.0..30.0).contains(&tries), "doge 'A' → {tries}");
+    }
+
+    #[test]
+    fn ambiguous_lead_picks_the_reading_that_exists() {
+        // `D1` can't follow the `D` lead, so it must mean `DD1…`.
+        for (id, input, want) in [
+            ("doge", "D1", "DD1"),
+            ("trx", "T1", "TT1"),
+            ("ltc", "L1", "LL1"),
+            ("kaspa", "q0", "kaspa:qq0"),
+            ("kaspa", "qp", "kaspa:qp"),
+            ("ada", "8", "addr1v8"),
+            ("btc", "1ab", "1ab"),
+        ] {
+            let chain = Chain::from_id(id).unwrap();
+            let p = chain.build_pattern(Some(input), None, None, true).unwrap();
+            assert_eq!(p.prefix, want, "{id} '{input}'");
+        }
+    }
+
+    /// Every real address must be reachable: the start of a freshly generated
+    /// address is never rejected and the resulting pattern matches it.
+    #[test]
+    fn real_address_starts_are_always_accepted() {
+        let mut ids: Vec<&str> = Chain::all_ids().to_vec();
+        ids.extend(["evm-contract", "sol-mint"]);
+        for id in ids {
+            let chain = Chain::from_id(id).unwrap();
+            let addrs: Vec<String> = (0..300).map(|_| chain.grind_attempt().0).collect();
+            let fixed = (0..addrs[0].len())
+                .take_while(|&i| {
+                    addrs
+                        .iter()
+                        .all(|a| a.as_bytes()[i] == addrs[0].as_bytes()[i])
+                })
+                .count();
+            for a in &addrs {
+                for k in 1..=3 {
+                    let input = &a[fixed..fixed + k];
+                    for exact in [true, false] {
+                        let p = chain
+                            .build_pattern(Some(input), None, None, exact)
+                            .unwrap_or_else(|e| panic!("{id} '{input}' (from {a}): {e}"));
+                        assert!(chain.expected_attempts(&p).is_finite(), "{id} '{input}'");
+                        // `15` on Bitcoin may fairly be read as lead `1` + `5`.
+                        if p.prefix.len() == fixed + k {
+                            assert!(
+                                chain.matches(a, &p),
+                                "{id} '{input}' → '{}' misses {a}",
+                                p.prefix
+                            );
+                        }
+                        // Typing the full start is never ambiguous.
+                        let full = &a[..fixed + k];
+                        if let Ok(p) = chain.build_pattern(Some(full), None, None, exact) {
+                            assert!(
+                                chain.matches(a, &p),
+                                "{id} '{full}' → '{}' misses {a}",
+                                p.prefix
+                            );
+                        }
+                    }
+                }
+            }
         }
     }
 

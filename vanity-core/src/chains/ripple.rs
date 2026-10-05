@@ -3,9 +3,17 @@ use crate::pattern::Pattern;
 use secp256k1::SecretKey;
 use sha2::{Digest, Sha256};
 
+use super::base58_odds::Base58Layout;
 use super::util::{
-    base58_combinations, build_base58_pattern, encode_base58_with_alphabet, expected_from_pattern,
-    grind_secp256k1, hash160, matches_pattern, secret_from_attempt, RIPPLE_ALPHABET,
+    build_base58_pattern, encode_base58_with_alphabet, grind_secp256k1, hash160, matches_pattern,
+    secret_from_attempt, RIPPLE_ALPHABET,
+};
+
+/// 0x00 + 20-byte hash160 + 4-byte checksum.
+const LAYOUT: Base58Layout = Base58Layout {
+    version: &[0x00],
+    random_len: 24,
+    alphabet: RIPPLE_ALPHABET,
 };
 
 #[derive(Clone, Default)]
@@ -59,11 +67,14 @@ impl ChainGrinder for RippleGrinder {
         contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
-        build_base58_pattern(prefix, suffix, contains, exact, RIPPLE_ALPHABET, 35)
+        let mut pattern =
+            build_base58_pattern(prefix, suffix, contains, exact, RIPPLE_ALPHABET, 35)?;
+        LAYOUT.apply_lead("Ripple", &mut pattern, "r")?;
+        Ok(pattern)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {
-        expected_from_pattern(pattern, base58_combinations)
+        LAYOUT.expected_attempts(pattern)
     }
 
     fn matches(&self, address: &str, pattern: &Pattern) -> bool {
@@ -75,7 +86,7 @@ impl ChainGrinder for RippleGrinder {
     }
 
     fn pattern_hint(&self) -> &'static str {
-        "Ripple base58 alphabet — addresses start with r."
+        "Ripple base58 alphabet — addresses always start with r (added for you)."
     }
 }
 

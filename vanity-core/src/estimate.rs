@@ -129,6 +129,7 @@ mod tests {
             suffix_match: suffix.to_ascii_lowercase(),
             contains_match: String::new(),
             ignore_case: true,
+            fixed_prefix_len: 0,
         }
     }
 

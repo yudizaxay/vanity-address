@@ -81,6 +81,7 @@ impl ChainGrinder for FilecoinGrinder {
             pattern.prefix = format!("f1{rest}");
             pattern.prefix_match = pattern.prefix.clone();
         }
+        pattern.set_fixed_prefix("f1");
         Ok(pattern)
     }
 

@@ -120,7 +120,7 @@ fn run_wizard() -> Option<InteractiveConfig> {
             WizardStep::MatchKind => {
                 banner::print_compact();
                 println!("{}", "── Step 2/4 · How to match? ──".bold().cyan());
-                println!();
+                print_selection(&chain, None);
                 println!("  {}  Suffix   — address ends with…", "[1]".green());
                 println!("  {}  Prefix   — address starts with…", "[2]".green());
                 println!("  {}  Both     — prefix + suffix", "[3]".green());
@@ -160,7 +160,7 @@ fn run_wizard() -> Option<InteractiveConfig> {
                 };
 
                 println!("{}", format!("── Step 3/4 · {label} ──").bold().cyan());
-                println!();
+                print_selection(&chain, None);
                 println!("  {}", chain.pattern_hint().dimmed());
                 println!("  {}", "[Esc] Back".dimmed());
                 println!();
@@ -254,7 +254,9 @@ fn run_wizard() -> Option<InteractiveConfig> {
             WizardStep::CaseMode => {
                 banner::print_compact();
                 println!("{}", "── Step 4/4 · Case sensitivity ──".bold().cyan());
-                println!();
+                let target =
+                    target_label(prefix.as_deref(), suffix.as_deref(), contains.as_deref());
+                print_selection(&chain, Some(&target));
                 println!("  {}  Any case  (faster — recommended)", "[1]".green());
                 println!("  {}  Exact case (slower)", "[2]".yellow());
                 println!("  {}  Back", "[0]".dimmed());
@@ -509,6 +511,33 @@ fn format_speed(n: f64) -> String {
 
 fn pause() {
     wait_for_key("\n  Press any key to continue...");
+}
+
+/// Context line under each step header so the user always sees what they picked.
+fn print_selection(chain: &Chain, target: Option<&str>) {
+    println!(
+        "  {}  {}",
+        "Chain ".dimmed(),
+        chain.display_name().bold().green()
+    );
+    if let Some(target) = target {
+        println!("  {}  {}", "Target".dimmed(), target.bold());
+    }
+    println!();
+}
+
+fn target_label(prefix: Option<&str>, suffix: Option<&str>, contains: Option<&str>) -> String {
+    let mut parts = Vec::new();
+    if let Some(p) = prefix {
+        parts.push(format!("starts with '{p}'"));
+    }
+    if let Some(s) = suffix {
+        parts.push(format!("ends with '{s}'"));
+    }
+    if let Some(c) = contains {
+        parts.push(format!("contains '{c}'"));
+    }
+    parts.join(" + ")
 }
 
 fn clear_screen() {

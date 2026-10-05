@@ -154,6 +154,7 @@ impl ChainGrinder for BitcoinSegwitGrinder {
                 };
             }
         }
+        pattern.set_fixed_prefix(hrp);
         Ok(pattern)
     }
 

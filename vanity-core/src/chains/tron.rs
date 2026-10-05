@@ -3,9 +3,17 @@ use crate::pattern::Pattern;
 use secp256k1::SecretKey;
 use sha3::{Digest, Keccak256};
 
+use super::base58_odds::Base58Layout;
 use super::util::{
-    base58_check_encode_raw, base58_combinations, build_base58_pattern, expected_from_pattern,
-    grind_secp256k1, matches_pattern, secret_from_attempt, BASE58_ALPHABET,
+    base58_check_encode_raw, build_base58_pattern, grind_secp256k1, matches_pattern,
+    secret_from_attempt, BASE58_ALPHABET,
+};
+
+/// 0x41 + 20-byte hash + 4-byte checksum.
+const LAYOUT: Base58Layout = Base58Layout {
+    version: &[0x41],
+    random_len: 24,
+    alphabet: BASE58_ALPHABET,
 };
 
 #[derive(Clone, Default)]
@@ -65,11 +73,14 @@ impl ChainGrinder for TronGrinder {
         contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
-        build_base58_pattern(prefix, suffix, contains, exact, BASE58_ALPHABET, 34)
+        let mut pattern =
+            build_base58_pattern(prefix, suffix, contains, exact, BASE58_ALPHABET, 34)?;
+        LAYOUT.apply_lead("Tron", &mut pattern, "T")?;
+        Ok(pattern)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {
-        expected_from_pattern(pattern, base58_combinations)
+        LAYOUT.expected_attempts(pattern)
     }
 
     fn matches(&self, address: &str, pattern: &Pattern) -> bool {
@@ -81,7 +92,7 @@ impl ChainGrinder for TronGrinder {
     }
 
     fn pattern_hint(&self) -> &'static str {
-        "Base58 — Tron addresses start with T."
+        "Base58 — Tron addresses always start with T (added for you)."
     }
 }
 

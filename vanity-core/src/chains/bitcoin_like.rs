@@ -2,9 +2,10 @@ use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
 use secp256k1::SecretKey;
 
+use super::base58_odds::Base58Layout;
 use super::util::{
-    base58_combinations, build_base58_pattern, expected_from_pattern, grind_secp256k1,
-    matches_pattern, p2pkh_address, secret_from_attempt, BASE58_ALPHABET,
+    build_base58_pattern, grind_secp256k1, matches_pattern, p2pkh_address, secret_from_attempt,
+    BASE58_ALPHABET,
 };
 
 #[derive(Clone)]
@@ -12,7 +13,10 @@ pub struct BitcoinLikeGrinder {
     pub id: &'static str,
     pub display_name: &'static str,
     pub version_byte: u8,
+    /// First character every address gets from `version_byte`.
+    pub lead: &'static str,
     pub wallet_hint: &'static str,
+    pub pattern_hint: &'static str,
 }
 
 impl BitcoinLikeGrinder {
@@ -21,7 +25,9 @@ impl BitcoinLikeGrinder {
             id: "btc",
             display_name: "Bitcoin (P2PKH)",
             version_byte: 0x00,
+            lead: "1",
             wallet_hint: "Electrum / Sparrow / hardware wallet WIF import",
+            pattern_hint: "Base58 (no 0, O, I, l). Addresses always start with 1 (added for you).",
         }
     }
 
@@ -30,7 +36,9 @@ impl BitcoinLikeGrinder {
             id: "ltc",
             display_name: "Litecoin (P2PKH)",
             version_byte: 0x30,
+            lead: "L",
             wallet_hint: "Litecoin Core / compatible wallets",
+            pattern_hint: "Base58 (no 0, O, I, l). Addresses always start with L (added for you).",
         }
     }
 
@@ -39,7 +47,9 @@ impl BitcoinLikeGrinder {
             id: "doge",
             display_name: "Dogecoin",
             version_byte: 0x1e,
+            lead: "D",
             wallet_hint: "Dogecoin Core / compatible wallets",
+            pattern_hint: "Base58 (no 0, O, I, l). Addresses always start with D (added for you).",
         }
     }
 
@@ -48,7 +58,18 @@ impl BitcoinLikeGrinder {
             id: "dash",
             display_name: "Dash (P2PKH)",
             version_byte: 0x4c,
+            lead: "X",
             wallet_hint: "Dash Core / compatible wallets",
+            pattern_hint: "Base58 (no 0, O, I, l). Addresses always start with X (added for you).",
+        }
+    }
+
+    /// Version byte + 20-byte hash160 + 4-byte checksum.
+    fn layout(&self) -> Base58Layout<'_> {
+        Base58Layout {
+            version: std::slice::from_ref(&self.version_byte),
+            random_len: 24,
+            alphabet: BASE58_ALPHABET,
         }
     }
 
@@ -99,11 +120,15 @@ impl ChainGrinder for BitcoinLikeGrinder {
         contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
-        build_base58_pattern(prefix, suffix, contains, exact, BASE58_ALPHABET, 34)
+        let mut pattern =
+            build_base58_pattern(prefix, suffix, contains, exact, BASE58_ALPHABET, 34)?;
+        self.layout()
+            .apply_lead(self.display_name, &mut pattern, self.lead)?;
+        Ok(pattern)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {
-        expected_from_pattern(pattern, base58_combinations)
+        self.layout().expected_attempts(pattern)
     }
 
     fn matches(&self, address: &str, pattern: &Pattern) -> bool {
@@ -115,7 +140,7 @@ impl ChainGrinder for BitcoinLikeGrinder {
     }
 
     fn pattern_hint(&self) -> &'static str {
-        "Base58 characters (no 0, O, I, l)."
+        self.pattern_hint
     }
 }
 

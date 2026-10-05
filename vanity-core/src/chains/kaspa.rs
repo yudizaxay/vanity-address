@@ -3,12 +3,16 @@ use crate::pattern::Pattern;
 use secp256k1::{Keypair as SecpKeypair, Secp256k1, SecretKey};
 
 use super::util::{
-    bech32_combinations, build_base58_pattern, expected_from_pattern, grind_secp256k1,
-    kaspa_address_data, matches_pattern, secret_from_attempt, BECH32_CHARSET,
+    address_start_factor, apply_address_start, bech32_combinations, build_base58_pattern,
+    expected_from_pattern, grind_secp256k1, kaspa_address_data, matches_pattern,
+    secret_from_attempt, BECH32_CHARSET,
 };
 
 /// PubKey (Schnorr, 32-byte x-only) address version, per kaspa-addresses.
 const VERSION_PUBKEY: u8 = 0;
+
+/// Version 0 packs as `q`, then 3 zero bits + 2 key bits → one of `q p z r`.
+const KASPA_NEXT: &[&str] = &["q", "pqrz"];
 
 #[derive(Clone, Default)]
 pub struct KaspaGrinder;
@@ -60,22 +64,13 @@ impl ChainGrinder for KaspaGrinder {
     ) -> Result<Pattern, String> {
         let mut pattern =
             build_base58_pattern(prefix, suffix, contains, exact, BECH32_CHARSET, 72)?;
-        if pattern.has_prefix() && !pattern.prefix.starts_with("kaspa:") {
-            pattern.prefix = format!("kaspa:{}", pattern.prefix);
-            pattern.prefix_match = if pattern.ignore_case {
-                pattern.prefix.to_ascii_lowercase()
-            } else {
-                pattern.prefix.clone()
-            };
-        }
+        apply_address_start(&mut pattern, "Kaspa", "kaspa:", KASPA_NEXT)?;
         Ok(pattern)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {
-        expected_from_pattern(pattern, |p| {
-            let data = p.strip_prefix("kaspa:").unwrap_or(p);
-            bech32_combinations(data)
-        })
+        expected_from_pattern(pattern, bech32_combinations)
+            * address_start_factor(pattern, KASPA_NEXT, 32.0)
     }
 
     fn matches(&self, address: &str, pattern: &Pattern) -> bool {
@@ -87,7 +82,7 @@ impl ChainGrinder for KaspaGrinder {
     }
 
     fn pattern_hint(&self) -> &'static str {
-        "Bech32 after kaspa: (q, p, z, r…)."
+        "Bech32. Addresses are kaspa:q then p/q/r/z — start your prefix with e.g. qp…"
     }
 }
 

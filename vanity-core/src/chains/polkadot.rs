@@ -1,11 +1,19 @@
 use super::util::Keypair;
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
+
+/// SS58 prefix byte + 32-byte public key + 2-byte checksum.
+const LAYOUT: Base58Layout = Base58Layout {
+    version: &[SS58_PREFIX],
+    random_len: 34,
+    alphabet: BASE58_ALPHABET,
+};
 use crate::pattern::Pattern;
 use blake2::{Blake2b512, Digest};
 
+use super::base58_odds::Base58Layout;
 use super::util::{
-    base58_combinations, build_base58_pattern, expected_from_pattern, grind_ed25519,
-    keypair_from_secret, matches_pattern, secret_from_attempt, BASE58_ALPHABET,
+    build_base58_pattern, grind_ed25519, keypair_from_secret, matches_pattern, secret_from_attempt,
+    BASE58_ALPHABET,
 };
 
 /// Polkadot mainnet SS58 prefix.
@@ -69,11 +77,14 @@ impl ChainGrinder for PolkadotGrinder {
         contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
-        build_base58_pattern(prefix, suffix, contains, exact, BASE58_ALPHABET, 48)
+        let mut pattern =
+            build_base58_pattern(prefix, suffix, contains, exact, BASE58_ALPHABET, 48)?;
+        LAYOUT.apply_lead("Polkadot", &mut pattern, "1")?;
+        Ok(pattern)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {
-        expected_from_pattern(pattern, base58_combinations)
+        LAYOUT.expected_attempts(pattern)
     }
 
     fn matches(&self, address: &str, pattern: &Pattern) -> bool {
@@ -85,7 +96,7 @@ impl ChainGrinder for PolkadotGrinder {
     }
 
     fn pattern_hint(&self) -> &'static str {
-        "SS58 base58 (Polkadot prefix 0, ed25519)."
+        "SS58 base58 (ed25519). Addresses always start with 1 (added for you)."
     }
 }
 

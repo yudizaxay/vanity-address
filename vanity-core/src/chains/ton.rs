@@ -4,9 +4,13 @@ use crate::pattern::Pattern;
 use sha2::{Digest, Sha256};
 
 use super::util::{
-    base64url_combinations, build_base58_pattern, crc16_xmodem, expected_from_pattern,
-    grind_ed25519, keypair_from_secret, matches_pattern, secret_from_attempt, BASE64URL_ALPHABET,
+    address_start_factor, apply_address_start, base64url_combinations, build_base58_pattern,
+    crc16_xmodem, expected_from_pattern, grind_ed25519, keypair_from_secret, matches_pattern,
+    secret_from_attempt, BASE64URL_ALPHABET,
 };
+
+/// Workchain 0 leaves only 2 hash bits in the third base64 char → `A`–`D`.
+const TON_NEXT: &[&str] = &["ABCD"];
 
 /// Wallet V4R2 code cell hash (constant) and depth from official BOC.
 const V4R2_CODE_HASH: [u8; 32] = [
@@ -108,19 +112,16 @@ impl ChainGrinder for TonGrinder {
     ) -> Result<Pattern, String> {
         let mut pattern =
             build_base58_pattern(prefix, suffix, contains, exact, BASE64URL_ALPHABET, 48)?;
-        if pattern.has_prefix() && !pattern.prefix.starts_with("UQ") {
-            pattern.prefix = format!("UQ{}", pattern.prefix);
-            pattern.prefix_match = if pattern.ignore_case {
-                pattern.prefix.to_ascii_lowercase()
-            } else {
-                pattern.prefix.clone()
-            };
+        if let Some(rest) = pattern.prefix.strip_prefix("EQ") {
+            pattern.prefix = format!("UQ{rest}");
         }
+        apply_address_start(&mut pattern, "TON", "UQ", TON_NEXT)?;
         Ok(pattern)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {
         expected_from_pattern(pattern, base64url_combinations)
+            * address_start_factor(pattern, TON_NEXT, 64.0)
     }
 
     fn matches(&self, address: &str, pattern: &Pattern) -> bool {
@@ -132,7 +133,7 @@ impl ChainGrinder for TonGrinder {
     }
 
     fn pattern_hint(&self) -> &'static str {
-        "Base64url — UQ… (Wallet V4R2 non-bounceable)."
+        "Base64url. Addresses are UQ then A/B/C/D (Wallet V4R2) — start your prefix with e.g. A…"
     }
 }
 

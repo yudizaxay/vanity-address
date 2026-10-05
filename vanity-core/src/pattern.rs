@@ -7,6 +7,9 @@ pub struct Pattern {
     pub suffix_match: String,
     pub contains_match: String,
     pub ignore_case: bool,
+    /// Leading chars of `prefix` every address has anyway (`0x`, `kaspa:`, `cosmos1`…);
+    /// they cost nothing to match, so difficulty counts skip them.
+    pub fixed_prefix_len: usize,
 }
 
 impl Pattern {
@@ -46,7 +49,25 @@ impl Pattern {
 
     /// Literal character count used for difficulty estimates (`*` wildcards ignored).
     pub fn effective_literal_chars(&self) -> usize {
-        literal_len(&self.prefix) + literal_len(&self.suffix) + literal_len(&self.contains)
+        literal_len(&self.prefix).saturating_sub(self.fixed_prefix_len)
+            + literal_len(&self.suffix)
+            + literal_len(&self.contains)
+    }
+
+    /// The part of `prefix` the user actually asked for (chain-forced start removed).
+    pub fn user_prefix(&self) -> &str {
+        self.prefix
+            .char_indices()
+            .nth(self.fixed_prefix_len)
+            .map_or("", |(i, _)| &self.prefix[i..])
+    }
+
+    /// Record `fixed` as the chain-forced start of `prefix` (no-op if it isn't there).
+    pub fn set_fixed_prefix(&mut self, fixed: &str) {
+        self.fixed_prefix_len = match self.prefix.get(..fixed.len()) {
+            Some(head) if head.eq_ignore_ascii_case(fixed) => fixed.chars().count(),
+            _ => 0,
+        };
     }
 }
 

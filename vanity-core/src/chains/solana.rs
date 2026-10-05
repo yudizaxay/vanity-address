@@ -1,8 +1,18 @@
-use super::util::{grind_ed25519, keypair_from_secret, secret_from_attempt, Keypair};
+use super::base58_odds::Base58Layout;
+use super::util::{
+    grind_ed25519, keypair_from_secret, secret_from_attempt, Keypair, BASE58_ALPHABET,
+};
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::{matches_full, Pattern};
 
 const BASE58_INVALID: &str = "0OIl";
+
+/// A bare 32-byte public key, no version byte.
+const LAYOUT: Base58Layout = Base58Layout {
+    version: &[],
+    random_len: 32,
+    alphabet: BASE58_ALPHABET,
+};
 
 #[derive(Clone, Default)]
 pub struct SolanaGrinder;
@@ -146,7 +156,7 @@ impl ChainGrinder for SolanaGrinder {
             contains.clone()
         };
 
-        Ok(Pattern {
+        let pattern = Pattern {
             prefix,
             suffix,
             contains,
@@ -154,13 +164,16 @@ impl ChainGrinder for SolanaGrinder {
             suffix_match,
             contains_match,
             ignore_case,
-        })
+            fixed_prefix_len: 0,
+        };
+        LAYOUT.check_prefix("Solana", &pattern)?;
+        Ok(pattern)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {
         let mut combos = 1.0_f64;
         if pattern.has_prefix() {
-            combos *= Self::char_combinations(&pattern.prefix, pattern.ignore_case);
+            combos /= LAYOUT.prefix_probability(&pattern.prefix, pattern.ignore_case);
         }
         if pattern.has_suffix() {
             combos *= Self::char_combinations(&pattern.suffix, pattern.ignore_case);

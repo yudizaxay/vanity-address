@@ -68,6 +68,7 @@ impl ChainGrinder for MultiversXGrinder {
                 pattern.prefix.clone()
             };
         }
+        pattern.set_fixed_prefix("erd1");
         Ok(pattern)
     }
 

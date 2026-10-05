@@ -4,9 +4,13 @@ use crate::pattern::Pattern;
 use stellar_strkey::ed25519::{PrivateKey, PublicKey};
 
 use super::util::{
-    base58_combinations, build_base58_pattern, expected_from_pattern, grind_ed25519,
-    keypair_from_secret, matches_pattern, secret_from_attempt, BASE58_ALPHABET,
+    address_start_factor, apply_address_start, base32_combinations, build_base58_pattern,
+    expected_from_pattern, grind_ed25519, keypair_from_secret, matches_pattern,
+    secret_from_attempt, BASE32_ALPHABET,
 };
+
+/// Version byte 6<<3 leaves only 2 key bits in the second base32 char → `A`–`D`.
+const STELLAR_NEXT: &[&str] = &["ABCD"];
 
 #[derive(Clone, Default)]
 pub struct StellarGrinder;
@@ -61,11 +65,22 @@ impl ChainGrinder for StellarGrinder {
         contains: Option<&str>,
         exact: bool,
     ) -> Result<Pattern, String> {
-        build_base58_pattern(prefix, suffix, contains, exact, BASE58_ALPHABET, 56)
+        let upper = |s: Option<&str>| s.map(|v| v.to_ascii_uppercase());
+        let mut pattern = build_base58_pattern(
+            upper(prefix).as_deref(),
+            upper(suffix).as_deref(),
+            upper(contains).as_deref(),
+            exact,
+            BASE32_ALPHABET,
+            56,
+        )?;
+        apply_address_start(&mut pattern, "Stellar", "G", STELLAR_NEXT)?;
+        Ok(pattern)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {
-        expected_from_pattern(pattern, base58_combinations)
+        expected_from_pattern(pattern, base32_combinations)
+            * address_start_factor(pattern, STELLAR_NEXT, 32.0)
     }
 
     fn matches(&self, address: &str, pattern: &Pattern) -> bool {
@@ -77,7 +92,7 @@ impl ChainGrinder for StellarGrinder {
     }
 
     fn pattern_hint(&self) -> &'static str {
-        "Base58 strkey — public addresses start with G."
+        "Base32 (A-Z, 2-7). Addresses are G then A/B/C/D — start your prefix with e.g. A…"
     }
 }
 

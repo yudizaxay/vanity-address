@@ -4,9 +4,13 @@ use crate::pattern::Pattern;
 use bech32::{encode, Bech32, Hrp};
 
 use super::util::{
-    bech32_combinations, blake2b_var, build_base58_pattern, expected_from_pattern, grind_ed25519,
-    keypair_from_secret, matches_pattern, secret_from_attempt, BECH32_CHARSET,
+    address_start_factor, apply_address_start, bech32_combinations, blake2b_var,
+    build_base58_pattern, expected_from_pattern, grind_ed25519, keypair_from_secret,
+    matches_pattern, secret_from_attempt, BECH32_CHARSET,
 };
+
+/// Header 0x61 packs as `v`, then 3 header bits + 2 hash bits → one of `y 9 x 8`.
+const CARDANO_NEXT: &[&str] = &["v", "89xy"];
 
 #[derive(Clone, Default)]
 pub struct CardanoGrinder;
@@ -65,25 +69,13 @@ impl ChainGrinder for CardanoGrinder {
     ) -> Result<Pattern, String> {
         let mut pattern =
             build_base58_pattern(prefix, suffix, contains, exact, BECH32_CHARSET, 108)?;
-        if pattern.has_prefix() && !pattern.prefix.starts_with("addr") {
-            pattern.prefix = format!("addr1{}", pattern.prefix);
-            pattern.prefix_match = if pattern.ignore_case {
-                pattern.prefix.to_ascii_lowercase()
-            } else {
-                pattern.prefix.clone()
-            };
-        }
+        apply_address_start(&mut pattern, "Cardano", "addr1", CARDANO_NEXT)?;
         Ok(pattern)
     }
 
     fn expected_attempts(&self, pattern: &Pattern) -> f64 {
-        expected_from_pattern(pattern, |p| {
-            let data = p
-                .strip_prefix("addr1")
-                .or_else(|| p.strip_prefix("addr"))
-                .unwrap_or(p);
-            bech32_combinations(data)
-        })
+        expected_from_pattern(pattern, bech32_combinations)
+            * address_start_factor(pattern, CARDANO_NEXT, 32.0)
     }
 
     fn matches(&self, address: &str, pattern: &Pattern) -> bool {
@@ -95,7 +87,7 @@ impl ChainGrinder for CardanoGrinder {
     }
 
     fn pattern_hint(&self) -> &'static str {
-        "Bech32 after addr1 (Shelley enterprise / payment-only)."
+        "Bech32. Addresses are addr1v then 8/9/x/y — start your prefix with e.g. v8…"
     }
 }
 
