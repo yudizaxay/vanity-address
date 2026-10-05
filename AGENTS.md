@@ -231,7 +231,7 @@ make homebrew-formula VER=X.Y.Z
 
 ## Pending / optional next steps
 
-- [ ] Tag `v0.6.1` + publish crates / GitHub Release / Homebrew / npm (evm-contract, sol-mint, hyperliquid/sonic aliases, 0600 saves, zeroize)
+- [ ] Tag `v0.6.2` + publish crates / GitHub Release / Homebrew / npm (impossible-prefix rejection, exact base58 odds, wizard shows chain)
 - [ ] Winget / Scoop manifests (Windows package managers)
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen (unsigned warnings documented)
 - [ ] Submit to homebrew-core when notability criteria met

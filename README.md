@@ -57,7 +57,7 @@ Generate multi-chain keypairs whose public address matches your desired prefix, 
 
 **31 chains** + **contract & token-mint modes** · **CLI + desktop + npm SDK** · **MIT licensed** · **privacy-first** (keys never leave your machine)
 
-> **New in 0.6.1:** vanity **contract addresses** with no factory (`--chain evm-contract`), vanity **Solana token mints** (`--chain sol-mint`), Hyperliquid + Sonic aliases, and saved key files are now owner-only. See the [CHANGELOG](https://github.com/yudizaxay/vanity-address/blob/main/CHANGELOG.md).
+> **New in 0.6.2:** impossible prefixes are rejected up front (no more grinding forever on e.g. Kaspa `ax`), exact difficulty estimates for every chain, and fixed address starts are added for you. **0.6.1:** vanity **contract addresses** with no factory (`--chain evm-contract`), vanity **Solana token mints** (`--chain sol-mint`), Hyperliquid + Sonic aliases, owner-only key files. See the [CHANGELOG](https://github.com/yudizaxay/vanity-address/blob/main/CHANGELOG.md).
 
 ---
 
@@ -93,9 +93,9 @@ Generate multi-chain keypairs whose public address matches your desired prefix, 
 **Quick start (Linux):**
 
 ```bash
-# Replace 0.6.1 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.6.1/VanityAddress-0.6.1-Linux-CLI.tar.gz
-tar xzf VanityAddress-0.6.1-Linux-CLI.tar.gz
+# Replace 0.6.2 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.6.2/VanityAddress-0.6.2-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.6.2-Linux-CLI.tar.gz
 ./vanity-address
 ```
 
