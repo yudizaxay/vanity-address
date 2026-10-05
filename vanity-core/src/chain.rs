@@ -1,10 +1,17 @@
 use crate::pattern::Pattern;
+use zeroize::Zeroize;
 
 #[derive(Debug, Clone)]
 pub struct KeyExport {
     pub label: String,
     pub value: String,
     pub hint: Option<String>,
+}
+
+impl Drop for KeyExport {
+    fn drop(&mut self) {
+        self.value.zeroize();
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -17,6 +24,20 @@ pub struct KeypairResult {
 pub enum GrindAttempt {
     /// secp256k1 / ed25519 secret key bytes (chain-specific finalize)
     Secret32([u8; 32]),
+}
+
+impl GrindAttempt {
+    pub fn secret_bytes(&self) -> [u8; 32] {
+        let GrindAttempt::Secret32(bytes) = self;
+        *bytes
+    }
+}
+
+impl Drop for GrindAttempt {
+    fn drop(&mut self) {
+        let GrindAttempt::Secret32(bytes) = self;
+        bytes.zeroize();
+    }
 }
 
 pub trait ChainGrinder: Send + Sync + Clone {

@@ -1,6 +1,6 @@
 [package]
 name = "vanity-core"
-version = "0.6.0"
+version = "0.6.1"
 edition = "2021"
 description = "Multi-chain vanity address grinding core library"
 license = "MIT"
@@ -28,6 +28,7 @@ sysinfo = { version = "0.33", optional = true }
 data-encoding = "2"
 crc32fast = "1"
 base64 = "0.23"
+zeroize = "1.3"
 getrandom = { version = "0.2", features = ["js"], optional = true }
 
 [dev-dependencies]

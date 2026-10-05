@@ -6,6 +6,7 @@ mod cardano;
 mod cosmos;
 pub mod create2;
 mod evm;
+mod evm_contract;
 mod filecoin;
 mod hedera;
 mod icp;
@@ -31,6 +32,7 @@ pub use cardano::CardanoGrinder;
 pub use cosmos::CosmosGrinder;
 pub use create2::Create2Grinder;
 pub use evm::EvmGrinder;
+pub use evm_contract::EvmContractGrinder;
 pub use filecoin::FilecoinGrinder;
 pub use hedera::HederaGrinder;
 pub use icp::IcpGrinder;
@@ -40,7 +42,7 @@ pub use multiversx::MultiversXGrinder;
 pub use near::NearGrinder;
 pub use polkadot::PolkadotGrinder;
 pub use ripple::RippleGrinder;
-pub use solana::SolanaGrinder;
+pub use solana::{SolanaGrinder, SolanaMintGrinder};
 pub use stellar::StellarGrinder;
 pub use sui::SuiGrinder;
 pub use tezos::TezosGrinder;
@@ -84,6 +86,8 @@ pub enum Chain {
     Hedera(HederaGrinder),
     MultiversX(MultiversXGrinder),
     Create2(Create2Grinder),
+    EvmContract(EvmContractGrinder),
+    SolanaMint(SolanaMintGrinder),
 }
 
 /// Menu label for interactive chain picker (index 0-based).
@@ -164,12 +168,15 @@ impl Chain {
         let id = id.to_ascii_lowercase();
         match id.as_str() {
             "sol" | "solana" => Ok(Chain::Solana(SolanaGrinder)),
+            "sol-mint" | "spl-mint" | "mint" => Ok(Chain::SolanaMint(SolanaMintGrinder)),
             // EVM + trending L2 / app-chain aliases (same address math)
             "evm" | "eth" | "ethereum" | "base" | "arb" | "arbitrum" | "op" | "optimism"
             | "polygon" | "matic" | "avax" | "avalanche" | "bnb" | "bsc" | "fantom" | "ftm"
             | "scroll" | "linea" | "zksync" | "blast" | "mantle" | "mode" | "bera"
-            | "berachain" | "monad" | "abstract" | "unichain" | "robinhood" | "hood" | "rh" => {
-                Ok(Chain::Evm(EvmGrinder))
+            | "berachain" | "monad" | "abstract" | "unichain" | "robinhood" | "hood" | "rh"
+            | "hyperliquid" | "hyperevm" | "hype" | "sonic" => Ok(Chain::Evm(EvmGrinder)),
+            "evm-contract" | "evm-create" | "contract" => {
+                Ok(Chain::EvmContract(EvmContractGrinder))
             }
             "btc" | "bitcoin" => Ok(Chain::Bitcoin(BitcoinLikeGrinder::bitcoin())),
             "btc-segwit" | "segwit" | "bc1q" => {
@@ -205,7 +212,7 @@ impl Chain {
             "hedera" | "hbar" => Ok(Chain::Hedera(HederaGrinder)),
             "erd" | "mvx" | "elrond" | "multiversx" => Ok(Chain::MultiversX(MultiversXGrinder)),
             _ => Err(format!(
-                "Unknown chain '{id}'. Supported: {}",
+                "Unknown chain '{id}'. Supported: {} (deploy modes: evm-contract, sol-mint)",
                 Self::supported_ids_display()
             )),
         }
@@ -288,6 +295,8 @@ macro_rules! dispatch {
             Chain::Hedera(g) => g.$method($($arg),*),
             Chain::MultiversX(g) => g.$method($($arg),*),
             Chain::Create2(g) => g.$method($($arg),*),
+            Chain::EvmContract(g) => g.$method($($arg),*),
+            Chain::SolanaMint(g) => g.$method($($arg),*),
         }
     };
 }
@@ -394,9 +403,27 @@ mod tests {
             "avax",
             "bnb",
             "monad",
+            "hyperliquid",
+            "hyperevm",
+            "sonic",
         ] {
             let c = Chain::from_id(id).unwrap_or_else(|e| panic!("{id}: {e}"));
             assert_eq!(c.id(), "evm");
+        }
+    }
+
+    #[test]
+    fn deploy_modes_resolve_and_roundtrip() {
+        for (alias, id) in [
+            ("evm-contract", "evm-contract"),
+            ("contract", "evm-contract"),
+            ("sol-mint", "sol-mint"),
+            ("mint", "sol-mint"),
+        ] {
+            let chain = Chain::from_id(alias).unwrap_or_else(|e| panic!("{alias}: {e}"));
+            assert_eq!(chain.id(), id);
+            let (addr, attempt) = chain.grind_attempt();
+            assert_eq!(chain.finalize(attempt).address, addr);
         }
     }
 }

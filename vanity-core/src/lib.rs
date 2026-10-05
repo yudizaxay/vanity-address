@@ -5,6 +5,8 @@ pub mod estimate;
 pub mod grinder;
 pub mod pattern;
 #[cfg(feature = "native")]
+pub mod secure_file;
+#[cfg(feature = "native")]
 pub mod system;
 pub mod verify;
 
@@ -19,6 +21,8 @@ pub use grinder::{benchmark, grind, grind_n, grind_patterns, CancelToken, GrindR
 pub use pattern::{
     expand_pattern_alternatives, expected_attempts_any, matches_full, Pattern, PatternAlternative,
 };
+#[cfg(feature = "native")]
+pub use secure_file::open_private_append;
 #[cfg(feature = "native")]
 pub use system::{build_thread_pool, MemoryPressure, SystemProfile};
 pub use verify::verify_address;

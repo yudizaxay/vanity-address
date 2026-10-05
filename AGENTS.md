@@ -231,7 +231,7 @@ make homebrew-formula VER=X.Y.Z
 
 ## Pending / optional next steps
 
-- [ ] Tag `v0.6.0` + publish crates / GitHub Release / Homebrew / npm
+- [ ] Tag `v0.6.1` + publish crates / GitHub Release / Homebrew / npm (evm-contract, sol-mint, hyperliquid/sonic aliases, 0600 saves, zeroize)
 - [ ] Winget / Scoop manifests (Windows package managers)
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen (unsigned warnings documented)
 - [ ] Submit to homebrew-core when notability criteria met
@@ -277,6 +277,8 @@ make homebrew-formula VER=X.Y.Z
 | `vanity-core/src/chains/mod.rs` | Chain enum + menu IDs |
 | `vanity-core/src/chains/bitcoin_segwit.rs` | BTC SegWit + Taproot |
 | `vanity-core/src/chains/create2.rs` | EVM CREATE2 salt grinder |
+| `vanity-core/src/chains/evm_contract.rs` | EVM CREATE (deployer nonce 0) contract vanity (`evm-contract`) |
+| `vanity-core/src/secure_file.rs` | Owner-only (`0600`) append for saved keys |
 | `vanity-core/src/pattern.rs` | Prefix/suffix/contains + wildcards + OR expand |
 | `vanity-core/src/verify.rs` | Key → address verify |
 | `vanity-core/src/grinder.rs` | Parallel grind + benchmark + grind_n |

@@ -5,11 +5,11 @@ Desktop UI for [vanity-address](../README.md), built with **Tauri 2** + vanilla 
 ## Flow (matches CLI)
 
 1. **Home** — Start / Help
-2. **Chain** — pick from 25 supported chains
-3. **Pattern** — suffix / prefix / both tabs, live estimate + warnings
+2. **Chain** — pick from 31 supported chains (contract / token-mint modes are CLI-only for now)
+3. **Pattern** — suffix / prefix / contains, live estimate + warnings
 4. **Summary** — system profile, difficulty, confirm (double-confirm for impractical)
 5. **Grind** — 2s benchmark, live progress, stop anytime
-6. **Result** — highlighted address, blurred keys, copy/save, grind another or new grind
+6. **Result** — highlighted address, blurred keys, copy/save (owner-only file on macOS/Linux), grind another or new grind
 
 ## Requirements
 

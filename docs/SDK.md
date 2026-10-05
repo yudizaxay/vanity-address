@@ -166,12 +166,19 @@ All **31** chains — same ids as the CLI `--chain` flag:
 | `dash` | Dash | `sol` | Solana |
 | `doge` | Dogecoin | `xlm` | Stellar |
 | `dydx` | dYdX | `sui` | Sui |
-| `evm` | EVM (+ Base, Robinhood, …) | `xtz` | Tezos |
+| `evm` | EVM (+ Base, Hyperliquid, Sonic, Robinhood, …) | `xtz` | Tezos |
 | `fil` | Filecoin | `ton` | TON |
 | `hedera` | Hedera | `trx` | Tron |
 | `inj` | Injective | | |
 | `icp` | Internet Computer | | |
 | `kaspa` | Kaspa | | |
+
+Deploy modes (not in `listChains()`, but accepted as `chain`):
+
+| id | what you get | `privateKey` is |
+|---|---|---|
+| `evm-contract` | contract address from the deployer's first deploy (CREATE, nonce 0) | deployer private key (hex) |
+| `sol-mint` | SPL token mint address | mint secret key (base58); `exports[1]` is the keypair JSON for `spl-token` |
 
 ---
 

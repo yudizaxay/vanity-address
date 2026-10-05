@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## [0.6.1] - 2026-10-05
+
+### Added
+
+- **EVM contract vanity (`--chain evm-contract`)** — grind a deployer key so its first deployment (CREATE, nonce 0) lands on a matching contract address; no factory or init code hash needed
+- **Solana token mint vanity (`--chain sol-mint`)** — mint keypair JSON ready for `spl-token create-token mint.json`
+- **EVM aliases** — `hyperliquid` / `hyperevm`, `sonic`
+- `verify` works with `evm-contract` and `sol-mint`
+
+### Security
+
+- Saved key files (CLI `--save` and desktop Save) are created as owner-only `0600` on macOS/Linux; existing files are tightened
+- Secret buffers and exported key strings are zeroized when dropped
+
 ## [0.6.0] - 2026-09-21
 
 ### Added
