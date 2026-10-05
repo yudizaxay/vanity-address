@@ -9,13 +9,12 @@ use colored::Colorize;
 use indicatif::{ProgressBar, ProgressStyle};
 use json_output::{print_error_json, print_success_json, ErrorCode};
 use menu::run as run_interactive;
-use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use vanity_core::{
     benchmark, build_pattern_list, expected_attempts_any, format_attempts, grind_estimate, grind_n,
-    grind_patterns, patterns_description, verify_address, CancelToken, Chain, ChainGrinder,
-    Create2Grinder, GrindResult, Pattern, PatternRisk, SystemProfile,
+    grind_patterns, open_private_append, patterns_description, verify_address, CancelToken, Chain,
+    ChainGrinder, Create2Grinder, GrindResult, Pattern, PatternRisk, SystemProfile,
 };
 
 const BENCHMARK_SECS: f64 = 2.0;
@@ -35,7 +34,7 @@ struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
 
-    /// Blockchain id or alias (e.g. sol, evm, robinhood, base, btc-segwit, sei)
+    /// Blockchain id or alias (e.g. sol, evm, base, hyperliquid, btc-segwit, sei) or deploy mode (evm-contract, sol-mint)
     #[arg(long)]
     chain: Option<String>,
 
@@ -723,7 +722,7 @@ fn save_result(
     pattern: &Pattern,
     result: &GrindResult,
 ) -> io::Result<String> {
-    let mut file = OpenOptions::new().create(true).append(true).open(path)?;
+    let mut file = open_private_append(path)?;
 
     let timestamp = chrono_timestamp();
     writeln!(file, "━")?;

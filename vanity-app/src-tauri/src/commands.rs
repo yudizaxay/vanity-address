@@ -369,10 +369,10 @@ fn run_grind_job(
                 .keypair
                 .exports
                 .into_iter()
-                .map(|e| KeyExportPayload {
-                    label: e.label,
-                    value: e.value,
-                    hint: e.hint,
+                .map(|mut e| KeyExportPayload {
+                    label: std::mem::take(&mut e.label),
+                    value: std::mem::take(&mut e.value),
+                    hint: e.hint.take(),
                 })
                 .collect();
             let _ = app.emit(
@@ -472,11 +472,8 @@ pub async fn save_result(
         .into_path()
         .map_err(|e| format!("invalid save path: {e}"))?;
 
-    let mut file = std::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(&path)
-        .map_err(|e| format!("could not open file: {e}"))?;
+    let mut file =
+        vanity_core::open_private_append(&path).map_err(|e| format!("could not open file: {e}"))?;
 
     let timestamp = chrono_timestamp();
     writeln!(file, "━").ok();

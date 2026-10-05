@@ -14,7 +14,7 @@ vanity-address
 
 ```
 ╔══════════════════════════════════════════╗
-║         vanity-address  v0.6.0           ║
+║         vanity-address  v0.6.1           ║
 ╚══════════════════════════════════════════╝
 
   [1]  Start a new grind
@@ -39,6 +39,36 @@ vanity-address --chain btc-segwit --suffix cafe
 vanity-address --chain robinhood --suffix dead
 vanity-address verify --chain evm --address 0x… --key 0x…
 vanity-address --create2 --deployer 0x… --init-code-hash 0x… --prefix cafe
+vanity-address --chain evm-contract --prefix cafe
+vanity-address --chain sol-mint --suffix pump
+vanity-address --chain hyperliquid --prefix dead
+```
+
+---
+
+## Deploy modes (contract + token addresses)
+
+### EVM contract address (`evm-contract`)
+
+Grinds a **deployer key** whose first deployment (nonce 0, plain `CREATE`) lands on a matching contract address.
+
+```bash
+vanity-address --chain evm-contract --prefix cafe
+vanity-address verify --chain evm-contract --address 0xcafe… --key <deployer-private-key>
+```
+
+Output: contract address + deployer private key + deployer address. Fund the deployer and make the deploy its **very first transaction** on that chain — any earlier transaction bumps the nonce and the address changes. Works on every EVM chain (same address on each, as long as nonce 0 is the deploy).
+
+Use `--create2` instead when you deploy through a factory and already know its init code hash.
+
+### Solana token mint (`sol-mint`)
+
+Same ed25519 math as a wallet, exported for token creation:
+
+```bash
+vanity-address --chain sol-mint --suffix pump
+# save the "Mint Keypair (JSON)" line as mint.json, then:
+spl-token create-token mint.json            # or: spl-token create-token --program-2022 mint.json
 ```
 
 ---
@@ -103,7 +133,7 @@ Use `--chain` with any supported ID:
 
 `ada`, `algo`, `aptos`, `btc`, `btc-segwit`, `btc-taproot`, `cosmos`, `dash`, `doge`, `dot`, `dydx`, `erd`, `evm`, `fil`, `hedera`, `icp`, `inj`, `kaspa`, `ksm`, `ltc`, `near`, `osmo`, `sei`, `sol`, `sui`, `tia`, `ton`, `trx`, `xlm`, `xrp`, `xtz`
 
-EVM aliases (same math as `evm`): `base`, `arb`, `op`, `polygon`, `robinhood`, …
+EVM aliases (same math as `evm`): `base`, `arb`, `op`, `polygon`, `robinhood`, `hyperliquid` / `hyperevm`, `sonic`, `monad`, …
 
 ---
 
@@ -119,7 +149,7 @@ Example success payload:
 
 ```json
 {
-  "version": "0.6.0",
+  "version": "0.6.1",
   "chain": "sol",
   "chain_name": "Solana",
   "pattern": {
@@ -145,7 +175,7 @@ Combine with `--save` / `--output` to persist keys; `saved_to` is included in th
 
 | Flag                 | Description                                        | Default |
 | -------------------- | -------------------------------------------------- | ------- |
-| `--chain <ID>`       | Blockchain or alias (`robinhood`, `base`, …)       | `sol`   |
+| `--chain <ID>`       | Blockchain, alias (`base`, `hyperliquid`, …) or deploy mode (`evm-contract`, `sol-mint`) | `sol`   |
 | `--prefix <PATTERN>` | Address must start with pattern (`*` OK)           | —       |
 | `--suffix <PATTERN>` | Address must end with pattern (`*` OK; comma = OR) | —       |
 | `--contains <PAT>`   | Substring anywhere (`*` wildcards OK)              | —       |
@@ -154,7 +184,7 @@ Combine with `--save` / `--output` to persist keys; `saved_to` is included in th
 | `--create2`          | EVM CREATE2 salt grind (needs deployer + hash)     | off     |
 | `--deployer <HEX>`   | CREATE2 deployer (20 bytes)                        | —       |
 | `--init-code-hash`   | CREATE2 init code hash (32 bytes)                  | —       |
-| `--save`             | Append match (incl. private keys) to file          | off     |
+| `--save`             | Append match (incl. private keys) to file; `0600` on macOS/Linux | off     |
 | `--output <PATH>`    | Custom save file (with `--save` or interactive)    | `vanity-results.txt` |
 | `--no-benchmark`     | Skip 2s speed calibration warm-up                  | off     |
 | `--force`            | Allow impractical patterns in CLI mode             | off     |

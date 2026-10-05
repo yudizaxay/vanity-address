@@ -129,10 +129,10 @@ pub fn grind_chunk(
                     exports: kp
                         .exports
                         .into_iter()
-                        .map(|e| ExportOut {
-                            label: e.label,
-                            value: e.value,
-                            hint: e.hint,
+                        .map(|mut e| ExportOut {
+                            label: std::mem::take(&mut e.label),
+                            value: std::mem::take(&mut e.value),
+                            hint: e.hint.take(),
                         })
                         .collect(),
                 }),

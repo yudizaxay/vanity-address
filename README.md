@@ -50,9 +50,14 @@ Generate multi-chain keypairs whose public address matches your desired prefix, 
 | Parallel CPU grinding       |   ✅   |    ✅    |
 | Live progress + ETA         |   ✅   |    ✅    |
 | Multiple key export formats |   ✅   |    ✅    |
+| Contract address vanity     |   —    | ✅ CREATE + CREATE2 |
+| Token mint vanity           | ✅ SPL |    —     |
+| Owner-only key files (`0600`) |  ✅   |    ✅    |
 | 100% offline / local        |   ✅   |    ✅    |
 
-**31 chains** · **CLI + desktop + npm SDK** · **MIT licensed** · **privacy-first** (keys never leave your machine)
+**31 chains** + **contract & token-mint modes** · **CLI + desktop + npm SDK** · **MIT licensed** · **privacy-first** (keys never leave your machine)
+
+> **New in 0.6.1:** vanity **contract addresses** with no factory (`--chain evm-contract`), vanity **Solana token mints** (`--chain sol-mint`), Hyperliquid + Sonic aliases, and saved key files are now owner-only. See the [CHANGELOG](https://github.com/yudizaxay/vanity-address/blob/main/CHANGELOG.md).
 
 ---
 
@@ -88,9 +93,9 @@ Generate multi-chain keypairs whose public address matches your desired prefix, 
 **Quick start (Linux):**
 
 ```bash
-# Replace 0.6.0 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.6.0/VanityAddress-0.6.0-Linux-CLI.tar.gz
-tar xzf VanityAddress-0.6.0-Linux-CLI.tar.gz
+# Replace 0.6.1 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.6.1/VanityAddress-0.6.1-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.6.1-Linux-CLI.tar.gz
 ./vanity-address
 ```
 
@@ -137,20 +142,36 @@ vanity-address --chain btc-segwit --suffix cafe
 vanity-address --chain robinhood --suffix dead
 vanity-address verify --chain sol --address <addr> --key <hex-or-base58>
 vanity-address --create2 --deployer 0x… --init-code-hash 0x… --prefix cafe
+vanity-address --chain evm-contract --prefix cafe   # contract address (CREATE, deployer nonce 0)
+vanity-address --chain sol-mint --suffix pump       # SPL token mint keypair
+vanity-address --chain hyperliquid --prefix dead    # HyperEVM (also: sonic, base, monad, …)
 ```
 
 ### Common flags
 
 | Flag              | Description                              |
 | ----------------- | ---------------------------------------- |
-| `--chain <ID>`    | `sol`, `evm`, `robinhood`, `btc-segwit`, `sei`, … |
+| `--chain <ID>`    | `sol`, `evm`, `base`, `hyperliquid`, `btc-segwit`, `sei`, … or deploy mode `evm-contract` / `sol-mint` |
 | `--prefix` / `--suffix` / `--contains` | Match start, end, or anywhere (`*` OK) |
 | `--count N`       | Find N matches                           |
 | `--json`          | Machine-readable output (scripts)        |
-| `--save`          | Append keys to `vanity-results.txt`      |
+| `--save`          | Append keys to `vanity-results.txt` (owner-only `0600` on macOS/Linux) |
 | `-q, --quiet`     | Minimal output for scripts               |
 
-📖 **Full guide:** [docs/USAGE.md](https://github.com/yudizaxay/vanity-address/blob/main/docs/USAGE.md) — all chains, JSON schema, pattern rules, performance tips
+### Contract & token addresses
+
+```bash
+# EVM: grind a deployer key — its first deploy (nonce 0) lands on 0xcafe…
+vanity-address --chain evm-contract --prefix cafe
+
+# Solana: vanity token mint → save "Mint Keypair (JSON)" as mint.json
+vanity-address --chain sol-mint --suffix pump
+spl-token create-token mint.json
+```
+
+> For `evm-contract`, the deploy must be the deployer's **very first transaction** on that chain. Using a factory? Use `--create2` instead.
+
+📖 **Full guide:** [docs/USAGE.md](https://github.com/yudizaxay/vanity-address/blob/main/docs/USAGE.md) — all chains, deploy modes, JSON schema, pattern rules, performance tips
 
 ---
 
@@ -205,6 +226,7 @@ Home → Chain → Pattern → Summary → Grind → Result
 | Feature | Desktop |
 | ------- | ------- |
 | 31 chains, live ETA, stop mid-grind | ✅ |
+| Contract / token-mint modes | CLI only (for now) |
 | Impractical-pattern warning | ✅ |
 | Masked keys + reveal / copy / save | ✅ |
 
@@ -224,6 +246,7 @@ Home → Chain → Pattern → Summary → Grind → Result
 > | No network   | This tool **never connects to the internet**            |
 > | Never share  | **Do not** share private keys with anyone               |
 > | Verify first | Always double-check the address before sending funds    |
+> | Saved keys   | `--save` files are owner-only (`0600`) on macOS/Linux; secrets are wiped from memory after use |
 > | Open source  | Audit the code — trust, but verify                      |
 
 Full policy: [SECURITY.md](https://github.com/yudizaxay/vanity-address/blob/main/SECURITY.md)

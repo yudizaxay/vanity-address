@@ -4,7 +4,7 @@
 
 # vanity-address
 
-**Generate custom crypto wallet addresses that start, end, or contain YOUR word — Solana, Ethereum, Bitcoin SegWit/Taproot + 28 more chains.**
+**Generate custom crypto wallet addresses that start, end, or contain YOUR word — Solana, Ethereum, Bitcoin SegWit/Taproot + 28 more chains. Plus vanity contract addresses and Solana token mints.**
 
 [![npm](https://img.shields.io/npm/v/vanity-address?style=flat-square&logo=npm&color=cb3837)](https://www.npmjs.com/package/vanity-address)
 [![downloads](https://img.shields.io/npm/dm/vanity-address?style=flat-square&color=blue)](https://www.npmjs.com/package/vanity-address)
@@ -84,6 +84,12 @@ npx vanity-address --chain sol --suffix moon --save
 
 # JSON output for scripts / automation
 npx vanity-address --chain sol --suffix ax --json --no-benchmark
+
+# Contract address starting with 0xcafe (deployer's first deploy, nonce 0)
+npx vanity-address --chain evm-contract --prefix cafe
+
+# Solana token mint ending in "pump" → spl-token create-token mint.json
+npx vanity-address --chain sol-mint --suffix pump
 ```
 
 Example output:
@@ -123,7 +129,7 @@ Example output:
 | Dash | `dash` | base58 (P2PKH `X…`) | Dash Core |
 | Dogecoin | `doge` | base58 | — |
 | dYdX | `dydx` | bech32 | — |
-| Ethereum + all EVM | `evm` | `0x` hex | MetaMask, Rabby, Base, Robinhood… |
+| Ethereum + all EVM | `evm` | `0x` hex | MetaMask, Rabby, Base, Hyperliquid, Sonic, Robinhood… |
 | Filecoin | `fil` | `f1…` | Lotus, Glif |
 | Hedera | `hedera` | ed25519 pubkey hex | HashPack (0.0.N on-chain) |
 | Injective | `inj` | bech32 (`inj1…`) | Keplr |
@@ -144,19 +150,27 @@ Example output:
 | TON | `ton` | `UQ…` V4R2 | Tonkeeper |
 | Tron | `trx` | base58 (`T…`) | TronLink |
 
+### Deploy modes
+
+| Mode | `--chain` | What you get |
+| ---- | --------- | ------------ |
+| EVM contract (CREATE) | `evm-contract` | Deployer key whose **first** deploy (nonce 0) lands on your vanity contract address |
+| EVM contract (CREATE2) | `--create2 --deployer … --init-code-hash …` | Salt for a factory deploy |
+| Solana token mint | `sol-mint` | Mint keypair JSON for `spl-token create-token mint.json` |
+
 ---
 
 ## All flags
 
 | Flag | What it does | 
 | ---- | ------------ |
-| `--chain <ID>` | Which blockchain (see table above) |
+| `--chain <ID>` | Which blockchain or deploy mode (see tables above) |
 | `--prefix <WORD>` | Address must **start** with this (`*` OK) |
 | `--suffix <WORD>` | Address must **end** with this (`*` OK) |
 | `--contains <WORD>` | Address must **contain** this (`*` OK) |
 | `--count <N>` | Find N matches |
 | `--exact` | Match upper/lowercase exactly |
-| `--save` | Save keys to `vanity-results.txt` |
+| `--save` | Save keys to `vanity-results.txt` (owner-only on macOS/Linux) |
 | `--output <PATH>` | Custom file for saved keys |
 | `--json` | Machine-readable output |
 | `--threads <N>` | Limit CPU threads used |
@@ -206,6 +220,7 @@ Supports `import` (ESM) and `require` (CJS). Node uses a **worker_threads** pool
 | Are the wallets real? | Yes — standard keypairs, importable into Phantom / MetaMask / etc. |
 | Is it open source? | Yes, MIT licensed — [read the code](https://github.com/yudizaxay/vanity-address) |
 | Telemetry / analytics? | None. |
+| Saved key files? | Created owner-only (`0600`) on macOS/Linux; secrets wiped from memory after use. |
 
 ⚠️ **Golden rule:** whoever has the private key controls the funds. Never share it, and protect `vanity-results.txt` if you use `--save`.
 

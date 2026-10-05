@@ -190,9 +190,79 @@ impl ChainGrinder for SolanaGrinder {
     }
 }
 
+/// SPL token mint address — same ed25519 keypair math as a wallet; the
+/// exports are geared to `spl-token create-token <mint.json>`.
+#[derive(Clone, Default)]
+pub struct SolanaMintGrinder;
+
+impl ChainGrinder for SolanaMintGrinder {
+    fn id(&self) -> &'static str {
+        "sol-mint"
+    }
+
+    fn display_name(&self) -> &'static str {
+        "Solana token mint (SPL)"
+    }
+
+    fn grind_attempt(&self) -> (String, GrindAttempt) {
+        SolanaGrinder.grind_attempt()
+    }
+
+    fn finalize(&self, attempt: GrindAttempt) -> KeypairResult {
+        let secret_bytes = secret_from_attempt(attempt);
+        let keypair = keypair_from_secret(secret_bytes);
+        let keypair_bytes = SolanaGrinder::keypair_bytes(secret_bytes, &keypair);
+
+        KeypairResult {
+            address: SolanaGrinder::derive_address(&keypair),
+            exports: vec![
+                KeyExport {
+                    label: "Mint Secret Key (base58)".into(),
+                    value: bs58::encode(keypair_bytes).into_string(),
+                    hint: Some("Keypair.fromSecretKey(bs58.decode(…)) in @solana/web3.js".into()),
+                },
+                KeyExport {
+                    label: "Mint Keypair (JSON)".into(),
+                    value: SolanaGrinder::format_json_byte_array(&keypair_bytes),
+                    hint: Some(
+                        "Save as mint.json → spl-token create-token mint.json (or --program-2022)"
+                            .into(),
+                    ),
+                },
+            ],
+        }
+    }
+
+    fn build_pattern(
+        &self,
+        prefix: Option<&str>,
+        suffix: Option<&str>,
+        contains: Option<&str>,
+        exact: bool,
+    ) -> Result<Pattern, String> {
+        SolanaGrinder.build_pattern(prefix, suffix, contains, exact)
+    }
+
+    fn expected_attempts(&self, pattern: &Pattern) -> f64 {
+        SolanaGrinder.expected_attempts(pattern)
+    }
+
+    fn matches(&self, address: &str, pattern: &Pattern) -> bool {
+        SolanaGrinder.matches(address, pattern)
+    }
+
+    fn supports_exact_case(&self) -> bool {
+        true
+    }
+
+    fn pattern_hint(&self) -> &'static str {
+        "Base58 characters only. Invalid: 0, O, I, l (e.g. --suffix pump)"
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::SolanaGrinder;
+    use super::{SolanaGrinder, SolanaMintGrinder};
     use crate::chain::ChainGrinder;
     use crate::chains::util::keypair_from_secret;
     use solana_sdk::signature::SeedDerivable;
@@ -219,6 +289,16 @@ mod tests {
             old_keypair_bytes.to_vec(),
             "keypair bytes mismatch"
         );
+    }
+
+    #[test]
+    fn mint_derives_same_address_as_wallet_for_seed() {
+        let seed = [9u8; 32];
+        let wallet = SolanaGrinder.finalize(crate::chain::GrindAttempt::Secret32(seed));
+        let mint = SolanaMintGrinder.finalize(crate::chain::GrindAttempt::Secret32(seed));
+        assert_eq!(mint.address, wallet.address);
+        assert_eq!(mint.exports[0].value, wallet.exports[1].value);
+        assert_eq!(mint.exports[1].value, wallet.exports[2].value);
     }
 
     #[test]

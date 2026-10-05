@@ -516,6 +516,5 @@ pub fn secret32_from_keypair(keypair: &Keypair) -> [u8; 32] {
 }
 
 pub fn secret_from_attempt(attempt: GrindAttempt) -> [u8; 32] {
-    let GrindAttempt::Secret32(bytes) = attempt;
-    bytes
+    attempt.secret_bytes()
 }
