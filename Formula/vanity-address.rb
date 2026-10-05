@@ -14,8 +14,8 @@
 class VanityAddress < Formula
   desc "Fast, local multi-chain vanity address generator"
   homepage "https://github.com/yudizaxay/vanity-address"
-  url "https://github.com/yudizaxay/vanity-address/archive/refs/tags/v0.6.0.tar.gz"
-  sha256 "496a1031f682b2b97f20a19a63c7d2b845199c3d1345d557702ac133a975b763"
+  url "https://github.com/yudizaxay/vanity-address/archive/refs/tags/v0.6.1.tar.gz"
+  sha256 "05883d480c9c80eb3d5c92b0a98bd8821cb3d6860b587b2dcadcc345961bc9cd"
   license "MIT"
   head "https://github.com/yudizaxay/vanity-address.git", branch: "main"
 
