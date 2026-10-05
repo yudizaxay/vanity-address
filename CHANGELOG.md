@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- **Impossible prefixes are rejected** instead of grinding forever — e.g. Kaspa `ax` (always `kaspa:q` + `p/q/r/z`), Cardano, TON, Stellar, Litecoin, Dogecoin, Dash, Tron, Tezos, Kusama. The error names the characters that can appear there
+- **Accurate difficulty estimates** — exact odds for base58 address starts (they are not uniform), and fixed starts (`0x`, `kaspa:q`, `cosmos1`, `1`, `D`, `tz1`…) no longer count as difficulty, so "Easy" and the long-pattern warning agree
+- Fixed starts are added automatically (`--chain ada --prefix 8` → `addr1v8…`); ambiguous input picks the reading that can exist (Doge `D1` → `DD1…`)
+- Stellar patterns validated as base32 (was base58)
+- Interactive wizard shows the selected chain on every step and the target before grinding
+
 ## [0.6.1] - 2026-10-05
 
 ### Added

@@ -199,10 +199,27 @@ Combine with `--save` / `--output` to persist keys; `saved_to` is included in th
 
 - **Contains / wildcards:** `--contains cafe` or `Cool*xyz` — `*` = any chars
 - **Multi-pattern OR:** `--suffix moon,pump,dao` (comma only in one of prefix/suffix/contains)
-- **Base58 chains** (Solana, Bitcoin P2PKH, Litecoin, Dogecoin, Dash, Tron, Ripple, Stellar, Tezos, Polkadot, Kusama): no `0`, `O`, `I`, `l` (where applicable); Ripple uses its own alphabet
+- **Base58 chains** (Solana, Bitcoin P2PKH, Litecoin, Dogecoin, Dash, Tron, Ripple, Tezos, Polkadot, Kusama): no `0`, `O`, `I`, `l` (where applicable); Ripple uses its own alphabet
 - **Bech32** (Cosmos, Osmosis, Sei, Injective, Celestia, dYdX, Kaspa, Cardano, MultiversX, BTC SegWit/Taproot): charset `qpzry9x8gf2tvdw0s3jn54khce6mua7l`
-- **Base32** (Algorand, Filecoin, ICP): Algorand uppercase; Filecoin `f1…`; ICP principals (dashes optional in pattern)
+- **Base32** (Algorand, Stellar, Filecoin, ICP): Algorand / Stellar uppercase; Filecoin `f1…`; ICP principals (dashes optional in pattern)
 - **Base64url** (TON): `UQ…` Wallet V4R2 non-bounceable
+- **Fixed address starts are added for you** and don't count toward difficulty — type only your part (`--chain doge --prefix Moon` → `DMoon…`)
+- **Impossible prefixes are rejected up front** with the characters that can appear there. Some chains only allow a few characters right after the fixed start:
+
+| Chain | Every address starts | Next character |
+| ----- | -------------------- | -------------- |
+| Kaspa | `kaspa:q` | `p` `q` `r` `z` |
+| Cardano | `addr1v` | `8` `9` `x` `y` |
+| TON | `UQ` | `A`–`D` |
+| Stellar | `G` | `A`–`D` |
+| Dogecoin | `D` | `5`–`9`, `A`–`U` |
+| Litecoin | `L` | `K`–`Z`, `a`–`i` |
+| Dash | `X` | `a`–`z` |
+| Tron | `T` | `9`, `A`–`Z` |
+| Tezos | `tz1` | `K`–`Z`, `a`–`i` |
+| Kusama | — | `C` `D` `E` `F` `G` `H` `J` |
+
+Bitcoin (`1`), Ripple (`r`), Polkadot (`1`) and Solana allow almost any next character, but some are much rarer than others — the estimate accounts for that.
 - **Hex chains** (EVM + aliases, Aptos, Sui, NEAR, Hedera pubkey, CREATE2): `0-9`, `a-f`; optional `0x`
 ---
 
