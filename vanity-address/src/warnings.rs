@@ -9,7 +9,7 @@ pub fn print_pattern_warnings(estimate: &GrindEstimate) {
             println!(
                 "  {} {}",
                 "⚠".yellow().bold(),
-                "This pattern may take hours or longer. 4–6 characters is usually realistic."
+                "This pattern may take hours or longer. Dropping a character or two makes it much faster."
                     .yellow()
             );
         }
@@ -18,7 +18,7 @@ pub fn print_pattern_warnings(estimate: &GrindEstimate) {
             println!(
                 "  {} {}",
                 "⚠".red().bold(),
-                "Long pattern — weeks or months on this machine. Strongly consider shortening it."
+                "Long pattern — a week or more on this machine. Strongly consider shortening it."
                     .red()
             );
         }
@@ -28,8 +28,8 @@ pub fn print_pattern_warnings(estimate: &GrindEstimate) {
                 "  {} {}",
                 "⛔".red().bold(),
                 format!(
-                    "{} characters is NOT practical on a single PC (years to centuries+).",
-                    estimate.pattern_chars
+                    "{} characters is NOT practical on a single PC ({}).",
+                    estimate.pattern_chars, estimate.time_label
                 )
                 .red()
                 .bold()
@@ -42,7 +42,7 @@ pub fn print_pattern_warnings(estimate: &GrindEstimate) {
             );
             println!(
                 "  {}",
-                "Recommended: 2–4 chars suffix/prefix · 6 max for patient grinds.".dimmed()
+                "Shorten the pattern until the estimate is hours, not years.".dimmed()
             );
         }
     }

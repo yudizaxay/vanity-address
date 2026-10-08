@@ -12,9 +12,10 @@ use menu::run as run_interactive;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use vanity_core::{
-    benchmark, build_pattern_list, expected_attempts_any, format_attempts, grind_estimate, grind_n,
-    grind_patterns, open_private_append, patterns_description, verify_address, CancelToken, Chain,
-    ChainGrinder, Create2Grinder, GrindResult, Pattern, PatternRisk, SystemProfile,
+    benchmark, build_pattern_list, expected_attempts_any, format_attempts, format_duration,
+    grind_estimate, grind_n, grind_patterns, open_private_append, patterns_description,
+    verify_address, CancelToken, Chain, ChainGrinder, Create2Grinder, GrindResult, Pattern,
+    PatternRisk, SystemProfile,
 };
 
 const BENCHMARK_SECS: f64 = 2.0;
@@ -124,6 +125,8 @@ struct RunConfig {
     prompt_save: bool,
     output: Option<PathBuf>,
     no_benchmark: bool,
+    /// Already measured (interactive summary) — skip the warm-up.
+    measured_keys_per_sec: Option<f64>,
     force: bool,
     json: bool,
 }
@@ -144,6 +147,7 @@ impl Clone for RunConfig {
             prompt_save: self.prompt_save,
             output: self.output.clone(),
             no_benchmark: self.no_benchmark,
+            measured_keys_per_sec: self.measured_keys_per_sec,
             force: self.force,
             json: self.json,
         }
@@ -205,10 +209,24 @@ impl Cli {
             prompt_save: false,
             output: self.output.map(PathBuf::from),
             no_benchmark: self.no_benchmark,
+            measured_keys_per_sec: None,
             force: self.force,
             json: self.json,
         })
     }
+}
+
+/// Grinding has no memory: after any number of misses the average wait is unchanged,
+/// so show progress against the average instead of a countdown that can hit zero.
+fn progress_line(attempts: u64, rate: f64, expected: f64) -> String {
+    let share = attempts as f64 / expected.max(1.0) * 100.0;
+    format!(
+        "{} keys | {} keys/s | {:.0}% of average · avg {}",
+        format_attempts(attempts as f64).cyan(),
+        format_speed(rate).green(),
+        share,
+        format_duration(expected / rate.max(1.0))
+    )
 }
 
 fn format_speed(n: f64) -> String {
@@ -283,34 +301,15 @@ fn run_grind(config: RunConfig) {
         profile = profile.with_threads(threads);
     }
 
-    let pre_estimate = grind_estimate(
-        expected,
-        profile.estimated_keys_per_sec(chain.id()),
-        &pattern,
-    );
-
-    // CLI direct mode: warn and block impractical patterns unless --force.
-    if !config.compact_header && !config.quiet && !json {
-        warnings::print_pattern_warnings(&pre_estimate);
-        if pre_estimate.risk == PatternRisk::Impractical && !config.force {
-            exit_error(
-                "Pattern is not practical on a single machine. Shorten it or pass --force to grind anyway.",
-                ErrorCode::ImpracticalPattern,
-                json,
-            );
-        }
-    } else if json && pre_estimate.risk == PatternRisk::Impractical && !config.force {
-        exit_error(
-            "Pattern is not practical on a single machine. Shorten it or pass --force to grind anyway.",
-            ErrorCode::ImpracticalPattern,
-            json,
-        );
-    }
-
+    let interactive_out = !config.quiet && !json;
     let mut measured_keys_per_sec: Option<f64> = None;
+    let mut benchmarked_now = false;
 
-    if !config.quiet && !config.no_benchmark && !json {
-        if !config.compact_header {
+    if let Some(rate) = config.measured_keys_per_sec {
+        measured_keys_per_sec = Some(rate);
+        profile = profile.with_benchmark(rate);
+    } else if !config.no_benchmark {
+        if interactive_out && !config.compact_header {
             println!(
                 "  {}  {}",
                 "Calibrating".dimmed(),
@@ -321,41 +320,57 @@ fn run_grind(config: RunConfig) {
             Ok(rate) => {
                 measured_keys_per_sec = Some(rate);
                 profile = profile.with_benchmark(rate);
-                let calibrated = grind_estimate(
-                    expected,
-                    profile.estimated_keys_per_sec(chain.id()),
-                    &pattern,
-                );
-                if !config.compact_header {
-                    println!(
-                        "  {}  {}",
-                        "Measured".dimmed(),
-                        format!("~{} keys/sec", format_speed(rate)).green()
-                    );
-                    println!(
-                        "  {}  {}",
-                        "Est. time".dimmed(),
-                        calibrated.time_label.yellow()
-                    );
-                    println!();
-                } else {
-                    println!(
-                        "  {}  {}",
-                        "Speed".dimmed(),
-                        format!("~{} keys/sec (measured)", format_speed(rate)).green()
-                    );
-                }
+                benchmarked_now = true;
             }
             Err(e) => {
-                if !config.compact_header {
+                if interactive_out && !config.compact_header {
                     eprintln!("  {}  benchmark skipped ({e})", "warn:".yellow().bold(),);
                 }
             }
         }
-    } else if !config.no_benchmark && (json || config.quiet) {
-        if let Ok(rate) = benchmark(chain.clone(), &profile, BENCHMARK_SECS) {
-            measured_keys_per_sec = Some(rate);
-            profile = profile.with_benchmark(rate);
+    }
+
+    let estimate = grind_estimate(
+        expected,
+        profile.estimated_keys_per_sec(chain.id()),
+        &pattern,
+    );
+
+    // CLI direct mode: warn and block impractical patterns unless --force.
+    if !config.compact_header && interactive_out {
+        warnings::print_pattern_warnings(&estimate);
+    }
+    if (json || (interactive_out && !config.compact_header))
+        && estimate.risk == PatternRisk::Impractical
+        && !config.force
+    {
+        exit_error(
+            "Pattern is not practical on a single machine. Shorten it or pass --force to grind anyway.",
+            ErrorCode::ImpracticalPattern,
+            json,
+        );
+    }
+
+    if interactive_out && benchmarked_now {
+        let rate = measured_keys_per_sec.unwrap_or_default();
+        if !config.compact_header {
+            println!(
+                "  {}  {}",
+                "Measured".dimmed(),
+                format!("~{} keys/sec", format_speed(rate)).green()
+            );
+            println!(
+                "  {}  {}",
+                "Est. time".dimmed(),
+                estimate.time_label.yellow()
+            );
+            println!();
+        } else {
+            println!(
+                "  {}  {}",
+                "Speed".dimmed(),
+                format!("~{} keys/sec (measured)", format_speed(rate)).green()
+            );
         }
     }
 
@@ -420,14 +435,9 @@ fn run_grind(config: RunConfig) {
             &patterns,
             &profile,
             &CancelToken::new(),
-            |attempts, rate, eta_min| {
+            |attempts, rate, _eta_min| {
                 if let Some(ref bar) = pb {
-                    bar.set_message(format!(
-                        "{} keys | {} keys/s | ~{:.0} min remaining",
-                        format_attempts(attempts as f64).cyan(),
-                        format!("{rate:.0}").green(),
-                        eta_min
-                    ));
+                    bar.set_message(progress_line(attempts, rate, expected));
                 }
             },
         ) {
@@ -441,15 +451,13 @@ fn run_grind(config: RunConfig) {
             config.count,
             &profile,
             &CancelToken::new(),
-            |attempts, rate, eta_min, which| {
+            |attempts, rate, _eta_min, which| {
                 if let Some(ref bar) = pb {
                     bar.set_message(format!(
-                        "match {}/{} · {} keys | {} keys/s | ~{:.0} min",
+                        "match {}/{} · {}",
                         which,
                         config.count,
-                        format_attempts(attempts as f64).cyan(),
-                        format!("{rate:.0}").green(),
-                        eta_min
+                        progress_line(attempts, rate, expected)
                     ));
                 }
             },
@@ -838,6 +846,7 @@ fn main() {
             prompt_save: true,
             output: None,
             no_benchmark: false,
+            measured_keys_per_sec: config.measured_keys_per_sec,
             force: false,
             json: false,
         };

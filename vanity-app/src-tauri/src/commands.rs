@@ -4,9 +4,9 @@ use std::io::Write;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_dialog::DialogExt;
 use vanity_core::{
-    benchmark, expected_attempts_any, grind_estimate, grind_patterns, patterns_description,
-    CancelToken, Chain, ChainGrinder, GrindResult, Pattern, PatternRisk, SystemProfile,
-    MENU_CHAINS,
+    benchmark, expected_attempts_any, grind_estimate, grind_patterns, pattern_guide,
+    patterns_description, CancelToken, Chain, ChainGrinder, GrindResult, Pattern, PatternRisk,
+    SystemProfile, MENU_CHAINS,
 };
 
 const BENCHMARK_SECS: f64 = 2.0;
@@ -129,34 +129,23 @@ fn risk_warning(estimate: &vanity_core::GrindEstimate) -> Option<String> {
     match estimate.risk {
         PatternRisk::None => None,
         PatternRisk::Caution => Some(
-            "This pattern may take hours or longer. 4–6 characters is usually realistic.".to_string(),
+            "This pattern may take hours or longer. Dropping a character or two makes it much faster."
+                .to_string(),
         ),
         PatternRisk::Long => Some(
-            "Long pattern — weeks or months on this machine. Strongly consider shortening it."
+            "Long pattern — a week or more on this machine. Strongly consider shortening it."
                 .to_string(),
         ),
         PatternRisk::Impractical => Some(format!(
-            "{} characters is NOT practical on a single PC (years to centuries+). Vanity grinds are probabilistic — you will almost certainly never find a match. Recommended: 2–4 chars · 6 max for patient grinds.",
-            estimate.pattern_chars
+            "{} characters is NOT practical on a single PC ({}). Vanity grinds are probabilistic — you will almost certainly never find a match. Shorten the pattern until the estimate is hours, not years.",
+            estimate.pattern_chars, estimate.time_label
         )),
     }
 }
 
-fn length_guide(chain_id: &str, len: usize) -> String {
-    let hex_chains = ["evm", "aptos", "sui", "near"];
-    let length_hint = match len {
-        0..=3 => "Great length — usually seconds to minutes",
-        4..=5 => "OK — minutes to ~1 hour",
-        6..=7 => "Getting long — hours to days",
-        8..=9 => "Very long — days to weeks+",
-        _ => "Too long for a single machine — use ≤6 chars",
-    };
-    let rule = if hex_chains.contains(&chain_id) {
-        "Rule of thumb: 2→sec · 4→min · 6→~30min · 8+→hours+"
-    } else {
-        "Rule of thumb: 2→sec · 4→min · 6→~1hr · 8+→days+"
-    };
-    format!("{len}-char pattern: {length_hint}. {rule}")
+fn length_guide(chain: &Chain, pattern: &Pattern, estimate: &vanity_core::GrindEstimate) -> String {
+    let (verdict, rule) = pattern_guide(estimate, chain.chars_per_position(pattern.ignore_case));
+    format!("{} chars: {verdict}. {rule}", estimate.pattern_chars)
 }
 
 #[tauri::command]
@@ -186,7 +175,7 @@ pub fn estimate(
 
     let warning = risk_warning(&est);
     let length_guide = if pattern.has_prefix() || pattern.has_suffix() || pattern.has_contains() {
-        Some(length_guide(chain.id(), est.pattern_chars))
+        Some(length_guide(&chain, pattern, &est))
     } else {
         None
     };

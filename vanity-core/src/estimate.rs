@@ -9,12 +9,14 @@ pub enum PatternRisk {
 }
 
 impl PatternRisk {
-    pub fn assess(attempts: f64, pattern_chars: usize, avg_secs: f64) -> Self {
-        if attempts >= 1e15 || pattern_chars >= 10 || avg_secs >= 86400.0 * 365.0 * 10.0 {
+    /// Judged on time, not length: 8 hex characters take hours, 8 base58 ones take years.
+    pub fn assess(attempts: f64, _pattern_chars: usize, avg_secs: f64) -> Self {
+        const DAY: f64 = 86_400.0;
+        if attempts >= 1e15 || avg_secs >= DAY * 365.0 * 10.0 {
             PatternRisk::Impractical
-        } else if attempts >= 1e12 || pattern_chars >= 8 || avg_secs >= 86400.0 * 30.0 {
+        } else if avg_secs >= DAY * 7.0 {
             PatternRisk::Long
-        } else if attempts >= 1e9 || pattern_chars >= 6 || avg_secs >= 86400.0 {
+        } else if avg_secs >= 3_600.0 {
             PatternRisk::Caution
         } else {
             PatternRisk::None
@@ -87,6 +89,27 @@ pub fn default_keys_per_sec(chain_id: &str) -> f64 {
         "evm" | "eth" | "ethereum" | "aptos" | "apt" | "sui" | "near" => 35_000.0,
         _ => 80_000.0,
     }
+}
+
+/// Verdict for the estimated time, and what one character more or less would do.
+/// `per_char` is how many options each pattern character has (see `Chain::chars_per_position`).
+pub fn pattern_guide(estimate: &GrindEstimate, per_char: f64) -> (&'static str, String) {
+    const DAY: f64 = 86_400.0;
+    let verdict = match estimate.avg_secs {
+        s if s < 60.0 => "✓ Great — about a minute or less",
+        s if s < 3_600.0 => "✓ OK — minutes",
+        s if s < DAY => "⚠ Getting long — hours",
+        s if s < DAY * 30.0 => "⚠ Very long — days",
+        _ => "⛔ Too long for one machine — shorten the pattern",
+    };
+    let per_char = per_char.round();
+    let shorter = format_duration(estimate.avg_secs / per_char);
+    let rule = if estimate.pattern_chars > 1 {
+        format!("Each character ≈ {per_char:.0}× longer · one fewer ≈ {shorter}")
+    } else {
+        format!("Each character ≈ {per_char:.0}× longer")
+    };
+    (verdict, rule)
 }
 
 pub fn grind_estimate(attempts: f64, keys_per_sec: f64, pattern: &Pattern) -> GrindEstimate {

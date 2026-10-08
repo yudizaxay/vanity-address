@@ -5,8 +5,11 @@ use crate::terminal::{
 use crate::warnings;
 use colored::Colorize;
 use vanity_core::{
-    grind_estimate, Chain, ChainGrinder, GrindEstimate, PatternRisk, SystemProfile, MENU_CHAINS,
+    benchmark, grind_estimate, pattern_guide, Chain, ChainGrinder, GrindEstimate, PatternRisk,
+    SystemProfile, MENU_CHAINS,
 };
+
+const SUMMARY_BENCHMARK_SECS: f64 = 1.0;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum WizardStep {
@@ -31,6 +34,8 @@ pub struct InteractiveConfig {
     pub suffix: Option<String>,
     pub contains: Option<String>,
     pub exact: bool,
+    /// Speed measured for the summary, so the grind can skip its own warm-up.
+    pub measured_keys_per_sec: Option<f64>,
 }
 
 pub fn run() -> Option<InteractiveConfig> {
@@ -81,6 +86,7 @@ fn run_wizard() -> Option<InteractiveConfig> {
     let mut suffix: Option<String> = None;
     let mut contains: Option<String> = None;
     let mut exact = false;
+    let mut measured: Option<(&'static str, f64)> = None;
 
     loop {
         clear_screen();
@@ -291,7 +297,20 @@ fn run_wizard() -> Option<InteractiveConfig> {
                     }
                 };
 
-                let profile = SystemProfile::detect();
+                let mut profile = SystemProfile::detect();
+                let speed = match measured {
+                    Some((id, rate)) if id == chain.id() => Some(rate),
+                    _ => {
+                        println!("  {}", "Measuring speed on this machine…".dimmed());
+                        let rate = benchmark(chain.clone(), &profile, SUMMARY_BENCHMARK_SECS).ok();
+                        measured = rate.map(|r| (chain.id(), r));
+                        clear_screen();
+                        rate
+                    }
+                };
+                if let Some(rate) = speed {
+                    profile = profile.with_benchmark(rate);
+                }
                 let expected = chain.expected_attempts(&pattern);
                 let estimate = grind_estimate(
                     expected,
@@ -335,6 +354,7 @@ fn run_wizard() -> Option<InteractiveConfig> {
                         suffix,
                         contains,
                         exact,
+                        measured_keys_per_sec: speed,
                     });
                 }
 
@@ -456,11 +476,16 @@ fn print_summary(
         format!("{}", profile.memory_pressure).cyan()
     );
     let speed = profile.estimated_keys_per_sec(chain.id());
+    let source = if profile.measured_keys_per_sec.is_some() {
+        "measured"
+    } else {
+        "estimated"
+    };
     println!(
         "  {:<14} {}",
-        "Est. speed:".dimmed(),
+        "Speed:".dimmed(),
         format!(
-            "~{} keys/sec on this machine (estimated)",
+            "~{} keys/sec on this machine ({source})",
             format_speed(speed)
         )
         .green()
@@ -470,33 +495,16 @@ fn print_summary(
 
     if pattern.has_suffix() || pattern.has_prefix() || pattern.has_contains() {
         println!();
-        print_length_guide(chain.id(), estimate.pattern_chars);
+        let (verdict, rule) =
+            pattern_guide(estimate, chain.chars_per_position(pattern.ignore_case));
+        println!(
+            "  {}",
+            format!("Pattern guide ({} chars):", estimate.pattern_chars).dimmed()
+        );
+        println!("    {verdict}");
+        println!("    {}", rule.dimmed());
     }
     println!();
-}
-
-fn print_length_guide(chain_id: &str, len: usize) {
-    println!("  {}", format!("{len}-char pattern guide:").dimmed());
-    let hex_chains = ["evm", "aptos", "sui", "near"];
-    if hex_chains.contains(&chain_id) {
-        match len {
-            0..=3 => println!("    ✓ Great length — usually seconds to minutes"),
-            4..=5 => println!("    ✓ OK — minutes to ~1 hour"),
-            6..=7 => println!("    ⚠ Getting long — hours to days"),
-            8..=9 => println!("    ⚠ Very long — days to weeks+"),
-            _ => println!("    ⛔ Too long for a single machine — use ≤6 chars"),
-        }
-        println!("    Rule of thumb: 2→sec · 4→min · 6→~30min · 8+→hours+");
-    } else {
-        match len {
-            0..=3 => println!("    ✓ Great length — usually seconds to minutes"),
-            4..=5 => println!("    ✓ OK — minutes to ~1 hour"),
-            6..=7 => println!("    ⚠ Getting long — hours to days"),
-            8..=9 => println!("    ⚠ Very long — days to weeks+"),
-            _ => println!("    ⛔ Too long for a single machine — use ≤6 chars"),
-        }
-        println!("    Rule of thumb: 2→sec · 4→min · 6→~1hr · 8+→days+");
-    }
 }
 
 fn format_speed(n: f64) -> String {

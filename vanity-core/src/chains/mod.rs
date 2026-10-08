@@ -128,6 +128,25 @@ pub const MENU_CHAINS: [(&str, &str); 31] = [
 ];
 
 impl Chain {
+    /// How many characters one pattern position can match, i.e. how much longer
+    /// each extra character makes a grind. Any-case base58/base64 letters match two.
+    pub fn chars_per_position(&self, ignore_case: bool) -> f64 {
+        match self.id() {
+            "evm" | "evm-contract" | "create2" | "aptos" | "sui" | "near" | "hedera" => 16.0,
+            "ton" if ignore_case => 37.0,
+            "ton" => 64.0,
+            "sol" | "sol-mint" | "btc" | "ltc" | "doge" | "dash" | "trx" | "xrp" | "dot"
+            | "ksm" | "xtz" => {
+                if ignore_case {
+                    34.0
+                } else {
+                    58.0
+                }
+            }
+            _ => 32.0,
+        }
+    }
+
     pub fn from_menu_index(index: usize) -> Option<Self> {
         match index {
             0 => Some(Chain::Algorand(AlgorandGrinder)),

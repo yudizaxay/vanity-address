@@ -48,6 +48,25 @@ require_bin vanity-address-win32-x64 vanity-address.exe
 require_wasm nodejs
 require_wasm bundler
 
+# Stale binaries in npm/*/bin are not overwritten when prepare-npm.sh fails.
+check_host_binary_version() {
+  local want host
+  want="$(sed -n 's/^version = "\(.*\)"/\1/p' "${ROOT}/vanity-address/Cargo.toml" | head -1)"
+  case "$(uname -s)-$(uname -m)" in
+    Darwin-arm64) host=vanity-address-darwin-arm64 ;;
+    Darwin-x86_64) host=vanity-address-darwin-x64 ;;
+    Linux-x86_64) host=vanity-address-linux-x64 ;;
+    *) echo "Skipping binary version check on this host"; return ;;
+  esac
+  local got
+  got="$("${ROOT}/npm/${host}/bin/vanity-address" --version | awk '{print $2}')"
+  if [[ "${got}" != "${want}" ]]; then
+    echo "npm/${host}/bin/vanity-address is ${got}, expected ${want} — run ./scripts/prepare-npm.sh ${want}" >&2
+    exit 1
+  fi
+}
+check_host_binary_version
+
 for dir in "${PLATFORMS[@]}"; do
   echo "==> Publishing ${dir}"
   (cd "${ROOT}/npm/${dir}" && npm publish --access public ${DRY})

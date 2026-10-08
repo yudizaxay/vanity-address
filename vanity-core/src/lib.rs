@@ -14,7 +14,7 @@ pub use chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 pub use chains::{Chain, Create2Grinder, EvmGrinder, SolanaGrinder, MENU_CHAINS};
 pub use estimate::{
     default_keys_per_sec, effective_pattern_chars, format_attempts, format_duration,
-    grind_estimate, GrindEstimate, PatternRisk,
+    grind_estimate, pattern_guide, GrindEstimate, PatternRisk,
 };
 #[cfg(feature = "native")]
 pub use grinder::{benchmark, grind, grind_n, grind_patterns, CancelToken, GrindResult};
