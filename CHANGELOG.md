@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## [0.6.3] - 2026-10-08
+
+### Changed
+
+- **Difficulty is judged by time, not length** — warnings now come from the estimated time on your machine (hours / a week or more / not practical), so 8 hex characters and 8 base58 characters are no longer treated alike
+- Interactive summary measures real speed (1s) and shows a per-character guide: verdict plus "each character ≈ N× longer · one fewer ≈ …"; the grind reuses that speed instead of warming up again
+- Progress line shows "% of average · avg …" instead of a misleading "minutes remaining" countdown
+- Desktop app uses the same warnings and pattern guide
+
+### Fixed
+
+- CLI direct mode calibrates speed before warning or blocking, so the warning matches the shown estimate
+- npm 0.6.2 shipped the 0.6.1 CLI binary; `publish-npm.sh` now refuses to publish a stale binary
+
 ## [0.6.2] - 2026-10-05
 
 ### Fixed
