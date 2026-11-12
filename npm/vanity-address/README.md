@@ -138,6 +138,8 @@ Example output:
 | Cardano | `ada` | `addr1…` enterprise | — |
 | Celestia | `tia` | bech32 (`celestia1…`) | Keplr |
 | Cosmos | `cosmos` | bech32 (`cosmos1…`) | Keplr |
+| Bitcoin Cash | `bch` | CashAddr (`q…`) | Electron Cash |
+| Decred | `dcr` | base58 (`Ds…`) | Decrediton |
 | Dash | `dash` | base58 (P2PKH `X…`) | Dash Core |
 | DigiByte | `dgb` | base58 (P2PKH `D…`) | — |
 | Dogecoin | `doge` | base58 | — |
@@ -150,6 +152,7 @@ Example output:
 | Internet Computer | `icp` | principal | dfx / NNS |
 | Kaspa | `kaspa` | `kaspa:…` | Kaspium |
 | Kusama | `ksm` | SS58 ed25519 | Polkadot.js |
+| Nervos CKB | `ckb` | bech32m-style short (`ckb1qyq…`) | Neuron |
 | Litecoin | `ltc` | base58 | — |
 | Monacoin | `mona` | base58 (P2PKH `M…`) | — |
 | MultiversX | `erd` | bech32 (`erd1…`) | xPortal |
@@ -165,6 +168,7 @@ Example output:
 | Sei | `sei` | bech32 (`sei1…`) | Compass |
 | Solana | `sol` | base58 | Phantom, Solflare |
 | Stellar | `xlm` | strkey (`G…`) | — |
+| Stacks | `stx` | c32check (`SP…`) | Leather, Xverse |
 | Sui | `sui` | `0x` hex | Sui Wallet |
 | Syscoin | `sys` | base58 (P2PKH `S…`) | — |
 | Tezos | `xtz` | `tz1…` | Temple, Kukai |
@@ -172,6 +176,7 @@ Example output:
 | Tron | `trx` | base58 (`T…`) | TronLink |
 | Vertcoin | `vtc` | base58 (P2PKH `V…`) | — |
 | Viacoin | `via` | base58 (P2PKH `V…`) | — |
+| Zcash | `zec` | transparent `t1…` | YWallet, Zashi (transparent import) |
 
 ### Deploy modes
 

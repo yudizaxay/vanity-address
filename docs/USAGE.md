@@ -159,7 +159,7 @@ $ vanity-address --chain evm --prefix dead --suffix face
 
 Use `--chain` with any supported ID:
 
-Wallet menu (A–Z + Bitcoin-family forks): `ada`, `algo`, `aptos`, `btc`, `btg`, `btc-segwit`, `btc-taproot`, `cdn`, `cosmos`, `dash`, `dgb`, `doge`, `dot`, `dydx`, `emc2`, `erd`, `evm`, `fil`, `hedera`, `icp`, `inj`, `kaspa`, `ksm`, `ltc`, `mona`, `near`, `nvc`, `osmo`, `ppc`, `qtum`, `rvn`, `sei`, `sol`, `sui`, `sys`, `tia`, `ton`, `trx`, `via`, `vtc`, `xlm`, `xpm`, `xrp`, `xtz`
+Wallet menu (A–Z + Bitcoin-family forks): `ada`, `algo`, `aptos`, `bch`, `btc`, `btg`, `btc-segwit`, `btc-taproot`, `cdn`, `ckb`, `cosmos`, `dash`, `dcr`, `dgb`, `doge`, `dot`, `dydx`, `emc2`, `erd`, `evm`, `fil`, `hedera`, `icp`, `inj`, `kaspa`, `ksm`, `ltc`, `mona`, `near`, `nvc`, `osmo`, `ppc`, `qtum`, `rvn`, `sei`, `sol`, `stx`, `sui`, `sys`, `tia`, `ton`, `trx`, `via`, `vtc`, `xlm`, `xpm`, `xrp`, `xtz`, `zec`
 
 EVM aliases (same math as `evm`): `base`, `arb`, `op`, `polygon`, `robinhood`, `hyperliquid` / `hyperevm`, `sonic`, `monad`, …
 

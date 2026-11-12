@@ -196,8 +196,10 @@ All **49** chains — same ids as the CLI `--chain` flag:
 | `inj` | Injective | `xtz` | Tezos |
 | `icp` | Internet Computer | `ton` | TON |
 | `kaspa` | Kaspa | `trx` | Tron |
-| | | `vtc` | Vertcoin |
-| | | `via` | Viacoin |
+| `bch` | Bitcoin Cash (CashAddr `q…`) | `vtc` | Vertcoin |
+| `ckb` | Nervos CKB | `via` | Viacoin |
+| `dcr` | Decred | `zec` | Zcash (transparent `t1…`) |
+| `stx` | Stacks | | |
 
 Deploy modes (also from `listDeployModes()`; accepted as `chain`):
 
