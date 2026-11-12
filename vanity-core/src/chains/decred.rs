@@ -36,10 +36,13 @@ impl DecredGrinder {
 
     fn derive(secret: &SecretKey) -> String {
         let secp = Secp256k1::new();
-        let hash = Self::hash160_blake(&secret.public_key(&secp).serialize());
+        Self::address_from_hash(&Self::hash160_blake(&secret.public_key(&secp).serialize()))
+    }
+
+    fn address_from_hash(hash: &[u8; 20]) -> String {
         let mut payload = Vec::with_capacity(26);
         payload.extend_from_slice(&DS_PREFIX);
-        payload.extend_from_slice(&hash);
+        payload.extend_from_slice(hash);
         let c1 = Blake256::digest(&payload);
         let c2 = Blake256::digest(&c1);
         payload.extend_from_slice(&c2[..4]);
@@ -136,6 +139,33 @@ mod tests {
             assert!(addr.starts_with("Ds"), "got {addr}");
             assert_eq!(g.finalize(attempt).address, addr);
         }
+    }
+
+    #[test]
+    fn blake256_known_vectors() {
+        use blake_hash::{Blake256, Digest as _};
+        // BLAKE-256 spec test vectors (1 zero byte, 72 zero bytes).
+        assert_eq!(
+            hex::encode(Blake256::digest(&[0u8])),
+            "0ce8d4ef4dd7cd8d62dfded9d4edb0a774ae6a41929a74da23109e8f11139c87"
+        );
+        assert_eq!(
+            hex::encode(Blake256::digest(&[0u8; 72])),
+            "d419bad32d504fb7d44d460c42c5593fe544fa4c135dec31e21bd9abdcc22d41"
+        );
+    }
+
+    #[test]
+    fn known_vector_ds_address() {
+        // dcrutil address test vector: pubkey hash → Ds address.
+        let hash: [u8; 20] = hex::decode("2789d58cfa0957d206f025c2af056fc8a77cebb0")
+            .unwrap()
+            .try_into()
+            .unwrap();
+        assert_eq!(
+            DecredGrinder::address_from_hash(&hash),
+            "DsUZxxoHJSty8DCfwfartwTYbuhmVct7tJu"
+        );
     }
 
     #[test]

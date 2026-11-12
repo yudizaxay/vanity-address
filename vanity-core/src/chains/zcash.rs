@@ -31,10 +31,13 @@ pub struct ZcashGrinder;
 impl ZcashGrinder {
     fn derive(secret: &SecretKey) -> String {
         let secp = Secp256k1::new();
-        let hash = hash160(&secret.public_key(&secp).serialize());
+        Self::address_from_hash(&hash160(&secret.public_key(&secp).serialize()))
+    }
+
+    fn address_from_hash(hash: &[u8; 20]) -> String {
         let mut payload = Vec::with_capacity(26);
         payload.extend_from_slice(&T1_PREFIX);
-        payload.extend_from_slice(&hash);
+        payload.extend_from_slice(hash);
         let checksum = &Sha256::digest(Sha256::digest(&payload))[..4];
         payload.extend_from_slice(checksum);
         bs58::encode(payload).into_string()
@@ -126,6 +129,20 @@ mod tests {
             assert!(addr.starts_with("t1"), "got {addr}");
             assert_eq!(g.finalize(attempt).address, addr);
         }
+    }
+
+    #[test]
+    fn known_vector_t1() {
+        // Secret key = 1 → compressed pubkey hash160 (same as Bitcoin's key-1 address).
+        // Expected address cross-checked with an independent Base58Check implementation.
+        let hash: [u8; 20] = hex::decode("751e76e8199196d454941c45d1b3a323f1433bd6")
+            .unwrap()
+            .try_into()
+            .unwrap();
+        assert_eq!(
+            ZcashGrinder::address_from_hash(&hash),
+            "t1UYsZVJkLPeMjxEtACvSxfWuNmddpWfxzs"
+        );
     }
 
     #[test]

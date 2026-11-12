@@ -171,7 +171,7 @@ await generateAddress({
 
 ## Supported chains
 
-All **44** chains — same ids as the CLI `--chain` flag:
+All **49** chains — same ids as the CLI `--chain` flag:
 
 | id | chain | id | chain |
 |---|---|---|---|
