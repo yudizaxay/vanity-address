@@ -4,7 +4,7 @@
 
 # vanity-address
 
-**Generate custom crypto wallet addresses that start, end, or contain YOUR word — 44 wallet chains including Solana, Ethereum, Bitcoin SegWit/Taproot. Plus vanity contract addresses and Solana token mints.**
+**Generate custom crypto wallet addresses that start, end, or contain YOUR word — 49 wallet chains including Solana, Ethereum, Bitcoin SegWit/Taproot, Zcash, BCH, Stacks. Plus vanity contract addresses and Solana token mints.**
 
 [![npm](https://img.shields.io/npm/v/vanity-address?style=flat-square&logo=npm&color=cb3837)](https://www.npmjs.com/package/vanity-address)
 [![downloads](https://img.shields.io/npm/dm/vanity-address?style=flat-square&color=blue)](https://www.npmjs.com/package/vanity-address)

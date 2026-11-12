@@ -8,7 +8,7 @@
     </title>
     <meta
       name="description"
-      content="Free offline vanity address generator: custom Solana, Ethereum/EVM, Bitcoin, Tron &amp; 44 wallet chains, CREATE2 contracts, and Solana token mints. Browser, CLI, desktop keys never leave your device."
+      content="Free offline vanity address generator: custom Solana, Ethereum/EVM, Bitcoin, Tron &amp; 49 wallet chains, CREATE2 contracts, and Solana token mints. Browser, CLI, desktop keys never leave your device."
     />
     <link rel="canonical" href="https://vanity-address.online/" />
     <meta property="og:type" content="website" />
@@ -19,7 +19,7 @@
     />
     <meta
       property="og:description"
-      content="Generate a custom crypto wallet or contract address with your word. 44 chains. Free, open source, 100% local no telemetry."
+      content="Generate a custom crypto wallet or contract address with your word. 49 chains. Free, open source, 100% local no telemetry."
     />
     <meta
       property="og:image"
@@ -93,7 +93,7 @@
             "downloadUrl": "https://github.com/yudizaxay/vanity-address/releases/latest",
             "codeRepository": "https://github.com/yudizaxay/vanity-address",
             "license": "https://opensource.org/licenses/MIT",
-            "description": "Offline multi-chain vanity address generator for Solana, Ethereum/EVM, Bitcoin, Tron and 44 chains wallets, CREATE2 contracts, and Solana token mints.",
+            "description": "Offline multi-chain vanity address generator for Solana, Ethereum/EVM, Bitcoin, Tron and 49 chains wallets, CREATE2 contracts, and Solana token mints.",
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
           },
           {
@@ -1520,7 +1520,7 @@
           <h2 class="section-title">Pick a chain. Type a word. Press grind.</h2>
           <p class="section-desc">
             Same Rust engine behind the CLI, desktop app, web app, and npm SDK
-            44 wallet chains, plus vanity <strong>contract</strong> and
+            49 wallet chains, plus vanity <strong>contract</strong> and
             <strong>token mint</strong> modes. One trust model. The browser
             generator stays CPU-only; OpenCL GPU (EVM), Bitcoin puzzle mode, and
             split-key are CLI/desktop features.
@@ -1568,7 +1568,7 @@
                 <span class="step-num">01 · chain</span>
                 <h3>Wallet or contract</h3>
                 <p>
-                  Solana, EVM, Bitcoin, Tron, and 27 more wallets or switch to
+                  Solana, EVM, Bitcoin, Tron, and 32 more wallets or switch to
                   Contract mode for a vanity deployer / CREATE2 / SPL mint
                   address.
                 </p>
@@ -1745,7 +1745,7 @@
         <div class="wrap">
           <p class="section-kicker">pick up a build</p>
           <h2 class="section-title">Get vanity-address</h2>
-          <span class="version-tag" id="latestVersionTag">v0.7.0</span>
+          <span class="version-tag" id="latestVersionTag">v0.8.0</span>
           <p class="section-desc">
             No Rust or Node required for pre-built downloads grab your
             platform ticket.
@@ -1869,8 +1869,8 @@
       <!-- CHAINS -->
       <section id="chains">
         <div class="wrap">
-          <p class="section-kicker">sticker wall · 44</p>
-          <h2 class="section-title">All 44 wallets, same trust model.</h2>
+          <p class="section-kicker">sticker wall · 49</p>
+          <h2 class="section-title">All 49 wallets, same trust model.</h2>
           <p class="section-desc">
             Use any id with <code class="inline">--chain</code> plus deploy
             modes (<code class="inline">evm-contract</code>,
@@ -2722,6 +2722,7 @@
           ["algo", "Algorand"],
           ["aptos", "Aptos"],
           ["btc", "Bitcoin"],
+          ["bch", "Bitcoin Cash"],
           ["btg", "Bitcoin Gold"],
           ["btc-segwit", "BTC SegWit"],
           ["btc-taproot", "BTC Taproot"],
@@ -2730,6 +2731,7 @@
           ["tia", "Celestia"],
           ["cosmos", "Cosmos"],
           ["dash", "Dash"],
+          ["dcr", "Decred"],
           ["dgb", "DigiByte"],
           ["doge", "Dogecoin"],
           ["dydx", "dYdX"],
@@ -2745,6 +2747,7 @@
           ["mona", "Monacoin"],
           ["erd", "MultiversX"],
           ["near", "NEAR"],
+          ["ckb", "Nervos CKB"],
           ["nvc", "Novacoin"],
           ["osmo", "Osmosis"],
           ["ppc", "Peercoin"],
@@ -2755,6 +2758,7 @@
           ["xrp", "Ripple"],
           ["sei", "Sei"],
           ["sol", "Solana"],
+          ["stx", "Stacks"],
           ["xlm", "Stellar"],
           ["sui", "Sui"],
           ["sys", "Syscoin"],
@@ -2763,6 +2767,7 @@
           ["trx", "Tron"],
           ["vtc", "Vertcoin"],
           ["via", "Viacoin"],
+          ["zec", "Zcash"],
         ];
         var grid = document.getElementById("chainsGrid");
         if (grid) {
@@ -2890,7 +2895,7 @@
               setHref("dlLinuxPrimary", find(/Linux-CLI\.tar\.gz$/i));
               var tag = document.getElementById("latestVersionTag");
               if (tag) {
-                // Prefer live GitHub tag when >= 0.7.0; otherwise keep v0.7.0 (pending publish)
+                // Prefer live GitHub tag when >= 0.8.0; otherwise keep v0.8.0 (pending publish)
                 var name = data.tag_name || "";
                 var parts = name
                   .replace(/^v/i, "")
@@ -2902,7 +2907,7 @@
                   parts[0] > 0 ||
                   (parts[0] === 0 &&
                     (parts[1] > 6 || (parts[1] === 6 && parts[2] >= 7)));
-                tag.textContent = isNewEnough ? name : "v0.7.0";
+                tag.textContent = isNewEnough ? name : "v0.8.0";
               }
             })
             .catch(function () {});

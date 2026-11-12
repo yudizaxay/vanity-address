@@ -10,14 +10,14 @@
 
 **One-liner**
 
-> Grind a custom wallet address on your machine — 44 chains, prefix/suffix/contains, 100% offline. No servers. No telemetry.
+> Grind a custom wallet address on your machine — 49 chains, prefix/suffix/contains, 100% offline. No servers. No telemetry.
 
 **Why people should care**
 
 | Pain                          | Your answer                                |
 | ----------------------------- | ------------------------------------------ |
 | Web vanity sites feel sketchy | Fully local CLI + desktop; open source MIT |
-| Only Solana / only EVM tools  | 44 chains in one engine                    |
+| Only Solana / only EVM tools  | 49 chains in one engine                    |
 | Hard patterns = guesswork     | Honest ETA + contains / wildcards / OR     |
 | “Is this safe?”               | Keys never leave device; verify command    |
 
@@ -123,7 +123,7 @@ Replace nothing critical — tone is calm founder, not hype.
 **Title**
 
 ```text
-Show HN: Offline multi-chain vanity address generator (44 chains, Rust)
+Show HN: Offline multi-chain vanity address generator (49 chains, Rust)
 ```
 
 **Body**
@@ -135,7 +135,7 @@ matching a prefix, suffix, or contains pattern (wildcards + OR lists).
 Why local: a lot of “vanity” tools are websites. This one never phones home;
 keys stay on your machine. MIT, Rust core.
 
-- 44 chains (Solana, EVM, BTC SegWit/Taproot, Cosmos family, …)
+- 49 chains (Solana, EVM, BTC SegWit/Taproot, Cosmos family, …)
 - Honest ETA before long grinds
 - npx vanity-address · cargo install vanity-address · GitHub Releases
 
@@ -162,7 +162,7 @@ and thin CLI / Tauri frontends.
 Highlights:
 - Parallel grind (rayon), system-aware worker count
 - Prefix / suffix / contains + `*` wildcards + comma OR
-- 44 chains behind one API
+- 49 chains behind one API
 - No network during grind; MIT
 
 Try: `cargo install vanity-address` or `npx vanity-address`
@@ -225,7 +225,7 @@ Shipped vanity-address v0.6.0 — a local multi-chain vanity wallet generator.
 Problem I kept seeing: vanity tools that run in a browser and ask for trust.
 This one grinds on your CPU. Keys never leave the device. Open source (MIT).
 
-• 44 chains
+• 49 chains
 • Prefix, suffix, contains (+ wildcards)
 • CLI, desktop app, npm
 
@@ -264,7 +264,7 @@ Still iterating — comments welcome.
 1. Hook — branded wallets vs phishing anxiety
 2. What a vanity address actually is (simple)
 3. Threat model — why web grinders are scary
-4. How vanity-address works (local grind, pattern types, 44 chains)
+4. How vanity-address works (local grind, pattern types, 49 chains)
 5. Quickstart — `npx vanity-address` + link to INSTALL
 6. Closing — audit source, verify addresses, never paste keys
 

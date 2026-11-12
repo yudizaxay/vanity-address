@@ -1,10 +1,11 @@
 // Offline copy of this page's own files. Never sees keys: it only stores static assets fetched from this site.
-const CACHE = "vanity-generate-v40";
+const CACHE = "vanity-generate-v41";
 
 const ICONS = [
-  "ada", "algo", "apt", "atom", "btc", "btg", "cdn", "dash", "dgb", "doge", "dot", "dydx", "egld", "emc2", "eth",
-  "fil", "hbar", "icp", "inj", "kas", "ksm", "ltc", "mona", "near", "nvc", "osmo", "ppc", "qtum", "rvn", "sei",
-  "sol", "sui", "sys", "tia", "ton", "trx", "via", "vtc", "xlm", "xpm", "xrp", "xtz",
+  "ada", "algo", "apt", "atom", "bch", "btc", "btg", "cdn", "ckb", "dash", "dcr", "dgb", "doge", "dot", "dydx",
+  "egld", "emc2", "eth", "fil", "hbar", "icp", "inj", "kas", "ksm", "ltc", "mona", "near", "nvc", "osmo", "ppc",
+  "qtum", "rvn", "sei", "sol", "stx", "sui", "sys", "tia", "ton", "trx", "via", "vtc", "xlm", "xpm", "xrp", "xtz",
+  "zec",
 ];
 
 const EXPLORER_ICONS = [

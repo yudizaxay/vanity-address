@@ -10,7 +10,7 @@
 
 **vanity-address** — fast, local, multi-chain vanity cryptocurrency address generator.
 
-- **44+ menu chains:** original 31 schemes + Bitcoin-family P2PKH forks (`btg`, `rvn`, `mona`, … — see `docs/BITCOIN_FORKS.md`); Bitcoin (P2PKH / SegWit / Taproot), Cardano, Celestia, Cosmos, Dash, Dogecoin, dYdX, EVM (+ aliases), Filecoin, Hedera, Injective, ICP, Kaspa, Kusama, Litecoin, MultiversX, NEAR, Osmosis, Polkadot, Ripple, Sei, Solana, Stellar, Sui, Tezos, TON, Tron
+- **49 menu chains:** prior set + Zcash (`zec` t1), Bitcoin Cash (`bch`), Stacks (`stx`), Decred (`dcr`), Nervos CKB (`ckb`); Bitcoin-family P2PKH forks (`btg`, `rvn`, `mona`, … — see `docs/BITCOIN_FORKS.md`); Bitcoin (P2PKH / SegWit / Taproot), Cardano, Celestia, Cosmos, Dash, Dogecoin, dYdX, EVM (+ aliases), Filecoin, Hedera, Injective, ICP, Kaspa, Kusama, Litecoin, MultiversX, NEAR, Osmosis, Polkadot, Ripple, Sei, Solana, Stellar, Sui, Tezos, TON, Tron
 - **Two frontends:** CLI (`vanity-address`) + Tauri desktop app (`vanity-app`)
 - **One engine:** `vanity-core` library (all chain logic lives here)
 - **Patterns:** prefix / suffix / contains + `*` wildcards + comma OR + `--count` + `verify` + CREATE2 lite
@@ -42,14 +42,14 @@ vanity-address/ (workspace root)
 
 | Package | Version | Published |
 | ------- | ------- | --------- |
-| vanity-core | **0.7.0** | ⏳ in tree — publish after tag |
-| vanity-address (CLI) | **0.7.0** | ⏳ in tree — publish after tag |
-| vanity-app (desktop) | **0.7.0** | ⏳ in tree — GitHub Release after tag |
-| vanity-wasm / npm SDK | **0.7.0 → 0.7.1** | ✅ npm 0.7.0 live; **0.7.1** (metadata patch, main pkg only) in tree |
+| vanity-core | **0.8.0** | ⏳ in tree — publish after tag |
+| vanity-address (CLI) | **0.8.0** | ⏳ in tree — publish after tag |
+| vanity-app (desktop) | **0.8.0** | ⏳ in tree — GitHub Release after tag |
+| vanity-wasm / npm SDK | **0.8.0** | ⏳ in tree — publish after Release assets + prepare-npm |
 | Web app (`landing/generate/`) | — | ✅ live at https://vanity-address.online/generate/ |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.7.0`  
-**Latest GitHub Release:** [v0.6.6](https://github.com/yudizaxay/vanity-address/releases/tag/v0.6.6) — bump Formula/sha after `v0.7.0` exists
+**Git tags on GitHub:** `v0.3.0` … `v0.7.0` (⏳ `v0.8.0` pending)  
+**Latest GitHub Release:** [v0.6.6](https://github.com/yudizaxay/vanity-address/releases/tag/v0.6.6) — bump Formula/sha after `v0.8.0` exists
 
 **Website deploy (Cloudflare Pages — GitHub `main` auto-deploys `landing/`):**
 
@@ -73,11 +73,11 @@ cargo publish -p vanity-address
 
 | Channel | Status | User command |
 | ------- | ------ | ------------ |
-| **GitHub Releases** | ✅ v0.6.6 (⏳ v0.7.0 pending) | Download `.dmg`, `.exe`, CLI archives |
-| **crates.io** | ✅ v0.6.6 (⏳ v0.7.0 pending) | `cargo install vanity-address` |
-| **Homebrew tap** | ✅ v0.6.6 (⏳ v0.7.0 pending) | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
+| **GitHub Releases** | ✅ v0.6.6 (⏳ v0.8.0 pending) | Download `.dmg`, `.exe`, CLI archives |
+| **crates.io** | ✅ v0.6.6 (⏳ v0.8.0 pending) | `cargo install vanity-address` |
+| **Homebrew tap** | ✅ v0.6.6 (⏳ v0.8.0 pending) | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
-| **npm** | ✅ v0.7.0 (0.7.1 docs patch pending publish) | `npx vanity-address` / `npm i vanity-address` |
+| **npm** | ✅ v0.7.0 / 0.7.1 (⏳ 0.8.0 pending) | `npx vanity-address` / `npm i vanity-address` |
 | **Web app** | ✅ Live | https://vanity-address.online/generate/ |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
 
@@ -227,7 +227,7 @@ make homebrew-formula VER=X.Y.Z
 
 ## Pending / optional next steps
 
-- [ ] Tag + publish **v0.7.0** (GitHub Release → crates.io → Homebrew → npm)
+- [ ] Tag + publish **v0.8.0** (GitHub Release → crates.io → Homebrew → npm)
 - [ ] Optional: ICP explorer link on the web result
 - [ ] Winget / Scoop manifests
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen
@@ -257,4 +257,4 @@ make homebrew-formula VER=X.Y.Z
 
 ---
 
-*Last updated: 2026-10-20 — **0.7.0** in tree; Phase 1–3 complete; tag/publish pending.*
+*Last updated: 2026-11-12 — **0.8.0** in tree (+ ZEC/BCH/STX/DCR/CKB); tag/publish pending.*
