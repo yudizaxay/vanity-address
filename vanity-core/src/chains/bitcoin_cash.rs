@@ -6,9 +6,7 @@ use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
 use secp256k1::{Secp256k1, SecretKey};
 
-use super::util::{
-    grind_secp256k1, hash160, matches_pattern, secret_from_attempt, validate_chars,
-};
+use super::util::{grind_secp256k1, hash160, matches_pattern, secret_from_attempt, validate_chars};
 
 const PREFIX: &str = "bitcoincash";
 const CHARSET: &[u8] = b"qpzry9x8gf2tvdw0s3jn54khce6mua7l";
@@ -92,11 +90,7 @@ impl ChainGrinder for BitcoinCashGrinder {
                         .strip_prefix("bitcoincash:")
                         .or_else(|| s.strip_prefix("BITCOINCASH:"))
                         .unwrap_or(s);
-                    Ok(Some(validate_chars(
-                        label,
-                        s,
-                        CASHADDR_ALPHABET,
-                    )?))
+                    Ok(Some(validate_chars(label, s, CASHADDR_ALPHABET)?))
                 }
             }
         };
@@ -139,7 +133,7 @@ impl ChainGrinder for BitcoinCashGrinder {
         }
         if pattern.has_prefix() {
             let lead = pattern.prefix.chars().next().unwrap_or('?');
-            if lead.to_ascii_lowercase() != 'q' {
+            if !lead.eq_ignore_ascii_case(&'q') {
                 return Err("Bitcoin Cash CashAddr P2PKH always starts with 'q'".into());
             }
             pattern.set_fixed_prefix("q");
@@ -155,7 +149,7 @@ impl ChainGrinder for BitcoinCashGrinder {
             let mut chars = s.chars().peekable();
             if skip_leading_q {
                 if let Some(c) = chars.peek() {
-                    if c.to_ascii_lowercase() == 'q' {
+                    if c.eq_ignore_ascii_case(&'q') {
                         chars.next();
                     }
                 }
@@ -197,7 +191,7 @@ fn encode_cashaddr(prefix: &str, version: u8, hash20: &[u8; 20]) -> String {
         .map(|b| b & 0x1f)
         .chain(std::iter::once(0u8))
         .chain(data5.iter().copied())
-        .chain(std::iter::repeat(0u8).take(8))
+        .chain(std::iter::repeat_n(0u8, 8))
         .collect();
     let mod_ = polymod(&values) ^ 1;
     values.truncate(values.len() - 8);
@@ -234,11 +228,11 @@ fn convert_bits(data: &[u8], from: u32, to: u32, pad: bool) -> Vec<u8> {
 
 fn polymod(values: &[u8]) -> u64 {
     const GEN: [u64; 5] = [
-        0x98f2_bc8e_61,
-        0x79b7_6d99_e2,
-        0xf33e_5fb3_c4,
-        0xae2e_abe2_a8,
-        0x1e4f_43e4_70,
+        0x0098_f2bc_8e61,
+        0x0079_b76d_99e2,
+        0x00f3_3e5f_b3c4,
+        0x00ae_2eab_e2a8,
+        0x001e_4f43_e470,
     ];
     let mut c = 1u64;
     for &v in values {

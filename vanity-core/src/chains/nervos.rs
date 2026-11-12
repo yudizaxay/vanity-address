@@ -3,10 +3,10 @@
 //! Deprecated short payload `0x01 | 0x00 | blake160(pk)` is still widely used
 //! (Neuron / many explorers). HRP `ckb`, Bech32 (BIP-173).
 
-use bech32::{encode, Bech32, Hrp};
-use blake2b_simd::Params;
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
+use bech32::{encode, Bech32, Hrp};
+use blake2b_simd::Params;
 use secp256k1::{Secp256k1, SecretKey};
 
 use super::util::{
@@ -111,10 +111,8 @@ mod tests {
     #[test]
     fn blake160_known_vector() {
         // nervosnetwork/rfcs#362
-        let pk = hex::decode(
-            "038ab113db7fc7af23b104a839c5c2e33e4b6b791d0589c3030f1eb7b819c17b82",
-        )
-        .unwrap();
+        let pk = hex::decode("038ab113db7fc7af23b104a839c5c2e33e4b6b791d0589c3030f1eb7b819c17b82")
+            .unwrap();
         assert_eq!(
             hex::encode(ckb_blake160(&pk)),
             "adf33350760d7d939935c48751886ad55506c741"

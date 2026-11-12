@@ -8,9 +8,7 @@ use crate::pattern::Pattern;
 use secp256k1::{Secp256k1, SecretKey};
 use sha2::{Digest, Sha256};
 
-use super::util::{
-    grind_secp256k1, hash160, matches_pattern, secret_from_attempt, validate_chars,
-};
+use super::util::{grind_secp256k1, hash160, matches_pattern, secret_from_attempt, validate_chars};
 
 /// Mainnet P2PKH / singlesig version (c32check).
 const VERSION: u8 = 22; // 0x16
@@ -82,7 +80,11 @@ impl ChainGrinder for StacksGrinder {
         let clean = |raw: Option<&str>, label: &str| -> Result<Option<String>, String> {
             match raw {
                 None => Ok(None),
-                Some(s) => Ok(Some(validate_chars(label, &s.to_ascii_uppercase(), C32_ALPHABET)?)),
+                Some(s) => Ok(Some(validate_chars(
+                    label,
+                    &s.to_ascii_uppercase(),
+                    C32_ALPHABET,
+                )?)),
             }
         };
         let prefix = clean(prefix, "prefix")?;
@@ -138,7 +140,11 @@ impl ChainGrinder for StacksGrinder {
         let count = |s: &str, skip_sp: bool| {
             let mut chars: Vec<char> = s.chars().collect();
             if skip_sp && chars.len() >= 2 {
-                let head: String = chars.iter().take(2).collect::<String>().to_ascii_uppercase();
+                let head: String = chars
+                    .iter()
+                    .take(2)
+                    .collect::<String>()
+                    .to_ascii_uppercase();
                 if head == "SP" {
                     chars.drain(0..2);
                 }

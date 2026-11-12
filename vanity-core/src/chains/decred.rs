@@ -3,9 +3,9 @@
 //! Hash160 = RIPEMD160(BLAKE256(compressed pubkey));
 //! Base58Check with 2-byte version `[0x07, 0x3f]` and double-BLAKE256 checksum.
 
-use blake_hash::{Blake256, Digest as _};
 use crate::chain::{ChainGrinder, GrindAttempt, KeyExport, KeypairResult};
 use crate::pattern::Pattern;
+use blake_hash::{Blake256, Digest as _};
 use ripemd::Ripemd160;
 use secp256k1::{Secp256k1, SecretKey};
 use sha2::Digest;

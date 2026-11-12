@@ -196,9 +196,9 @@ impl Chain {
             "evm" | "evm-contract" | "create2" | "aptos" | "sui" | "near" | "hedera" => 16.0,
             "ton" if ignore_case => 37.0,
             "ton" => 64.0,
-            "sol" | "sol-mint" | "btc" | "ltc" | "doge" | "dash" | "dcr" | "trx" | "trx-contract"
-            | "xrp" | "dot" | "ksm" | "xtz" | "btg" | "rvn" | "mona" | "vtc" | "dgb" | "ppc"
-            | "qtum" | "via" | "xpm" | "emc2" | "sys" | "nvc" | "cdn" | "zec" => {
+            "sol" | "sol-mint" | "btc" | "ltc" | "doge" | "dash" | "dcr" | "trx"
+            | "trx-contract" | "xrp" | "dot" | "ksm" | "xtz" | "btg" | "rvn" | "mona" | "vtc"
+            | "dgb" | "ppc" | "qtum" | "via" | "xpm" | "emc2" | "sys" | "nvc" | "cdn" | "zec" => {
                 // Typical letter: both cases in base58 → 58/2. (i/o/L are one-case; digits stay 58.)
                 if ignore_case {
                     29.0
