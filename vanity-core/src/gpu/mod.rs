@@ -5,10 +5,11 @@
 
 mod device;
 mod engine;
-mod pattern_pack;
 
 #[cfg(feature = "opencl")]
 mod opencl_backend;
+#[cfg(feature = "opencl")]
+mod pattern_pack;
 
 pub use device::{gpu_available, list_gpu_devices, GpuDeviceInfo};
 pub use engine::{benchmark_gpu, grind_gpu, GpuGrindReport, GpuMode};
