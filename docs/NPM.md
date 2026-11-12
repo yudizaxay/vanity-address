@@ -37,7 +37,7 @@ Requires **Node.js 18+**. Supported platforms:
 
 ## Programmatic API
 
-The **vanity-address** package ships a **WASM SDK** alongside the CLI — all 44
+The **vanity-address** package ships a **WASM SDK** alongside the CLI — all 49
 chains, in-process (no subprocess). On Node it uses a **multi-core
 `worker_threads` pool** by default.
 

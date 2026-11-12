@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Stacks vanity address generator (SP…, offline)</title>
+<meta name="description" content="Generate a custom Stacks (STX) SP… address offline with your own prefix or suffix. Free, open source, keys stay on your device." />
+<link rel="canonical" href="https://vanity-address.online/stacks-vanity-address/" />
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<meta property="og:type" content="article" />
+<meta property="og:site_name" content="vanity-address" />
+<meta property="og:url" content="https://vanity-address.online/stacks-vanity-address/" />
+<meta property="og:title" content="Stacks vanity address generator (SP…, offline)" />
+<meta property="og:description" content="Generate a custom Stacks (STX) SP… address offline with your own prefix or suffix. Free, open source, keys stay on your device." />
+<meta property="og:image" content="https://vanity-address.online/assets/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Stacks vanity address generator (SP…, offline)" />
+<meta name="twitter:description" content="Generate a custom Stacks (STX) SP… address offline with your own prefix or suffix. Free, open source, keys stay on your device." />
+<meta name="twitter:image" content="https://vanity-address.online/assets/og.png" />
+<link rel="icon" href="../assets/logo.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../assets/guide.css" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "headline": "Stacks vanity address generator (SP…, offline)",
+      "description": "Generate a custom Stacks (STX) SP… address offline with your own prefix or suffix. Free, open source, keys stay on your device.",
+      "url": "https://vanity-address.online/stacks-vanity-address/",
+      "image": "https://vanity-address.online/assets/og.png",
+      "datePublished": "2026-11-12",
+      "dateModified": "2026-11-12",
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "name": "yudizaxay",
+        "url": "https://github.com/yudizaxay"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "vanity-address",
+        "url": "https://vanity-address.online/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://vanity-address.online/assets/logo-512.png"
+        }
+      },
+      "mainEntityOfPage": "https://vanity-address.online/stacks-vanity-address/"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://vanity-address.online/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "All chains",
+          "item": "https://vanity-address.online/chains/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Stacks vanity address",
+          "item": "https://vanity-address.online/stacks-vanity-address/"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Why do Stacks addresses start with SP?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The leading S marks c32check, and version 0x16 encodes to P for mainnet singlesig."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I use lowercase patterns?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "c32 is uppercase-only; the tool normalises case where appropriate."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="../"><img src="../assets/logo.svg" alt="" width="34" height="34" /><span>vanity-address</span></a>
+    <nav class="nav-links" id="navLinks" aria-label="Site">
+      <a href="../generate/">Web app</a>
+      <a href="../#download">Download</a>
+      <a href="../#how">How it works</a>
+      <a href="../#deploy">Contracts</a>
+      <a href="../#demo">Demo</a>
+      <a href="../chains/">Chains</a>
+      <a href="../vanity-address-difficulty/">Difficulty</a>
+      <a href="../#install">Install</a>
+      <a href="../#faq">FAQ</a>
+      <a href="../#security">Security</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="nav-cta" href="https://github.com/yudizaxay/vanity-address" target="_blank" rel="noopener" aria-label="Star on GitHub">
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span class="cta-text">Star on GitHub</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" type="button" aria-label="Toggle menu" aria-expanded="false">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <div class="wrap">
+    <main>
+      <p class="kicker">Stacks · STX · offline</p>
+      <h1>Stacks vanity address generator</h1>
+      <p class="lede">Create a real Stacks address that starts with, ends with, or contains your own pattern — generated on your machine. No accounts, no telemetry, keys never leave your device.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="../generate/">Generate in browser</a>
+        <a class="btn btn-ghost" href="https://github.com/yudizaxay/vanity-address/releases/latest">Download CLI / desktop</a>
+      </div>
+
+      <h2>How Stacks addresses work</h2>
+      <p>Stacks mainnet singlesig addresses start with <code>SP</code> and use Crockford base32 (c32check) over hash160 of a compressed secp256k1 public key.</p>
+      <p>The alphabet is uppercase <code>0–9 A–Z</code> without <code>I L O U</code>, so patterns must fit that set.</p>
+      <p>Alphabet: <strong>c32</strong> (32 symbols per position). Typical shape: <code>SP…MOON</code>.</p>
+
+      <h2>How to generate a Stacks vanity address</h2>
+      <ol>
+        <li>Open the <a href="../generate/">web generator</a> or run <code>npx vanity-address</code>.</li>
+        <li>Choose <strong>Stacks</strong> (<code>stx</code>).</li>
+        <li>Enter a short prefix, suffix, or contains pattern using the c32 alphabet.</li>
+        <li>Check the ETA, grind, then verify the result before using it.</li>
+      </ol>
+      <pre>npx vanity-address --chain stx --suffix MOON</pre>
+
+      <h2>How long will it take?</h2>
+      <p>Each extra character multiplies the work by about 32. Times below are illustrative at one million keys per second; your device may be faster or slower. Use the <a href="../vanity-address-difficulty/">difficulty calculator</a> with your own speed.</p>
+<table class="diff"><thead><tr><th>Pattern length</th><th>Expected attempts</th><th>Average time @ 1M keys/s</th></tr></thead><tbody>
+<tr><td>1</td><td>32</td><td>under a second</td></tr>
+<tr><td>2</td><td>1,024</td><td>under a second</td></tr>
+<tr><td>3</td><td>32,768</td><td>under a second</td></tr>
+<tr><td>4</td><td>1.0 million</td><td>1 second</td></tr>
+<tr><td>5</td><td>33.6 million</td><td>34 seconds</td></tr>
+<tr><td>6</td><td>1.1 billion</td><td>18 minutes</td></tr>
+<tr><td>7</td><td>34.4 billion</td><td>9.5 hours</td></tr>
+<tr><td>8</td><td>1.1 trillion</td><td>13 days</td></tr>
+</tbody></table>
+
+      <h2>Tips for Stacks</h2>
+      <ul>
+        <li>Prefer uppercase suffixes that avoid I, L, O and U.</li>
+        <li>The same key can also derive a linked Bitcoin P2PKH address.</li>
+        <li>Import hex or WIF into Hiro / Leather / Xverse-compatible wallets.</li>
+      </ul>
+
+      <h2>Safety</h2>
+      <p>Whoever holds the private key controls the funds. vanity-address creates keys locally from your operating system's secure random source and re-derives every address on the CPU before export. The exported file is a plaintext secret: keep it offline and never commit or email it. Read the <a href="https://github.com/yudizaxay/vanity-address/blob/main/docs/SECURITY-MODEL.md">security model</a> before moving significant value.</p>
+
+      <h2>Frequently asked questions</h2>
+      <h3>Why do Stacks addresses start with SP?</h3>
+      <p>The leading S marks c32check, and version 0x16 encodes to P for mainnet singlesig.</p>
+      <h3>Can I use lowercase patterns?</h3>
+      <p>c32 is uppercase-only; the tool normalises case where appropriate.</p>
+      <aside class="related">
+        <h2>More vanity address guides</h2>
+        <ul>
+          <li><a href="../solana-vanity-address/">Solana vanity address</a></li>
+          <li><a href="../ethereum-vanity-address/">Ethereum / EVM vanity address</a></li>
+          <li><a href="../bitcoin-vanity-address/">Bitcoin vanity address</a></li>
+          <li><a href="../create2-vanity-address/">CREATE2 vanity contract</a></li>
+          <li><a href="../tron-vanity-address/">Tron vanity address</a></li>
+          <li><a href="../dogecoin-vanity-address/">Dogecoin vanity address</a></li>
+          <li><a href="../litecoin-vanity-address/">Litecoin vanity address</a></li>
+          <li><a href="../dash-vanity-address/">Dash vanity address</a></li>
+          <li><a href="../ton-vanity-address/">TON vanity address</a></li>
+          <li><a href="../sui-vanity-address/">Sui vanity address</a></li>
+          <li><a href="../near-vanity-address/">NEAR vanity address</a></li>
+          <li><a href="../xrp-vanity-address/">XRP Ledger vanity address</a></li>
+          <li><a href="../stellar-vanity-address/">Stellar vanity address</a></li>
+          <li><a href="../cardano-vanity-address/">Cardano vanity address</a></li>
+          <li><a href="../kaspa-vanity-address/">Kaspa vanity address</a></li>
+          <li><a href="../zcash-vanity-address/">Zcash vanity address</a></li>
+          <li><a href="../bitcoin-cash-vanity-address/">Bitcoin Cash vanity address</a></li>
+          <li><a href="../decred-vanity-address/">Decred vanity address</a></li>
+          <li><a href="../nervos-ckb-vanity-address/">Nervos CKB vanity address</a></li>
+          <li><a href="../vanity-address-difficulty/">Vanity address difficulty calculator</a></li>
+          <li><a href="../chains/">All 49 supported chains</a></li>
+        </ul>
+      </aside>
+    </main>
+    <footer class="foot">
+      <p><a href="../">← vanity-address home</a> · <a href="../chains/">All supported chains</a> · MIT · <a href="https://github.com/yudizaxay/vanity-address">Source on GitHub</a> · Updated 2026-11-12</p>
+    </footer>
+  </div>
+<script>
+(function () {
+  var t = document.getElementById("navToggle");
+  var l = document.getElementById("navLinks");
+  if (!t || !l) return;
+  t.addEventListener("click", function () {
+    var open = l.classList.toggle("open");
+    t.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+})();
+</script>
+
+</body>
+</html>

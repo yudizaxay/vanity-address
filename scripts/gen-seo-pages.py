@@ -11,7 +11,7 @@ import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / "landing"
 SITE = "https://vanity-address.online"
-TODAY = "2026-10-21"
+TODAY = "2026-11-12"
 OG = f"{SITE}/assets/og.png"
 FONTS = "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
 GH = "https://github.com/yudizaxay/vanity-address"
@@ -137,6 +137,56 @@ CHAINS = [
                "Check the address on a Kaspa explorer before sending."],
          faq=[("Why are some Kaspa prefixes impossible?", "The first data character carries version bits, so only q, p, z or r can appear first."),
               ("Is the key stored anywhere?", "No. It exists only in memory and in the file you choose to export.")]),
+    dict(slug="zcash-vanity-address", id="zec", name="Zcash", tick="ZEC", alpha=B58, ex="t1Moon…", sfx="Moon",
+         title="Zcash vanity address generator (transparent t1, offline)",
+         desc="Generate a custom Zcash transparent (t1) address offline with your own prefix or suffix. Free, open source, keys never leave your device.",
+         about=["Zcash transparent P2PKH addresses are Base58Check strings that begin with <code>t1</code>. The network uses a two-byte version prefix, so the leading <code>t1</code> is fixed and your pattern starts after that.",
+                "Shielded Sapling (<code>zs1…</code>) and Unified addresses are out of scope — this mode grinds transparent secp256k1 keys only."],
+         tips=["Suffixes such as short words or repeated digits read well on explorers.",
+               "Import the exported WIF or hex key into a wallet that supports transparent Zcash keys.",
+               "Case matters in Base58, so <code>Moon</code> and <code>moon</code> are different patterns."],
+         faq=[("Do Zcash addresses always start with t1?", "Transparent P2PKH mainnet addresses do. Shielded and Unified formats use other prefixes and are not generated here."),
+              ("Is a transparent vanity address private?", "No. Transparent addresses are visible on-chain like Bitcoin. Use shielded wallets if you need privacy.")]),
+    dict(slug="bitcoin-cash-vanity-address", id="bch", name="Bitcoin Cash", tick="BCH", alpha=("CashAddr", 32), ex="q…cafe", sfx="cafe",
+         title="Bitcoin Cash vanity address generator (CashAddr, offline)",
+         desc="Make a custom Bitcoin Cash CashAddr (q…) offline with your own prefix or suffix. Free, open source, fully local.",
+         about=["Bitcoin Cash P2PKH CashAddr addresses use the bech32-style charset and typically begin with <code>q</code> (or <code>bitcoincash:q</code> with the HRP).",
+                "The engine grinds the same secp256k1 + hash160 as Bitcoin, then encodes CashAddr instead of legacy Base58."],
+         tips=["Patterns use the CashAddr alphabet: <code>qpzry9x8gf2tvdw0s3jn54khce6mua7l</code>.",
+               "Words with <code>b</code>, <code>i</code>, <code>o</code> or <code>1</code> cannot match.",
+               "Export WIF and import into any BCH wallet that accepts Bitcoin-style keys."],
+         faq=[("Is this legacy Base58 BCH?", "No — CashAddr only (q…). Legacy 1… addresses are not generated."),
+              ("How hard is a 4-character CashAddr suffix?", "About 32⁴ ≈ 1 million attempts on average.")]),
+    dict(slug="stacks-vanity-address", id="stx", name="Stacks", tick="STX", alpha=("c32", 32), ex="SP…MOON", sfx="MOON",
+         title="Stacks vanity address generator (SP…, offline)",
+         desc="Generate a custom Stacks (STX) SP… address offline with your own prefix or suffix. Free, open source, keys stay on your device.",
+         about=["Stacks mainnet singlesig addresses start with <code>SP</code> and use Crockford base32 (c32check) over hash160 of a compressed secp256k1 public key.",
+                "The alphabet is uppercase <code>0–9 A–Z</code> without <code>I L O U</code>, so patterns must fit that set."],
+         tips=["Prefer uppercase suffixes that avoid I, L, O and U.",
+               "The same key can also derive a linked Bitcoin P2PKH address.",
+               "Import hex or WIF into Hiro / Leather / Xverse-compatible wallets."],
+         faq=[("Why do Stacks addresses start with SP?", "The leading S marks c32check, and version 0x16 encodes to P for mainnet singlesig."),
+              ("Can I use lowercase patterns?", "c32 is uppercase-only; the tool normalises case where appropriate.")]),
+    dict(slug="decred-vanity-address", id="dcr", name="Decred", tick="DCR", alpha=B58, ex="DsMoon…", sfx="Moon",
+         title="Decred vanity address generator (Ds…, offline)",
+         desc="Create a custom Decred (DCR) Ds… address offline with your own prefix or suffix. Free, open source, local-only.",
+         about=["Decred mainnet P2PKH addresses begin with <code>Ds</code>. Unlike Bitcoin, Decred uses BLAKE256 for hash160 and a double-BLAKE256 Base58Check checksum with a two-byte version.",
+                "vanity-address re-derives every candidate on the CPU before export so the address matches Decrediton / dcrwallet import."],
+         tips=["The leading <code>Ds</code> is fixed — start your pattern after it, or use a suffix.",
+               "Export hex or Decred WIF (<code>Pm…</code>) for wallet import.",
+               "Case-sensitive Base58 patterns are exact; ignoring case roughly doubles odds for letter-heavy words."],
+         faq=[("Why Ds and not D?", "Mainnet P2PKH uses a two-byte version that Base58-encodes to Ds."),
+              ("Does Decred use SHA-256 like Bitcoin?", "No. Address hashing uses BLAKE256 + RIPEMD160.")]),
+    dict(slug="nervos-ckb-vanity-address", id="ckb", name="Nervos CKB", tick="CKB", alpha=("Bech32", 32), ex="ckb1qyq…cafe", sfx="cafe",
+         title="Nervos CKB vanity address generator (ckb1qyq…, offline)",
+         desc="Generate a custom Nervos CKB short address offline with your own prefix or suffix. Free, open source, keys never leave your device.",
+         about=["Short secp256k1 CKB addresses look like <code>ckb1qyq…</code>. The payload is format <code>0x01</code>, code hash index <code>0x00</code>, then blake160 of the compressed public key (Blake2b with personalization <code>ckb-default-hash</code>).",
+                "Bech32 excludes <code>1 b i o</code> in the data part, so choose patterns from the remaining 32 characters."],
+         tips=["The fixed head <code>ckb1qyq</code> is applied for you — put custom characters after it or use a suffix.",
+               "Short format is widely supported; newer full Bech32m lock-script addresses are out of scope here.",
+               "Import the hex private key into Neuron or another CKB wallet."],
+         faq=[("Why ckb1qyq?", "Short format type 0x01 and secp index 0x00 encode to those leading data characters after the HRP."),
+              ("Are full CKB addresses supported?", "Not yet — this release grinds the popular short secp256k1 form.")]),
 ]
 
 CSS_PAGE = '<link rel="stylesheet" href="../assets/guide.css" />'
@@ -302,7 +352,7 @@ def related(current):
         <ul>
 {lis}
           <li><a href="../vanity-address-difficulty/">Vanity address difficulty calculator</a></li>
-          <li><a href="../chains/">All 44 supported chains</a></li>
+          <li><a href="../chains/">All 49 supported chains</a></li>
         </ul>
       </aside>'''
 
@@ -366,8 +416,8 @@ def chain_page(c):
 
 def hub_page():
     path = "chains/"
-    title = "Vanity address generator for 44 chains — all supported"
-    desc = "Every blockchain vanity-address can grind: Solana, EVM, Bitcoin, Tron, TON, Sui, NEAR, XRP, Stellar, Cardano, Kaspa and more. Offline, free, open source."
+    title = "Vanity address generator for 49 chains — all supported"
+    desc = "Every blockchain vanity-address can grind: Solana, EVM, Bitcoin, Zcash, BCH, Stacks, Decred, Nervos CKB, Tron, TON, Sui and more. Offline, free, open source."
     items = [(f"../{s}/", n, "In-depth guide") for s, n in GUIDES] + [
         (f"../{c['slug']}/", f"{c['name']} ({c['tick']})", f"{c['alpha'][0]} · {c['alpha'][1]} symbols") for c in CHAINS]
     lis = "\n".join(f'        <li><a href="{u}">{e(n)} vanity address</a> — {e(d)}</li>' for u, n, d in items)
@@ -377,7 +427,7 @@ def hub_page():
         breadcrumb([("Home", f"{SITE}/"), ("All chains", f"{SITE}/{path}")])]}
     main = f'''      <p class="kicker">Directory</p>
       <h1>Vanity address generator for every chain</h1>
-      <p class="lede">One offline engine, 44 blockchains. Pick a network to see its address format, valid characters, difficulty table and a ready-to-run command.</p>
+      <p class="lede">One offline engine, 49 blockchains. Pick a network to see its address format, valid characters, difficulty table and a ready-to-run command.</p>
       <h2>Guides</h2>
       <ul>
 {lis}

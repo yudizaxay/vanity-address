@@ -4,6 +4,21 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-12
+
+### Added
+
+- **Zcash** (`zec`): transparent mainnet P2PKH `t1…` (2-byte version); shielded/Unified out of scope
+- **Bitcoin Cash** (`bch`): CashAddr P2PKH `q…` / `bitcoincash:q…`
+- **Stacks** (`stx`): mainnet c32check `SP…`
+- **Decred** (`dcr`): mainnet P2PKH `Ds…` (BLAKE256 hash160 + double-BLAKE256 checksum)
+- **Nervos CKB** (`ckb`): short secp256k1 address `ckb1qyq…` (blake160 + bech32)
+- Menu / web / SEO guides for the five new chains — **49** wallet chains total
+
+### Changed
+
+- Version bump across core, CLI, desktop, wasm, and npm packages to **0.8.0**
+
 ## [0.7.1] - 2026-10-29
 
 ### Changed
