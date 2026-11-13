@@ -4,6 +4,22 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-13
+
+### Fixed
+
+- `vanity-core`: gate `gpu::pattern_pack` behind the `opencl` feature — default-feature builds (and `cargo publish` verify) no longer emit 8 dead-code warnings
+- `verify`: Bitcoin Cash addresses are now accepted with or without the `bitcoincash:` prefix
+
+### Added
+
+- Known-vector tests for Zcash (`t1`) and Decred (`Ds`, BLAKE-256 spec vectors); verify round-trip + tampered-address tests for ZEC/BCH/STX/DCR/CKB
+- CI/Makefile: clippy `vanity-core` with default features so feature-gated dead code can't slip through again
+
+### Changed
+
+- Docs: new chain ids listed in USAGE, SDK table (49) and npm README; version bump to **0.8.1**
+
 ## [0.8.0] - 2026-11-12
 
 ### Added

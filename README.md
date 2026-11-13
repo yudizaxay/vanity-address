@@ -53,7 +53,7 @@ Generate multi-chain keypairs whose public address matches your desired prefix, 
 
 **49 wallet chains** + **4 deploy modes** (`evm-contract`, `trx-contract`, `sol-mint`, `create2`) · **CLI + desktop + npm SDK** · **web app** (wallets) · **MIT** · keys never leave your machine
 
-> **0.8.0 in tree:** OpenCL GPU for **EVM** (~90× CPU on Apple M4; other GPUs untested) and experimental Solana — CLI/desktop — via `--gpu auto`, `gpu devices` / `gpu bench`, with CPU re-verify; Bitcoin-family forks, puzzle mode, split-key, security model. Web/npm stay CPU-only (no GPU, puzzle, or split-key). See [CHANGELOG](https://github.com/yudizaxay/vanity-address/blob/main/CHANGELOG.md) · [BENCHMARKS](https://github.com/yudizaxay/vanity-address/blob/main/docs/BENCHMARKS.md).
+> **0.8.1 in tree:** OpenCL GPU for **EVM** (~90× CPU on Apple M4; other GPUs untested) and experimental Solana — CLI/desktop — via `--gpu auto`, `gpu devices` / `gpu bench`, with CPU re-verify; Bitcoin-family forks, puzzle mode, split-key, security model. Web/npm stay CPU-only (no GPU, puzzle, or split-key). See [CHANGELOG](https://github.com/yudizaxay/vanity-address/blob/main/CHANGELOG.md) · [BENCHMARKS](https://github.com/yudizaxay/vanity-address/blob/main/docs/BENCHMARKS.md).
 
 ---
 
@@ -114,9 +114,9 @@ Keys exist only in the open tab and are never stored or sent anywhere. The devic
 **Quick start (Linux):**
 
 ```bash
-# Replace 0.8.0 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.8.0/VanityAddress-0.8.0-Linux-CLI.tar.gz
-tar xzf VanityAddress-0.8.0-Linux-CLI.tar.gz
+# Replace 0.8.1 if a newer release exists: https://github.com/yudizaxay/vanity-address/releases/latest
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.8.1/VanityAddress-0.8.1-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.8.1-Linux-CLI.tar.gz
 ./vanity-address
 ```
 

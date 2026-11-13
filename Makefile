@@ -42,6 +42,8 @@ clippy: clippy-cli clippy-app
 
 clippy-cli:
 	$(CARGO) clippy -p vanity-core -p vanity-address --all-targets -- -D warnings
+	# vanity-core alone = default features only (what crates.io consumers / publish verify build)
+	$(CARGO) clippy -p vanity-core --all-targets -- -D warnings
 
 clippy-app:
 	$(CARGO) clippy -p vanity-app --all-targets -- -D warnings

@@ -176,7 +176,7 @@ Example output:
 | Tron | `trx` | base58 (`T…`) | TronLink |
 | Vertcoin | `vtc` | base58 (P2PKH `V…`) | — |
 | Viacoin | `via` | base58 (P2PKH `V…`) | — |
-| Zcash | `zec` | transparent `t1…` | YWallet, Zashi (transparent import) |
+| Zcash | `zec` | transparent `t1…` | — |
 
 ### Deploy modes
 

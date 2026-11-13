@@ -24,7 +24,7 @@ Chain-by-chain guides and a time estimator: [all chains](https://vanity-address.
 | **Terminal app** | Windows 10 / 11 | `VanityAddress-*-Windows-CLI.zip` |
 | **Terminal app** | Linux | `VanityAddress-*-Linux-CLI.tar.gz` |
 
-> **Tip:** `*` = version number (e.g. `0.8.0`). Prefer [latest release](https://github.com/yudizaxay/vanity-address/releases/latest) for the newest filenames.  
+> **Tip:** `*` = version number (e.g. `0.8.1`). Prefer [latest release](https://github.com/yudizaxay/vanity-address/releases/latest) for the newest filenames.  
 > **Checksum files** (`.sha256`) are optional — for security verification only; most users can skip them.
 
 ---
@@ -32,9 +32,9 @@ Chain-by-chain guides and a time estimator: [all chains](https://vanity-address.
 ## Linux (CLI)
 
 ```bash
-# Replace 0.8.0 with the version on the Releases page if newer
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.8.0/VanityAddress-0.8.0-Linux-CLI.tar.gz
-tar xzf VanityAddress-0.8.0-Linux-CLI.tar.gz
+# Replace 0.8.1 with the version on the Releases page if newer
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.8.1/VanityAddress-0.8.1-Linux-CLI.tar.gz
+tar xzf VanityAddress-0.8.1-Linux-CLI.tar.gz
 ./vanity-address
 ```
 
@@ -52,8 +52,8 @@ vanity-address --version
 **Apple Silicon (M1/M2/M3/M4):**
 
 ```bash
-curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.8.0/VanityAddress-0.8.0-Mac-AppleSilicon-CLI.tar.gz
-tar xzf VanityAddress-0.8.0-Mac-AppleSilicon-CLI.tar.gz
+curl -LO https://github.com/yudizaxay/vanity-address/releases/download/v0.8.1/VanityAddress-0.8.1-Mac-AppleSilicon-CLI.tar.gz
+tar xzf VanityAddress-0.8.1-Mac-AppleSilicon-CLI.tar.gz
 ./vanity-address
 ```
 
@@ -138,12 +138,12 @@ Every archive on the Releases page ships with a `.sha256` sidecar file.
 
 ```bash
 # Linux / macOS (optional)
-shasum -a 256 -c VanityAddress-0.8.0-Linux-CLI.tar.gz.sha256
+shasum -a 256 -c VanityAddress-0.8.1-Linux-CLI.tar.gz.sha256
 ```
 
 ```powershell
 # Windows (optional) — compare hash manually
-Get-FileHash VanityAddress-0.8.0-Windows-CLI.zip -Algorithm SHA256
+Get-FileHash VanityAddress-0.8.1-Windows-CLI.zip -Algorithm SHA256
 ```
 
 ---

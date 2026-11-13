@@ -1745,7 +1745,7 @@
         <div class="wrap">
           <p class="section-kicker">pick up a build</p>
           <h2 class="section-title">Get vanity-address</h2>
-          <span class="version-tag" id="latestVersionTag">v0.8.0</span>
+          <span class="version-tag" id="latestVersionTag">v0.8.1</span>
           <p class="section-desc">
             No Rust or Node required for pre-built downloads grab your
             platform ticket.
@@ -2895,7 +2895,7 @@
               setHref("dlLinuxPrimary", find(/Linux-CLI\.tar\.gz$/i));
               var tag = document.getElementById("latestVersionTag");
               if (tag) {
-                // Prefer live GitHub tag when >= 0.8.0; otherwise keep v0.8.0 (pending publish)
+                // Prefer live GitHub tag when >= 0.8.1; otherwise keep v0.8.1 (pending publish)
                 var name = data.tag_name || "";
                 var parts = name
                   .replace(/^v/i, "")
@@ -2907,7 +2907,7 @@
                   parts[0] > 0 ||
                   (parts[0] === 0 &&
                     (parts[1] > 6 || (parts[1] === 6 && parts[2] >= 7)));
-                tag.textContent = isNewEnough ? name : "v0.8.0";
+                tag.textContent = isNewEnough ? name : "v0.8.1";
               }
             })
             .catch(function () {});

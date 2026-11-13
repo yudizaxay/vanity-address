@@ -46,6 +46,11 @@ jobs:
       - name: Clippy
         run: cargo clippy -p vanity-core -p vanity-address --all-targets -- -D warnings
 
+      # vanity-core alone builds with default features only (no opencl) — this is
+      # what crates.io consumers and `cargo publish` verify compile.
+      - name: Clippy (vanity-core, default features)
+        run: cargo clippy -p vanity-core --all-targets -- -D warnings
+
   # vanity-app (Tauri) — validate on macOS + Windows (Linux needs WebKit/GTK)
   desktop:
     name: Desktop app (${{ matrix.label }})

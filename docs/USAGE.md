@@ -16,7 +16,7 @@ vanity-address
 
 ```
 ╔══════════════════════════════════════════╗
-║         vanity-address  v0.8.0           ║
+║         vanity-address  v0.8.1           ║
 ╚══════════════════════════════════════════╝
 
   [1]  Start a new grind
@@ -221,7 +221,7 @@ Example success payload:
 
 ```json
 {
-  "version": "0.8.0",
+  "version": "0.8.1",
   "chain": "sol",
   "chain_name": "Solana",
   "pattern": {
