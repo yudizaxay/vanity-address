@@ -97,10 +97,15 @@ mod tests {
             let kp = chain.finalize(attempt);
             let key = &kp.exports[0].value;
             assert!(verify_address(id, &addr, key).is_ok(), "{id} roundtrip");
-            // Flip the last character → checksum/body no longer matches.
+            // Change the last character to a *different letter* (compare is
+            // case-insensitive, so `Q` → `q` would still match).
             let mut bad = addr.clone();
             let last = bad.pop().unwrap();
-            bad.push(if last == 'q' { 'p' } else { 'q' });
+            bad.push(if last.eq_ignore_ascii_case(&'q') {
+                'p'
+            } else {
+                'q'
+            });
             assert!(verify_address(id, &bad, key).is_err(), "{id} tampered");
         }
     }
