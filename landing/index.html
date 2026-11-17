@@ -2895,7 +2895,7 @@
               setHref("dlLinuxPrimary", find(/Linux-CLI\.tar\.gz$/i));
               var tag = document.getElementById("latestVersionTag");
               if (tag) {
-                // Prefer live GitHub tag when >= 0.8.1; otherwise keep v0.8.1 (pending publish)
+                // Prefer live GitHub tag when >= 0.8.1; otherwise fall back to v0.8.1
                 var name = data.tag_name || "";
                 var parts = name
                   .replace(/^v/i, "")

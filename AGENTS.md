@@ -38,18 +38,18 @@ vanity-address/ (workspace root)
 
 ---
 
-## Current version state (as of 2026-10-29)
+## Current version state (as of 2026-11-13)
 
 | Package | Version | Published |
 | ------- | ------- | --------- |
-| vanity-core | **0.8.0** | ⏳ in tree — publish after tag |
-| vanity-address (CLI) | **0.8.0** | ⏳ in tree — publish after tag |
-| vanity-app (desktop) | **0.8.0** | ⏳ in tree — GitHub Release after tag |
-| vanity-wasm / npm SDK | **0.8.0** | ⏳ in tree — publish after Release assets + prepare-npm |
+| vanity-core | **0.8.1** | ✅ crates.io |
+| vanity-address (CLI) | **0.8.1** | ✅ crates.io |
+| vanity-app (desktop) | **0.8.1** | ✅ GitHub Release v0.8.1 (`.dmg` / `.exe`) |
+| vanity-wasm / npm SDK | **0.8.1** | ✅ npm `vanity-address@0.8.1` |
 | Web app (`landing/generate/`) | — | ✅ live at https://vanity-address.online/generate/ |
 
-**Git tags on GitHub:** `v0.3.0` … `v0.7.0` (⏳ `v0.8.0` pending)  
-**Latest GitHub Release:** [v0.6.6](https://github.com/yudizaxay/vanity-address/releases/tag/v0.6.6) — bump Formula/sha after `v0.8.0` exists
+**Git tags on GitHub:** `v0.3.0` … `v0.8.1`  
+**Latest GitHub Release:** [v0.8.1](https://github.com/yudizaxay/vanity-address/releases/tag/v0.8.1) (v0.8.0 was the first 49-chain release; 0.8.1 = warning-free core build, BCH `verify` fix, more tests)
 
 **Website deploy (Cloudflare Pages — GitHub `main` auto-deploys `landing/`):**
 
@@ -73,11 +73,11 @@ cargo publish -p vanity-address
 
 | Channel | Status | User command |
 | ------- | ------ | ------------ |
-| **GitHub Releases** | ✅ v0.6.6 (⏳ v0.8.0 pending) | Download `.dmg`, `.exe`, CLI archives |
-| **crates.io** | ✅ v0.6.6 (⏳ v0.8.0 pending) | `cargo install vanity-address` |
-| **Homebrew tap** | ✅ v0.6.6 (⏳ v0.8.0 pending) | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
+| **GitHub Releases** | ✅ v0.8.1 | Download `.dmg`, `.exe`, CLI archives |
+| **crates.io** | ✅ v0.8.1 | `cargo install vanity-address` |
+| **Homebrew tap** | ✅ v0.8.1 | `brew tap yudizaxay/tap && brew trust yudizaxay/tap && brew install vanity-address` |
 | **Homebrew local** | ✅ Works | `brew install --build-from-source ./Formula/vanity-address.rb` |
-| **npm** | ✅ v0.7.0 / 0.7.1 (⏳ 0.8.0 pending) | `npx vanity-address` / `npm i vanity-address` |
+| **npm** | ✅ v0.8.1 | `npx vanity-address` / `npm i vanity-address` |
 | **Web app** | ✅ Live | https://vanity-address.online/generate/ |
 | **Winget / Scoop / AUR** | ❌ Not yet | Future optional channels |
 
@@ -120,6 +120,11 @@ Layout: `npm/vanity-address` (CLI shim + WASM SDK) + `npm/vanity-address-{darwin
 ---
 
 ## Release checklist (maintainers)
+
+**One command:** after bumping versions + `CHANGELOG.md` and committing, run `./scripts/release.sh`
+(`--dry-run` first). It pushes `main`, waits for CI, tags, waits for the Release workflow, updates
+Homebrew, publishes crates.io (core → CLI) and npm — each stage waits for the previous to succeed and
+is safe to re-run. Manual steps below remain the reference.
 
 1. `make check-ci` green on `main`
 2. Bump version in **all** (keep in sync):
@@ -198,6 +203,13 @@ Solana SDK compile is heavy (3–8 min first time). Documented in `docs/INSTALL.
 - GPU candidates always CPU-reverified before export
 - Kernels: `vanity-core/src/gpu/kernels/{evm,solana}.cl`
 
+### CI / testing gotchas
+
+- `cargo clippy -p vanity-core -p vanity-address` unifies features (CLI enables `opencl` in core), hiding dead-code warnings that appear when `vanity-core` is built alone (what `cargo publish` verify does) — CI/Makefile therefore also run `cargo clippy -p vanity-core`
+- `verify_address` compares case-insensitively: tamper tests must change the last char to a letter that differs ignoring case (`Q`→`q` still matches; this made an STX test flaky ~1/32)
+- Release scripts run under bash; on macOS use `sed -i ''` and remember zsh does not word-split unquoted vars
+- Local `cargo check --target wasm32-unknown-unknown` may fail on Homebrew rust ("can't find crate for core"); CI's `wasm-sdk` job is authoritative
+
 ### Dependabot
 
 - `sha3` ignored for major/minor in `.github/dependabot.yml` (manual crypto updates)
@@ -227,7 +239,9 @@ make homebrew-formula VER=X.Y.Z
 
 ## Pending / optional next steps
 
-- [ ] Tag + publish **v0.8.0** (GitHub Release → crates.io → Homebrew → npm)
+- [ ] Verify npm README wallet names (Leather/Xverse, Neuron, Electron Cash, Decrediton) — written from memory, unverified
+- [ ] Optional: list chains by name in the main README (currently only the count)
+- [ ] Optional: `verify` compares addresses case-insensitively even for case-sensitive Base58/c32 chains (strictness only; no key risk)
 - [ ] Optional: ICP explorer link on the web result
 - [ ] Winget / Scoop manifests
 - [ ] Code signing for macOS Gatekeeper / Windows SmartScreen
@@ -235,7 +249,14 @@ make homebrew-formula VER=X.Y.Z
 - [ ] Cloudflare Pages: disable Web Analytics (Metrics) so edge stops injecting `beacon.min.js`
 - [x] Faster EVM GPU (incremental EC + batch inversion) — Solana GPU still slower than CPU; NVIDIA/AMD untested
 
-### Recently completed (2026-10-20)
+### Recently completed (2026-11-13)
+
+- [x] **0.8.0 / 0.8.1 released** on GitHub, crates.io, Homebrew tap, npm — 49 chains (+ ZEC/BCH/STX/DCR/CKB)
+- [x] `scripts/release.sh` one-command release (waits on CI/Release workflow between stages)
+- [x] Known-vector tests (ZEC, DCR, BLAKE-256) + `verify` round-trip/tamper tests for the 5 new chains; BCH `verify` accepts bare or `bitcoincash:` form
+- [x] `gpu::pattern_pack` gated behind `opencl`; CI/Makefile now also clippy `vanity-core` alone (default features)
+
+### Completed (2026-10-20)
 
 - [x] **0.7.0** in tree: Phases 1–3 (forks, puzzle, split-key, security, OpenCL EVM+Solana GPU, benchmarks)
 - [x] Phase 2: split-key + SECURITY-MODEL + export/Safety warnings
@@ -253,8 +274,9 @@ make homebrew-formula VER=X.Y.Z
 6. **Read** `RELEASING.md` before version bumps or publishes
 7. **After Homebrew formula changes** — sync tap with `./scripts/sync-homebrew-tap.sh --push`
 8. **After npm package changes** — `./scripts/prepare-npm.sh` then `./scripts/publish-npm.sh` (do not commit binaries)
-9. **After `vanity-core` / `vanity-wasm` changes** — `./scripts/build-web.sh` and commit `landing/generate/wasm/` so the web generator matches
+9. **Don't push or tag** unless the user asks — they review and push themselves (they commit via GitHub Desktop / terminal)
+10. **After `vanity-core` / `vanity-wasm` changes** — `./scripts/build-web.sh` and commit `landing/generate/wasm/` so the web generator matches
 
 ---
 
-*Last updated: 2026-11-12 — **0.8.0** in tree (+ ZEC/BCH/STX/DCR/CKB); tag/publish pending.*
+*Last updated: 2026-11-13 — **0.8.1** released on all channels (49 chains incl. ZEC/BCH/STX/DCR/CKB).*

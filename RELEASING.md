@@ -2,7 +2,20 @@
 
 Maintainers cut releases by pushing a version tag. GitHub Actions builds binaries and publishes a GitHub Release automatically.
 
-## Checklist
+## One-command release
+
+After bumping versions in all packages and adding the `CHANGELOG.md` section, commit and run:
+
+```bash
+./scripts/release.sh --dry-run   # preflight + plan, changes nothing
+./scripts/release.sh             # push main → CI → tag → Release workflow → Homebrew → crates.io → npm
+```
+
+Each stage waits for the previous one to succeed. It is idempotent — after a failure fix the
+problem and re-run the same command. Options: `--yes`, `--skip-local`, optional explicit version.
+Requires `gh` auth, `cargo`/`npm` logins, `wasm-pack`, and the tap repo at `../homebrew-tap`.
+
+## Checklist (manual reference)
 
 1. Ensure `main` is green on CI (`make check-ci` or see README)
 2. Bump version in **all** packages (keep in sync):

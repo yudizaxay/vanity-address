@@ -10,7 +10,7 @@ alwaysApply: true
 ## Quick facts
 
 - Rust workspace: `vanity-core` (engine) + `vanity-address` (CLI) + `vanity-wasm` + `vanity-app` (Tauri desktop)
-- **v0.8.0** in tree (+ ZEC/BCH/STX/DCR/CKB → 49 menu chains; tag/publish pending); **v0.6.6** still live on GH/crates/brew; npm was 0.7.x; chain logic only in `vanity-core`
+- **v0.8.1** live on GitHub Releases, crates.io, Homebrew tap and npm (49 menu chains incl. ZEC/BCH/STX/DCR/CKB); chain logic only in `vanity-core`
 - Web: Cloudflare Pages → https://vanity-address.online/ (GitHub `main`, output dir `landing`, headers in `landing/_headers`)
 - Publish order: `vanity-core` then `vanity-address` (no `#` on same shell line)
 - npm: `prepare-npm.sh` + `build-wasm.sh` then `publish-npm.sh`
@@ -18,6 +18,8 @@ alwaysApply: true
 - crates.io README needs absolute GitHub/raw URLs for images and links
 
 ## Before releases
+
+Bump versions + `CHANGELOG.md`, commit, then `./scripts/release.sh --dry-run` → `./scripts/release.sh` (waits on CI/Release workflow between stages). Manual order for reference:
 
 `make check-ci` → version bump all packages → `CHANGELOG.md` → Homebrew formula → tag → `cargo publish` → sync Homebrew tap → `prepare-npm` + `publish-npm`
 
